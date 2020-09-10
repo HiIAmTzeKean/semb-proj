@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Index{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+<p>Access the following pages below</p>
+<li><a href="{{ url_for('ps.admin') }}">Admin</a>
+<li><a href="{{ url_for('ps.cos') }}">COS</a>
+{% endblock %}

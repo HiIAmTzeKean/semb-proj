@@ -1,0 +1,20 @@
+<!doctype html>
+<title>{% block title %}{% endblock %} - E-PS</title>
+
+<nav>
+    {% if g.user %}
+      <h1>Logged in as: {{ g.user['username'] }}</h1>
+      <a href="{{ url_for('auth.logout') }}">Log Out</a>
+    {% endif %}
+</nav>
+
+<section class="content">
+  <header>
+    {% block header %}{% endblock %}
+  </header>
+  {% for message in get_flashed_messages() %}
+    <div class="flash">{{ message }}</div>
+  {% endfor %}
+
+  {% block content %}{% endblock %}
+</section>
