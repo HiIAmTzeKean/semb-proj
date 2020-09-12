@@ -22,7 +22,13 @@ def index():
 # For COS to retrive parade state to send via whatsapp
 @bp.route('/paradestate')
 def paradestate():
-    return "parade state"
+# Access db to retive records
+    db = get_db()
+    fmw = "Sembawang" # Trial for Sembwang only
+    personnels = db.execute(
+             'SELECT * FROM personnel WHERE fmw = ?', (fmw,)
+         ).fetchall()
+    return render_template('ps/paradestate.html',personnels=personnels)
 
 # view only to admin
 @bp.route('/admin')

@@ -8,5 +8,19 @@
 <div>
     <!--display current parade state-->
     <p>This is the current parade state</p>
+    <table border="">
+        <tr>
+            <td>Rank</td>
+            <td>Name</td>
+            <td>AM</td>
+            <td>PM</td>
+        </tr>
+        {% for person in personnels %}
+        <tr>
+            <td>{{ person.rank }}</td>
+            <td>{{ person.name }}</td>
+        </tr>
+        {% endfor %}
+    </table>
 </div>
 {% endblock %}
