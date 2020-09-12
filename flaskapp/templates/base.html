@@ -6,8 +6,11 @@
       <h1>Logged in as: {{ g.user['username'] }}</h1>
       <a href="{{ url_for('auth.logout') }}">Log Out</a>
     {% endif %}
-
-    <a href="{{ url_for('ps.admin') }}">Admin Access</a>
+	
+	<a href="{{ url_for('ps.index') }}">Home Page</a>
+	&nbsp
+	<a href="{{ url_for('ps.admin') }}">Admin Access</a>
+	&nbsp
     <a href="{{ url_for('ps.paradestate') }}">Parade state Access</a>
 </nav>
 

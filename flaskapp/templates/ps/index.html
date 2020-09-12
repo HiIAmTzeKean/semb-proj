@@ -10,8 +10,7 @@
   <form method="POST">
     <ol>
     {{ form.hidden_tag() }}
-    <!--Stills need the name tag-->
-    <li><p>Name</p></li>
+    <li>{{ form.name.label }} {{ form.name() }}</li>
     <li>{{ form.am_status.label }} {{ form.am_status() }}</li>
     <li>{{ form.am_remarks.label }} {{ form.am_remarks() }}</li>
     <li>{{ form.pm_status.label }} {{ form.pm_status() }}</li>

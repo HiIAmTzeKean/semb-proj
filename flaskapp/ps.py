@@ -12,11 +12,32 @@ from .forms import paradestateform
 bp = Blueprint('ps', __name__)
 
 # For all to submit their parade state
-@bp.route('/')
+@bp.route('/', methods=('GET', 'POST'))
 def index():
+    db = get_db()
+    fmw = "Sembawang" # Trial for Sembwang only
+    rows = db.execute(
+             'SELECT name FROM personnel WHERE fmw = ?', (fmw,)
+         ).fetchall()
+# Convert row object to name
+    names = [] 
+    for row in rows:
+        names.append((row,row["name"]))
     form = paradestateform()
+    form.name.choices = names
     if form.validate_on_submit():
-        pass
+# update database
+        name = form.name.data
+        am_status = form.am_status.data
+        am_remarks = form.am_remarks.data
+        pm_status = form.pm_status.data
+        pm_remarks = form.pm_remarks.data
+        db.execute(
+            '''UPDATE personnel 
+            SET am_status = ?, am_remarks = ?, pm_status = ?, pm_remarks = ?
+            WHERE name = ?''', [am_status, am_remarks, pm_status, pm_remarks,name]
+        )
+        return redirect(url_for('ps.paradestate'))
     return render_template('ps/index.html', form=form)
 
 # For COS to retrive parade state to send via whatsapp
@@ -31,7 +52,7 @@ def paradestate():
     return render_template('ps/paradestate.html',personnels=personnels)
 
 # view only to admin
-@bp.route('/admin')
+@bp.route('/admin', methods=('GET', 'POST'))
 @login_required
 def admin():
     if g.user['username'] == 'Admin':

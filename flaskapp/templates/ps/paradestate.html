@@ -13,12 +13,18 @@
             <td>Rank</td>
             <td>Name</td>
             <td>AM</td>
+            <td>AM Remarks</td>
             <td>PM</td>
+            <td>PM Remarks</td>
         </tr>
         {% for person in personnels %}
         <tr>
             <td>{{ person.rank }}</td>
             <td>{{ person.name }}</td>
+            <td>{{ person.am_status }}</td>
+            <td>{{ person.am_remarks }}</td>
+            <td>{{ person.pm_status }}</td>
+            <td>{{ person.pm_remarks }}</td>
         </tr>
         {% endfor %}
     </table>

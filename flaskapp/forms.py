@@ -11,17 +11,13 @@ class loginform(FlaskForm):
 # submit parade state
 class paradestateform(FlaskForm):
     status = [("P","Present"),("OS","Out Station"),("MC","Medical Cert")]
-# Derive name drop down from excel sheet ---------------------------------#
-    #name = 
+    name = SelectField(label='Name', choices='')
     am_status = SelectField(label='AM Status', choices=status)
-    am_remarks = StringField(label='AM Remarks', validators=[DataRequired()])
+    am_remarks = StringField(label='AM Remarks',)
     pm_status = SelectField(label='PM Status', choices=status)
-    pm_remarks = StringField(label='PM Remarks', validators=[DataRequired()])
+    pm_remarks = StringField(label='PM Remarks',)
     submit = SubmitField('Submit')
 
 # Admin updater to change parade state
-class update_paradestateform(FlaskForm):
-    #super().__init__()
-    #date = 
-    #time =
-    pass
+# class update_paradestateform(paradestateform):
+#     pass
