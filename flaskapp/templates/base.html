@@ -1,0 +1,71 @@
+<!doctype html>
+<title>{% block title %}{% endblock %} - E-PS</title>
+
+<nav>
+    {% if g.user %}
+      <h1>Logged in as: {{ g.user['username'] }}</h1>
+      <a href="{{ url_for('auth.logout') }}">Log Out</a>
+    {% endif %}
+
+    <a href="{{ url_for('ps.admin') }}">Admin Access</a>
+    <a href="{{ url_for('ps.paradestate') }}">Parade state Access</a>
+</nav>
+
+<section class="content">
+  <header>
+    {% block header %}{% endblock %}
+  </header>
+
+  <div>
+    <!--Time and date display-->
+    <table>
+      <tr>
+								<th>Time is:</th>
+								<th></th>
+        <th>Date is:</th>
+      </tr>
+      <tr>
+        <th>
+								<script type="text/javascript">
+										<!--
+										var currentTime = new Date()
+										var hours = currentTime.getHours()
+										var minutes = currentTime.getMinutes()
+										if (minutes < 10){
+										minutes = "0" + minutes
+										}
+										document.write(hours + ":" + minutes + " ")
+										if(hours > 11){
+										document.write("PM")
+										} else {
+										document.write("AM")
+										}
+										//-->
+								</script>
+								</th>
+								<th></th>
+								<th>
+								<script type="text/javascript">
+										<!--
+										var currentTime = new Date()
+										var month = currentTime.getMonth() + 1
+										var day = currentTime.getDate()
+										var year = currentTime.getFullYear()
+										document.write(month + "/" + day + "/" + year)
+										//-->
+								</script>
+								</th>
+      </tr>
+    </table>
+  </div>
+
+  {% for message in get_flashed_messages() %}
+    <div class="flash">{{ message }}</div>
+  {% endfor %}
+
+  {% block content %}{% endblock %}
+</section>
+
+<footer>
+  <h3>Sembwang FMW</h3>
+</footer>

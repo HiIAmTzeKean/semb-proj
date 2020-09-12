@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Index{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+<div>
+  <!--drop down box to choose name and update AM and PM attendance-->
+  <form method="POST">
+    <ol>
+    {{ form.hidden_tag() }}
+    <!--Stills need the name tag-->
+    <li><p>Name</p></li>
+    <li>{{ form.am_status.label }} {{ form.am_status() }}</li>
+    <li>{{ form.am_remarks.label }} {{ form.am_remarks() }}</li>
+    <li>{{ form.pm_status.label }} {{ form.pm_status() }}</li>
+    <li>{{ form.pm_remarks.label }} {{ form.pm_remarks() }}</li>
+    <li>{{ form.submit() }}</li>
+    </ol>
+  </form>
+</div>
+{% endblock %}
