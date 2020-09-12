@@ -19,10 +19,10 @@ def index():
     rows = db.execute(
              'SELECT name FROM personnel WHERE fmw = ?', (fmw,)
          ).fetchall()
-# Convert row object to name
+# Convert to tuple for form processing
     names = [] 
     for row in rows:
-        names.append((row,row["name"]))
+        names.append((row["name"]))
     form = paradestateform()
     form.name.choices = names
     if form.validate_on_submit():
@@ -35,8 +35,9 @@ def index():
         db.execute(
             '''UPDATE personnel 
             SET am_status = ?, am_remarks = ?, pm_status = ?, pm_remarks = ?
-            WHERE name = ?''', [am_status, am_remarks, pm_status, pm_remarks,name]
+            WHERE name = ?''', (am_status, am_remarks, pm_status, pm_remarks,name)
         )
+        db.commit()
         return redirect(url_for('ps.paradestate'))
     return render_template('ps/index.html', form=form)
 
