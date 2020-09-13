@@ -70,5 +70,7 @@
 </section>
 
 <footer>
-  <h3>Sembwang FMW</h3>
+  {% if session.get('fmw') %}
+    {{ session.get('fmw') }}
+  {% endif %}
 </footer>

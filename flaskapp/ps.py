@@ -3,11 +3,11 @@ from flask import (
 )
 from werkzeug.exceptions import abort
 
-from flaskapp.auth import login_required
+from flaskapp.auth import login_required, fmw_required
 
 from flaskapp.db import get_db
 
-from .forms import paradestateform
+from .forms import paradestateform, fmwform
 
 from .methods import converter_paradestateform
 
@@ -15,6 +15,7 @@ bp = Blueprint('ps', __name__)
 
 # For all to submit their parade state
 @bp.route('/', methods=('GET', 'POST'))
+@fmw_required
 def index():
     db = get_db()
     fmw = "Sembawang" # Trial for Sembwang only
@@ -25,7 +26,7 @@ def index():
     form = paradestateform()
     form.name.choices = names
     if form.validate_on_submit():
-# update database
+    # update database
         name = form.name.data
         am_status = form.am_status.data
         am_remarks = form.am_remarks.data
@@ -43,7 +44,6 @@ def index():
 # For COS to retrive parade state to send via whatsapp
 @bp.route('/paradestate')
 def paradestate():
-# Access db to retive records
     db = get_db()
     fmw = "Sembawang" # Trial for Sembwang only
     personnels = db.execute(
@@ -51,14 +51,34 @@ def paradestate():
          ).fetchall()
     return render_template('ps/paradestate.html',personnels=personnels)
 
+@bp.route('/fmw', methods=('GET', 'POST'))
+def fmw():
+    form = fmwform()
+    if form.validate_on_submit():
+        fmw = form.fmw.data
+        session.clear()
+        session['fmw'] = fmw
+        return redirect(url_for('index'))
+    return render_template('ps/fmw.html',form=form)
+
 # view only to admin
 @bp.route('/admin', methods=('GET', 'POST'))
 @login_required
 def admin():
     if g.user['username'] == 'Admin':
-# displays admin functions
-# 1. update changes 2. add/remove people
+    # displays admin functions
+    # 1. update changes 2. add/remove people
         return 'admin'
 
-# show error 401 and forces user to login again
+    # show error 401 and forces user to login again
     return 'redirect'
+
+@bp.before_app_request
+def load_fmw():
+    fmw = session.get('fmw')
+
+    if fmw is None:
+        g.fmw = None
+    else:
+        g.fmw = fmw
+

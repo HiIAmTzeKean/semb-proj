@@ -8,6 +8,11 @@ class loginform(FlaskForm):
     password = PasswordField('Password',validators=[DataRequired()])
     submit = SubmitField('Submit')
 
+class fmwform(FlaskForm):
+    workshops = [("Sembwang"),("Bedok"),("Navy"),("HQ")]
+    fmw = SelectField(label='FMW', choices=workshops)
+    submit = SubmitField('Submit')
+
 # submit parade state
 class paradestateform(FlaskForm):
     status = [("P","Present"),("OS","Out Station"),("MC","Medical Cert")]

@@ -18,7 +18,7 @@ def login():
         error = None
         username = form.username.data
         password = form.password.data
-# validating user (Still need to add in password auth)
+    # validating user (Still need to add in password auth)
         db = get_db()
         user = db.execute(
              'SELECT * FROM user WHERE username = ?', (username,)
@@ -26,10 +26,12 @@ def login():
         if user is None:
             error = 'Incorrect username.'
 
-# Log user in and redirect to index page
+    # Log user in and redirect to index page
         if error is None:
+            fmw = session.get('fmw')
             session.clear()
             session['user_id'] = user['username']
+            session['fmw'] = fmw
             return redirect(url_for('index'))
         flash(error)
     return render_template('auth/login2.html',form=form)
@@ -55,6 +57,15 @@ def login_required(view):
     def wrapped_view(**kwargs):
         if g.user is None:
             return redirect(url_for('auth.login'))
+
+        return view(**kwargs)
+    return wrapped_view
+
+def fmw_required(view):
+    @functools.wraps(view)
+    def wrapped_view(**kwargs):
+        if g.fmw is None:
+            return redirect(url_for('ps.fmw'))
 
         return view(**kwargs)
     return wrapped_view
