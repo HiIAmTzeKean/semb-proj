@@ -8,14 +8,11 @@ class loginform(FlaskForm):
     password = PasswordField('Password',validators=[DataRequired()])
     submit = SubmitField('Submit')
 
-class fmwform(FlaskForm):
-    workshops = [("Sembwang"),("Bedok"),("Navy"),("HQ")]
-    fmw = SelectField(label='FMW', choices=workshops)
-    submit = SubmitField('Submit')
-
 # submit parade state
 class paradestateform(FlaskForm):
     status = [("P","Present"),("OS","Out Station"),("MC","Medical Cert")]
+    workshops = [("Sembwang"),("Bedok"),("Navy"),("HQ")]
+    fmw = SelectField(label='FMW', choices=workshops)
     name = SelectField(label='Name', choices='')
     am_status = SelectField(label='AM Status', choices=status)
     am_remarks = StringField(label='AM Remarks',)
@@ -24,5 +21,5 @@ class paradestateform(FlaskForm):
     submit = SubmitField('Submit')
 
 # Admin updater to change parade state
-# class update_paradestateform(paradestateform):
-#     pass
+class update_paradestateform(paradestateform):
+    pass

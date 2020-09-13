@@ -3,11 +3,11 @@ from flask import (
 )
 from werkzeug.exceptions import abort
 
-from flaskapp.auth import login_required, fmw_required
+from flaskapp.auth import login_required
 
 from flaskapp.db import get_db
 
-from .forms import paradestateform, fmwform
+from .forms import paradestateform
 
 from .methods import converter_paradestateform
 
@@ -15,7 +15,6 @@ bp = Blueprint('ps', __name__)
 
 # For all to submit their parade state
 @bp.route('/', methods=('GET', 'POST'))
-@fmw_required
 def index():
     db = get_db()
     fmw = "Sembawang" # Trial for Sembwang only
@@ -51,16 +50,6 @@ def paradestate():
          ).fetchall()
     return render_template('ps/paradestate.html',personnels=personnels)
 
-@bp.route('/fmw', methods=('GET', 'POST'))
-def fmw():
-    form = fmwform()
-    if form.validate_on_submit():
-        fmw = form.fmw.data
-        session.clear()
-        session['fmw'] = fmw
-        return redirect(url_for('index'))
-    return render_template('ps/fmw.html',form=form)
-
 # view only to admin
 @bp.route('/admin', methods=('GET', 'POST'))
 @login_required
@@ -72,13 +61,3 @@ def admin():
 
     # show error 401 and forces user to login again
     return 'redirect'
-
-@bp.before_app_request
-def load_fmw():
-    fmw = session.get('fmw')
-
-    if fmw is None:
-        g.fmw = None
-    else:
-        g.fmw = fmw
-
