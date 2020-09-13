@@ -9,6 +9,8 @@ from flaskapp.db import get_db
 
 from .forms import paradestateform
 
+from .methods import converter_paradestateform
+
 bp = Blueprint('ps', __name__)
 
 # For all to submit their parade state
@@ -19,10 +21,7 @@ def index():
     rows = db.execute(
              'SELECT name FROM personnel WHERE fmw = ?', (fmw,)
          ).fetchall()
-# Convert to tuple for form processing
-    names = [] 
-    for row in rows:
-        names.append((row["name"]))
+    names = converter_paradestateform(rows)
     form = paradestateform()
     form.name.choices = names
     if form.validate_on_submit():
