@@ -6,7 +6,7 @@ from datetime import datetime
 from flaskapp.auth import login_required
 from flaskapp.db import get_db
 from .forms import paradestateform
-from .methods import converter_paradestateform
+from .methods import converter_paradestateform, retrieve_personnel_list, retrieve_member_statuses
 
 bp = Blueprint('ps', __name__)
 
@@ -16,9 +16,7 @@ bp = Blueprint('ps', __name__)
 def index():
     db = get_db()
     fmw = "Sembawang"  # Trial for Sembawang only
-    rows = db.execute(
-             'SELECT id, name FROM personnel WHERE fmw = ?', (fmw,)
-         ).fetchall()
+    rows = retrieve_personnel_list(db, fmw)
     names = converter_paradestateform(rows)
     form = paradestateform()
     form.name.choices = names
@@ -48,10 +46,8 @@ def index():
 def paradestate():
     db = get_db()
     fmw = "Sembawang" # Trial for Sembswang only
-    personnels = db.execute(
-             'SELECT * FROM personnel WHERE fmw = ?', (fmw,)
-         ).fetchall()
-    return render_template('ps/paradestate.html', personnels=personnels)
+    statuses = retrieve_member_statuses(db, fmw, '2020-09-14', 'AM')
+    return render_template('ps/paradestate.html', personnels=statuses)
 
 # view only to admin
 @bp.route('/admin', methods=('GET', 'POST'))

@@ -29,14 +29,14 @@ class paradestateform(FlaskForm):
         'OTHERS': 'OTHERS'
     }
 
-    statuses = list(map(lambda x: (x.key, x.value), statuses))
+    statuses = statuses.items()
     workshops = [("Sembwang"),("Bedok"),("Navy"),("HQ")]
     fmw = SelectField(label='FMW', choices=workshops)
     name = SelectField(label='Name', choices='', coerce=int)
     status_date = HiddenField(label='Date')
-    am_status = SelectField(label='AM Status', choices=status)
+    am_status = SelectField(label='AM Status', choices=statuses)
     am_remarks = StringField(label='AM Remarks',)
-    pm_status = SelectField(label='PM Status', choices=status)
+    pm_status = SelectField(label='PM Status', choices=statuses)
     pm_remarks = StringField(label='PM Remarks',)
     submit = SubmitField('Submit')
 
