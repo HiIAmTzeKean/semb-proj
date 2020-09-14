@@ -1,7 +1,7 @@
 def converter_paradestateform(rows):
     names = [] 
     for row in rows:
-        names.append((row["name"]))
+        names.append((row["id"], row["name"]))
     return names
 
 import os
