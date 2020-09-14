@@ -1,6 +1,6 @@
 DROP TABLE IF EXISTS "user";
-DROP TABLE IF EXISTS "personnel";
 DROP TABLE IF EXISTS "personnel_status";
+DROP TABLE IF EXISTS "personnel";
 
 CREATE TABLE "user" (
 	"id" INTEGER,

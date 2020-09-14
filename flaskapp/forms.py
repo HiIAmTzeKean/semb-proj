@@ -8,9 +8,28 @@ class loginform(FlaskForm):
     password = PasswordField('Password',validators=[DataRequired()])
     submit = SubmitField('Submit')
 
+
 # submit parade state
 class paradestateform(FlaskForm):
-    status = [("P","Present"),("OS","Out Station"),("MC","Medical Cert")]
+    statuses = {
+        'P': 'PRESENT',
+        'AO': 'ATTACHED OUT',
+        'DUTY': 'DUTY',
+        'OS': 'OUT STATION',
+        'OC': 'ON COURSE',
+        'OFF': 'OFF',
+        'LL': 'LOCAL LEAVE',
+        'OL': 'OVERSEAS LEAVE',
+        'MC': 'MC',
+        'MA': 'MA',
+        'RSO': 'RSO',
+        'RSI': 'RSI',
+        'SOL': 'SOL',
+        'DR': 'DUTY REST',
+        'OTHERS': 'OTHERS'
+    }
+
+    statuses = list(map(lambda x: (x.key, x.value), statuses))
     workshops = [("Sembwang"),("Bedok"),("Navy"),("HQ")]
     fmw = SelectField(label='FMW', choices=workshops)
     name = SelectField(label='Name', choices='', coerce=int)
