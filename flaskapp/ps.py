@@ -2,7 +2,6 @@ from flask import (
     Blueprint, g, redirect, render_template, url_for
 )
 from datetime import datetime
-
 from flaskapp.auth import login_required
 from flaskapp.db import get_db
 from .forms import paradestateform
@@ -10,16 +9,17 @@ from .methods import converter_paradestateform, retrieve_personnel_list, retriev
 
 bp = Blueprint('ps', __name__)
 
-
 # For all to submit their parade state
 @bp.route('/', methods=('GET', 'POST'))
 def index():
     db = get_db()
-    fmw = "Sembawang"  # Trial for Sembawang only
+    # Trial for Sembawang only
+    fmw = "Sembawang"
     rows = retrieve_personnel_list(db, fmw)
     names = converter_paradestateform(rows)
     form = paradestateform()
     form.name.choices = names
+    # date to be changed to drop down box in the future for uploading
     form.status_date.data = datetime.today().strftime('%Y-%m-%d')
     if form.validate_on_submit():
         # update database
@@ -39,7 +39,6 @@ def index():
 
         return redirect(url_for('ps.paradestate'))
     return render_template('ps/index.html', form=form)
-
 
 # For COS to retrive parade state to send via whatsapp
 @bp.route('/paradestate')

@@ -10,11 +10,10 @@ def converter_paradestateform(rows):
     return names
 
 
-def retrieve_personnel_list(db, grp):
+def retrieve_personnel_list(db, fmw):
     query = db.execute(
-             'SELECT * FROM personnel WHERE fmw = ?', (grp,)
+             'SELECT * FROM personnel WHERE fmw = ?', (fmw,)
          ).fetchall()
-
     return query
 
 

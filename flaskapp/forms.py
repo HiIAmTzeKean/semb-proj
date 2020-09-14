@@ -8,7 +8,6 @@ class loginform(FlaskForm):
     password = PasswordField('Password',validators=[DataRequired()])
     submit = SubmitField('Submit')
 
-
 # submit parade state
 class paradestateform(FlaskForm):
     statuses = {
