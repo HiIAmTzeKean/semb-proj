@@ -44,7 +44,7 @@ def index():
 @bp.route('/paradestate')
 def paradestate():
     db = get_db()
-    fmw = "Sembawang" # Trial for Sembswang only
+    fmw = session.get('fmw')
     statuses = retrieve_member_statuses(db, fmw, '2020-09-14', 'AM')
     return render_template('ps/paradestate.html', personnels=statuses)
 

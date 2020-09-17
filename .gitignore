@@ -3,7 +3,5 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-instance/
-venv/
 .idea/
 .vscode/settings.json
