@@ -11,7 +11,7 @@ def create_app():
     )
 
     # load the instance config
-    app.config.from_pyfile('config.py', silent=True)
+    app.config.from_pyfile('config.py', silent=False)
     
     # ensure the instance folder exists
     try:
