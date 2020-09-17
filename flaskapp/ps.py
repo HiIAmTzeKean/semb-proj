@@ -46,7 +46,7 @@ def index():
 def paradestate():
     db = get_db()
     fmw = session.get('fmw')
-    #check if func work. Not working on my end
+    # check if func work. Not working on my end
     statuses = retrieve_member_statuses(db, fmw, '2020-09-14', 'AM')
     return render_template('ps/paradestate.html', personnels=statuses)
 
@@ -54,10 +54,10 @@ def paradestate():
 @bp.route('/admin', methods=('GET', 'POST'))
 @login_required
 def admin():
-    if g.user['username'] == 'Admin':
+    if session.get('user_id') == 'Admin':
     # displays admin functions
     # 1. add/remove people to db
     # 2. any additional functions? Hq level scope?
-        return 'admin'
+        return render_template('ps/admin.html')
     # show error 401 and forces user to login again
     return 'You are not authorised, please log in as Admin'

@@ -25,7 +25,8 @@ def login():
          ).fetchone()
         if user is None:
             error = 'Incorrect username.'
-
+        elif user['password'] != password:
+            error = 'Wrong password'
     # Log user in and redirect to index page
         if error is None:
             session.clear()
