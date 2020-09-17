@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Success{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+    <!-- print out the ps user has uploaded below -->
+    <a href="{{ url_for('index') }}">return to index page</a>
+{% endblock %}

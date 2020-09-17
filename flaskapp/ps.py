@@ -1,5 +1,5 @@
 from flask import (
-    Blueprint, g, redirect, render_template, url_for
+    Blueprint, flash, g, redirect, render_template, session, url_for
 )
 from datetime import datetime
 from flaskapp.auth import login_required
@@ -37,14 +37,16 @@ def index():
         db.execute(sql_str, (personnel_id, status_date, 'PM', pm_status, pm_remarks))
         db.commit()
 
-        return redirect(url_for('ps.paradestate'))
+        return redirect(url_for('misc.success'))
     return render_template('ps/index.html', form=form)
 
 # For COS to retrive parade state to send via whatsapp
 @bp.route('/paradestate')
+@login_required
 def paradestate():
     db = get_db()
     fmw = session.get('fmw')
+    #check if func work. Not working on my end
     statuses = retrieve_member_statuses(db, fmw, '2020-09-14', 'AM')
     return render_template('ps/paradestate.html', personnels=statuses)
 
@@ -54,8 +56,8 @@ def paradestate():
 def admin():
     if g.user['username'] == 'Admin':
     # displays admin functions
-    # 1. update changes 2. add/remove people
+    # 1. add/remove people to db
+    # 2. any additional functions? Hq level scope?
         return 'admin'
-
     # show error 401 and forces user to login again
-    return 'redirect'
+    return 'You are not authorised, please log in as Admin'

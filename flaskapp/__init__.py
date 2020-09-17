@@ -25,9 +25,14 @@ def create_app():
     from . import auth
     app.register_blueprint(auth.bp)
 
+    # for parade state page
     from . import ps
     app.register_blueprint(ps.bp)
     app.add_url_rule('/', endpoint='index')
+
+    # for misc pages
+    from . import misc
+    app.register_blueprint(misc.bp)
 
     # a simple page that says hello
     @app.route('/hello')
