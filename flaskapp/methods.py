@@ -35,19 +35,11 @@ def retrieve_personnel_statuses(db,fmw,date):
     SELECT personnel.id, personnel.rank, personnel.name, 
     personnel_status.am_status, personnel_status.am_remarks, personnel_status.pm_status, personnel_status.pm_remarks
     FROM personnel, personnel_status
-    WHERE (personnel.id, personnel_status.id) 
-    IN (SELECT personnel.id FROM personnel_status
-        JOIN personnel ON personnel.id = personnel_status.personnel_id
-        WHERE personnel.fmw = ? AND personnel_status.date = ?
-    )
+    WHERE WHERE personnel.fmw = ? AND personnel_status.date = ?
     ORDER BY personnel.id
     """, (fmw,date,) ).fetchall()
     #find out who has not submit their ps using ID
-    id_list = retrieve_personnel_id_from_fmw(db,fmw)
-    personnel_statuses = []
-    for status in statuses:
-        #remove if inside, else, skip
-        id_list.remove(status['id'])
+    
     #need to return as a sql query and those who did not submit
     return personnel_statuses
 
