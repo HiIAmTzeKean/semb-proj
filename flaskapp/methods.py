@@ -35,7 +35,7 @@ def retrieve_personnel_statuses(db,fmw,date):
     SELECT personnel.id, personnel.rank, personnel.name, 
     personnel_status.am_status, personnel_status.am_remarks, personnel_status.pm_status, personnel_status.pm_remarks
     FROM personnel, personnel_status
-    WHERE WHERE personnel.fmw = ? AND personnel_status.date = ?
+    WHERE personnel.fmw = ? AND personnel_status.date = ?
     ORDER BY personnel.id
     """, (fmw,date,) ).fetchall()
     #find out who has not submit their ps using ID

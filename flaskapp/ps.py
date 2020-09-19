@@ -5,7 +5,7 @@ from datetime import datetime
 from flaskapp.auth import login_required
 from flaskapp.db import get_db
 from .forms import paradestateform
-from .methods import nameconverter_paradestateform, retrieve_personnel_list, retrieve_member_statuses
+from .methods import nameconverter_paradestateform, retrieve_personnel_list
 
 bp = Blueprint('ps', __name__)
 
@@ -42,8 +42,8 @@ def index():
 def paradestate():
     db = get_db()
     fmw = session.get('fmw')
-    statuses = retrieve_member_statuses(db, fmw, '2020-09-14', 'AM')
-    return render_template('ps/paradestate.html', personnels=statuses)
+
+    return render_template('ps/paradestate.html', personnels=None)
 
 # view only to admin
 @bp.route('/admin', methods=('GET', 'POST'))
