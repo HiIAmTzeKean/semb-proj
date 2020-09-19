@@ -39,7 +39,7 @@ class paradestateform(FlaskForm):
     submit = SubmitField('Submit')
 
 class paradestateviewform(FlaskForm):
-    status_date = StringField(label='Date',)
+    date = StringField(label='Date',)
     submit = SubmitField('Submit')
 
 # Admin updater to change parade state

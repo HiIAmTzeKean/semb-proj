@@ -4,8 +4,8 @@ from flask import (
 from datetime import datetime
 from flaskapp.auth import login_required
 from flaskapp.db import get_db
-from .forms import paradestateform
-from .methods import nameconverter_paradestateform, retrieve_personnel_list
+from .forms import paradestateform,paradestateviewform
+from .methods import nameconverter_paradestateform, retrieve_personnel_list, retrieve_personnel_statuses
 
 bp = Blueprint('ps', __name__)
 
@@ -22,6 +22,8 @@ def index():
     # date to be changed to drop down box in the future for uploading
     form.status_date.data = datetime.today().strftime('%Y-%m-%d')
     if form.validate_on_submit():
+        #need to check for if there is existing record
+        #if there is, update instead of insert
         status_date = form.status_date.data
         personnel_id = form.name.data
         am_status = form.am_status.data
@@ -37,13 +39,17 @@ def index():
     return render_template('ps/index.html', form=form)
 
 # For COS to retrive parade state to send via whatsapp
-@bp.route('/paradestate')
+@bp.route('/paradestate', methods=('GET', 'POST'))
 @login_required
 def paradestate():
     db = get_db()
     fmw = session.get('fmw')
-
-    return render_template('ps/paradestate.html', personnels=None)
+    form = paradestateviewform()
+    date = datetime.today().strftime('%Y-%m-%d')
+    if form.validate_on_submit():
+        personnels_status=retrieve_personnel_statuses(db,fmw,date)
+        return render_template('ps/paradestate.html', personnels=personnels_status)
+    return render_template('ps/paradestate.html', form=form)
 
 # view only to admin
 @bp.route('/admin', methods=('GET', 'POST'))

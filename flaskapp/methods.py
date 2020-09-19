@@ -28,18 +28,25 @@ def retrieve_personnel_list(db, fmw):
          ).fetchall()
     return query
 
-# retrive status for display in PS 
+
 def retrieve_personnel_statuses(db,fmw,date):
-    #get id from those belonging to the fmw
-    personnel_statuses = db.execute("""
+    if fmw == 'Admin':
+        personnel_statuses = db.execute("""
     SELECT personnel.id, personnel.rank, personnel.name, 
     personnel_status.am_status, personnel_status.am_remarks, personnel_status.pm_status, personnel_status.pm_remarks
     FROM personnel, personnel_status
-    WHERE personnel.fmw = ? AND personnel_status.date = ?
-    ORDER BY personnel.id
-    """, (fmw,date,) ).fetchall()
+    WHERE personnel.id = personnel_status.personnel_id 
+    AND personnel_status.date = ?
+    """, (date,) ).fetchall()
+    else:
+        personnel_statuses = db.execute("""
+    SELECT personnel.id, personnel.rank, personnel.name, 
+    personnel_status.am_status, personnel_status.am_remarks, personnel_status.pm_status, personnel_status.pm_remarks
+    FROM personnel, personnel_status
+    WHERE personnel.id = personnel_status.personnel_id 
+    AND personnel.fmw = ? AND personnel_status.date = ?
+    """, (fmw,date) ).fetchall()
     #find out who has not submit their ps using ID
-    
     #need to return as a sql query and those who did not submit
     return personnel_statuses
 

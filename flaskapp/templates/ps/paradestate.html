@@ -7,6 +7,7 @@
 {% block content %}
 <div>
     <!--display current parade state-->
+    {% if personnels %}
     <p>This is the current parade state</p>
     <table border="">
         <tr>
@@ -28,5 +29,13 @@
         </tr>
         {% endfor %}
     </table>
+
+    {% else %}
+    <form method="POST">
+    {{ form.hidden_tag() }}
+    <li>{{ form.date.label }} {{ form.date() }}</li>
+    <li>{{ form.submit() }}</li>
+  </form>
+    {% endif %}
 </div>
 {% endblock %}
