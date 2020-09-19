@@ -48,7 +48,7 @@ def retrieve_personnel_statuses(db,fmw,date):
     for status in statuses:
         #remove if inside, else, skip
         id_list.remove(status['id'])
-    #need to return as a sql query
+    #need to return as a sql query and those who did not submit
     return personnel_statuses
 
 def retrieve_personnel_id_from_fmw(db, fmw):
