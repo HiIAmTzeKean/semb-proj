@@ -27,7 +27,6 @@ class paradestateform(FlaskForm):
         'DR': 'DUTY REST',
         'OTHERS': 'OTHERS'
     }
-
     statuses = statuses.items()
     workshops = [("Sembwang"),("Bedok"),("Navy"),("HQ")]
     fmw = SelectField(label='FMW', choices=workshops)
@@ -37,6 +36,10 @@ class paradestateform(FlaskForm):
     am_remarks = StringField(label='AM Remarks',)
     pm_status = SelectField(label='PM Status', choices=statuses)
     pm_remarks = StringField(label='PM Remarks',)
+    submit = SubmitField('Submit')
+
+class paradestateviewform(FlaskForm):
+    status_date = StringField(label='Date',)
     submit = SubmitField('Submit')
 
 # Admin updater to change parade state

@@ -19,13 +19,13 @@ CREATE TABLE "personnel" (
 );
 
 CREATE TABLE "personnel_status" (
-    "id" INTEGER,
-    "personnel_id" INTEGER NOT NULL,
-    "date" DATETIME NOT NULL,
-    "time" TEXT NOT NULL,
-    "status" TEXT NOT NULL,
-    "remarks" TEXT,
-    FOREIGN KEY (personnel_id) REFERENCES personnel(id),
-    CONSTRAINT CHK_Status CHECK (time='AM' OR time='PM'),
-    PRIMARY KEY("id" AUTOINCREMENT)
+	"id"	INTEGER,
+	"personnel_id"	INTEGER NOT NULL,
+	"date"	DATETIME NOT NULL,
+	"am_status"	TEXT NOT NULL,
+	"am_remarks"	TEXT,
+	"pm_status"	TEXT NOT NULL,
+	"pm_remarks"	TEXT,
+	FOREIGN KEY("personnel_id") REFERENCES "personnel"("id"),
+	PRIMARY KEY("id" AUTOINCREMENT)
 );

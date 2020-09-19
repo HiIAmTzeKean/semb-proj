@@ -22,21 +22,17 @@ def index():
     # date to be changed to drop down box in the future for uploading
     form.status_date.data = datetime.today().strftime('%Y-%m-%d')
     if form.validate_on_submit():
-        # update database
         status_date = form.status_date.data
         personnel_id = form.name.data
         am_status = form.am_status.data
         am_remarks = form.am_remarks.data
         pm_status = form.pm_status.data
         pm_remarks = form.pm_remarks.data
-
-        sql_str = '''INSERT INTO "personnel_status" (personnel_id, date, time, status, remarks)
-            VALUES (?,?,?,?,?)'''
-
-        db.execute(sql_str, (personnel_id, status_date, 'AM', am_status, am_remarks))
-        db.execute(sql_str, (personnel_id, status_date, 'PM', pm_status, pm_remarks))
+        db.execute('''INSERT INTO "personnel_status" 
+            (personnel_id, date, am_status, am_remarks, pm_status, pm_remarks)
+            VALUES (?,?,?,?,?,?)''',
+            (personnel_id, status_date, am_status, am_remarks, pm_status,pm_remarks))
         db.commit()
-
         return redirect(url_for('misc.success'))
     return render_template('ps/index.html', form=form)
 
@@ -46,7 +42,6 @@ def index():
 def paradestate():
     db = get_db()
     fmw = session.get('fmw')
-    # check if func work. Not working on my end
     statuses = retrieve_member_statuses(db, fmw, '2020-09-14', 'AM')
     return render_template('ps/paradestate.html', personnels=statuses)
 
