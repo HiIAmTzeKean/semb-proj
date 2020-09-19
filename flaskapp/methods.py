@@ -10,6 +10,18 @@ def converter_paradestateform(rows):
     return names
 
 
+def authenticate_user(db, username, password):
+    error = None
+    user = db.execute(
+             'SELECT * FROM user WHERE username = ?', (username,)
+         ).fetchone()
+    if user is None:
+        error = 'Incorrect username.'
+    elif user['password'] != password:
+        error = 'Wrong password'
+    return error, user
+
+
 def retrieve_personnel_list(db, fmw):
     query = db.execute(
              'SELECT * FROM personnel WHERE fmw = ?', (fmw,)

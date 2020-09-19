@@ -9,24 +9,15 @@ from flaskapp.db import get_db
 
 from .forms import loginform
 
+from .methods import authenticate_user
+
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 @bp.route('/login', methods=('GET', 'POST'))
 def login():
     form = loginform()
     if form.validate_on_submit():
-        error = None
-        username = form.username.data
-        password = form.password.data
-    # validating user (Still need to add in password auth)
-        db = get_db()
-        user = db.execute(
-             'SELECT * FROM user WHERE username = ?', (username,)
-         ).fetchone()
-        if user is None:
-            error = 'Incorrect username.'
-        elif user['password'] != password:
-            error = 'Wrong password'
+        error, user = authenticate_user(get_db(), form.username.data, form.password.data)
     # Log user in and redirect to index page
         if error is None:
             session.clear()
