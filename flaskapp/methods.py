@@ -3,7 +3,7 @@ from csv import writer, DictWriter
 from datetime import date
 
 
-def converter_paradestateform(rows):
+def nameconverter_paradestateform(rows):
     names = [] 
     for row in rows:
         names.append((row["id"], row["name"]))

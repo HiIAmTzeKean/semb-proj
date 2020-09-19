@@ -6,7 +6,7 @@ from .forms import paradestateform
 
 bp = Blueprint('misc', __name__)
 
-# For all to submit their parade state
+# successful upload page
 @bp.route('/success', methods=('GET', 'POST'))
 def success():
     return render_template('misc/success.html')

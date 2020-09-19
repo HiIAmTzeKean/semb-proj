@@ -5,7 +5,7 @@ from datetime import datetime
 from flaskapp.auth import login_required
 from flaskapp.db import get_db
 from .forms import paradestateform
-from .methods import converter_paradestateform, retrieve_personnel_list, retrieve_member_statuses
+from .methods import nameconverter_paradestateform, retrieve_personnel_list, retrieve_member_statuses
 
 bp = Blueprint('ps', __name__)
 
@@ -16,7 +16,7 @@ def index():
     # Trial for Sembawang only
     fmw = "Sembawang"
     rows = retrieve_personnel_list(db, fmw)
-    names = converter_paradestateform(rows)
+    names = nameconverter_paradestateform(rows)
     form = paradestateform()
     form.name.choices = names
     # date to be changed to drop down box in the future for uploading

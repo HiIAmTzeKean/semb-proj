@@ -18,7 +18,6 @@ def login():
     form = loginform()
     if form.validate_on_submit():
         error, user = authenticate_user(get_db(), form.username.data, form.password.data)
-    # Log user in and redirect to index page
         if error is None:
             session.clear()
             session['user_id'] = user['username']
