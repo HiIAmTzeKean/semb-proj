@@ -28,8 +28,20 @@ def retrieve_personnel_list(db, fmw):
          ).fetchall()
     return query
 
-
-def retrieve_personnel_statuses():
+# retrive status for display in PS 
+def retrieve_personnel_statuses(db,fmw):
+    #first get personnel ID which belongs to the FMW
+    id_list = list()
+    query = db.execute(
+        '''SELECT * from personnel
+        WHERE fmw = ?''',(fmw,)
+    )
+    for person in query:
+        id_list = 
+    #Then get the status of those who ID mataches
+    personnels = db.execute(
+        '''SELECT * from personnel_status WHERE '''
+    )
     return personnel_statuses
 
 
