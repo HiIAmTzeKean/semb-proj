@@ -1,3 +1,5 @@
+from datetime import date
+
 def retrieve_data_from_csv():
     data = []
     with open('testdata.csv') as f:
@@ -21,11 +23,10 @@ def retrieve_test_personnel_and_status():
     data = retrieve_data_from_csv()
     personnel = []
     personnel_status = []
-    date = "2020-01-01"
+    today = date.today().strftime('%Y-%m-%d')
     for i, p in enumerate(data, start=1):
         personnel.append((p[0], "RANK" + str(i), "Sembawang"))
-        personnel_status.append((str(i), date, 'AM', p[1].upper(), p[2].strip()))
-        personnel_status.append((str(i), date, 'PM', p[3].upper(), p[4].strip()))
+        personnel_status.append((str(i), today, p[1].upper(), p[2].strip(), p[3].upper(), p[4].strip()))
 
     return personnel, personnel_status
 
@@ -50,7 +51,7 @@ def write_testdata_file():
 
         f.write('\n')
 
-        f.write('INSERT INTO "personnel_status" ("personnel_id", "date", "time", "status", "remarks")\n')
+        f.write('INSERT INTO "personnel_status" ("personnel_id", "date", "am_status", "am_remarks", "pm_status", "pm_remarks")\n')
         f.write('VALUES\n')
         for i, personnel in enumerate(personnel_status_list, start=1):
             f.write(str(personnel))
