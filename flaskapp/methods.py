@@ -31,7 +31,7 @@ def retrieve_personnel_list(db, fmw):
 # retrive status for display in PS 
 def retrieve_personnel_statuses(db,fmw,date):
     #get id from those belonging to the fmw
-    statuses = db.execute("""
+    personnel_statuses = db.execute("""
     SELECT personnel.id, personnel.rank, personnel.name, 
     personnel_status.am_status, personnel_status.am_remarks, personnel_status.pm_status, personnel_status.pm_remarks
     FROM personnel, personnel_status
