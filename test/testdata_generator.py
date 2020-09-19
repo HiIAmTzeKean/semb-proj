@@ -39,7 +39,7 @@ def write_testdata_file():
     personnel_list, personnel_status_list = retrieve_test_personnel_and_status()
     with open('test_data.sql', 'w') as f:
         f.write('INSERT INTO "user" ("username", "password")\n')
-        f.write('VALUES {};\n'.format(retrieve_test_users()))
+        f.write('VALUES {};\n'.format(str(retrieve_test_users())[1:-1]))
 
         f.write('\n')
 

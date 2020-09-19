@@ -1,5 +1,5 @@
 INSERT INTO "user" ("username", "password")
-VALUES (('Admin', 'Admin'), ('COS', 'COS'));
+VALUES ('Admin', 'Admin'), ('COS', 'COS');
 
 INSERT INTO "personnel" ("name", "rank", "fmw")
 VALUES
