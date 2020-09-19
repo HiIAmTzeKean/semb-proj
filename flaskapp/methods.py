@@ -29,9 +29,9 @@ def retrieve_personnel_list(db, fmw):
     return query
 
 # retrive status for display in PS 
-def retrieve_personnel_statuses(db,fmw):
+def retrieve_personnel_statuses(db,fmw,date):
     #get id from those belonging to the fmw
-    latest_updates_sql = """
+    statuses = db.execute("""
     SELECT personnel.id, personnel.rank, personnel.name, 
     personnel_status.am_status, personnel_status.am_remarks, personnel_status.pm_status, personnel_status.pm_remarks
     FROM personnel, personnel_status
@@ -41,10 +41,22 @@ def retrieve_personnel_statuses(db,fmw):
         WHERE personnel.fmw = ? AND personnel_status.date = ?
     )
     ORDER BY personnel.id
-    """
-    
+    """, (fmw,date,) ).fetchall()
+    #find out who has not submit their ps using ID
+    id_list = retrieve_personnel_id_from_fmw(db,fmw)
+    personnel_statuses = []
+    for status in statuses:
+        #remove if inside, else, skip
+        id_list.remove(status['id'])
+    #need to return as a sql query
     return personnel_statuses
 
+def retrieve_personnel_id_from_fmw(db, fmw):
+    id_list = list()
+    personnels = retrieve_personnel_list(db,fmw)
+    for person in personnels:
+        id_list.append(person['id'])
+    return id_list
 
 def generate_PS():
     # create func to write per day
