@@ -30,18 +30,19 @@ def retrieve_personnel_list(db, fmw):
 
 # retrive status for display in PS 
 def retrieve_personnel_statuses(db,fmw):
-    #first get personnel ID which belongs to the FMW
-    id_list = list()
-    query = db.execute(
-        '''SELECT * from personnel
-        WHERE fmw = ?''',(fmw,)
+    #get id from those belonging to the fmw
+    latest_updates_sql = """
+    SELECT personnel.id, personnel.rank, personnel.name, 
+    personnel_status.am_status, personnel_status.am_remarks, personnel_status.pm_status, personnel_status.pm_remarks
+    FROM personnel, personnel_status
+    WHERE (personnel.id, personnel_status.id) 
+    IN (SELECT personnel.id FROM personnel_status
+        JOIN personnel ON personnel.id = personnel_status.personnel_id
+        WHERE personnel.fmw = ? AND personnel_status.date = ?
     )
-    for person in query:
-        id_list = 
-    #Then get the status of those who ID mataches
-    personnels = db.execute(
-        '''SELECT * from personnel_status WHERE '''
-    )
+    ORDER BY personnel.id
+    """
+    
     return personnel_statuses
 
 
