@@ -6,6 +6,7 @@ from flaskapp.auth import login_required
 from flaskapp.db import get_db
 from .forms import paradestateform,paradestateviewform
 from .methods import nameconverter_paradestateform, retrieve_personnel_list, retrieve_personnel_statuses
+from .db_methods import update_PS,insert_PS,retrive_one_record
 
 bp = Blueprint('ps', __name__)
 
@@ -22,20 +23,20 @@ def index():
     # date to be changed to drop down box in the future for uploading
     form.status_date.data = datetime.today().strftime('%Y-%m-%d')
     if form.validate_on_submit():
-        #need to check for if there is existing record
-        #if there is, update instead of insert
         status_date = form.status_date.data
         personnel_id = form.name.data
         am_status = form.am_status.data
         am_remarks = form.am_remarks.data
         pm_status = form.pm_status.data
         pm_remarks = form.pm_remarks.data
-        db.execute('''INSERT INTO "personnel_status" 
-            (personnel_id, date, am_status, am_remarks, pm_status, pm_remarks)
-            VALUES (?,?,?,?,?,?)''',
-            (personnel_id, status_date, am_status, am_remarks, pm_status,pm_remarks))
-        db.commit()
-        return redirect(url_for('misc.success'))
+        updated = False
+        if retrive_one_record(db,personnel_id,status_date): 
+            update_PS(db,personnel_id, status_date, am_status, am_remarks, pm_status,pm_remarks)
+            updated = True
+        else: 
+            insert_PS(db,personnel_id, status_date, am_status, am_remarks, pm_status,pm_remarks)
+        record = retrive_one_record(db,personnel_id,status_date)
+        return render_template('misc/success.html', updated=updated, personnel=record)
     return render_template('ps/index.html', form=form)
 
 # For COS to retrive parade state to send via whatsapp

@@ -50,12 +50,14 @@ def retrieve_personnel_statuses(db,fmw,date):
     #need to return as a sql query and those who did not submit
     return personnel_statuses
 
+
 def retrieve_personnel_id_from_fmw(db, fmw):
     id_list = list()
     personnels = retrieve_personnel_list(db,fmw)
     for person in personnels:
         id_list.append(person['id'])
     return id_list
+
 
 def generate_PS():
     # create func to write per day
