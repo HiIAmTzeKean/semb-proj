@@ -3,13 +3,13 @@ from wtforms import StringField, SubmitField, PasswordField, SelectField, Hidden
 from wtforms.fields.html5 import DateField
 from wtforms.validators import DataRequired
 
-# log admin into system
+
 class loginform(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     password = PasswordField('Password',validators=[DataRequired()])
     submit = SubmitField('Submit')
 
-# submit parade state
+
 class paradestateform(FlaskForm):
     statuses = {
         'P': 'PRESENT',
@@ -39,10 +39,16 @@ class paradestateform(FlaskForm):
     pm_remarks = StringField(label='PM Remarks',)
     submit = SubmitField('Submit')
 
+
 class paradestateviewform(FlaskForm):
     date = DateField(label='Date', validators=[DataRequired()])
     submit = SubmitField('Submit')
 
-# Admin updater to change parade state
-class update_paradestateform(paradestateform):
-    pass
+
+class personnelseeker(FlaskForm):
+    name = StringField(label='Name', validators=[DataRequired()])
+    rank = StringField(label='Rank', validators=[DataRequired()])
+    workshops = [("Sembwang"),("Bedok"),("Navy"),("HQ")]
+    fmw = SelectField(label='FMW', choices=workshops)
+    add_del = SelectField(label='Add/Delete', choices=[('Add'),('Delete')])
+    submit = SubmitField('Submit')

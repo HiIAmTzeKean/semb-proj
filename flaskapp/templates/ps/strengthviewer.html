@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    <h1>{% block title %}Parade State{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+<div>
+    <p>This is the strength</p>
+    <table border="">
+        <tr>
+            <td>No.</td>
+            <td>Rank</td>
+            <td>Name</td>
+            <td>FMW</td>
+        </tr>
+        {% for person in personnels %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ person.rank }}</td>
+            <td>{{ person.name }}</td>
+            <td>{{ person.fmw }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

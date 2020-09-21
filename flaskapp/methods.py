@@ -23,10 +23,8 @@ def authenticate_user(db, username, password):
 
 
 def retrieve_personnel_list(db, fmw):
-    query = db.execute(
-             'SELECT * FROM personnel WHERE fmw = ?', (fmw,)
-         ).fetchall()
-    return query
+    if fmw == "Admin": return db.execute('SELECT * FROM personnel').fetchall()
+    return db.execute('SELECT * FROM personnel WHERE fmw = ?', (fmw,)).fetchall()
 
 
 def retrieve_personnel_statuses(db,fmw,date):
@@ -38,6 +36,14 @@ def retrieve_personnel_statuses(db,fmw,date):
     WHERE personnel.id = personnel_status.personnel_id 
     AND personnel_status.date = ?
     """, (date,) ).fetchall()
+        missing_status = db.execute("""
+    SELECT personnel.rank, personnel.name, personnel.fmw
+    FROM personnel
+    WHERE personnel.id NOT IN 
+        (SELECT personnel.id FROM
+        personnel_status INNER JOIN personnel ON personnel.id = personnel_status.personnel_id 
+        WHERE personnel_status.date = ? )
+    """, (date,) ).fetchall()
     else:
         personnel_statuses = db.execute("""
     SELECT personnel.id, personnel.rank, personnel.name, 
@@ -48,15 +54,15 @@ def retrieve_personnel_statuses(db,fmw,date):
     """, (fmw,date) ).fetchall()
     #not done
         missing_status = db.execute("""
-    SELECT personnel.id, personnel.rank, personnel.name
-FROM personnel, personnel_status
-WHERE personnel.id NOT IN 
-(SELECT personnel_status.personnel_id, personnel_status.date 
-FROM )
-    """, () ).fetchall()
-    #find out who has not submit their ps using ID
-    #need to return as a sql query and those who did not submit
-    return personnel_statuses
+    SELECT personnel.rank, personnel.name, personnel.fmw
+    FROM personnel
+    WHERE personnel.fmw = ? 
+    AND personnel.id NOT IN 
+        (SELECT personnel.id FROM
+        personnel_status INNER JOIN personnel ON personnel.id = personnel_status.personnel_id 
+        WHERE personnel_status.date = ? )
+    """, (fmw,date) ).fetchall()
+    return personnel_statuses, missing_status
 
 
 def generate_PS():

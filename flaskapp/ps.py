@@ -1,12 +1,10 @@
-from flask import (
-    Blueprint, flash, g, redirect, render_template, session, url_for
-)
+from flask import (Blueprint, flash, g, redirect, render_template, session, url_for)
 from datetime import datetime
 from flaskapp.auth import login_required
 from flaskapp.db import get_db
-from .forms import paradestateform,paradestateviewform
+from .forms import paradestateform, paradestateviewform, personnelseeker
 from .methods import nameconverter_paradestateform, retrieve_personnel_list, retrieve_personnel_statuses
-from .db_methods import update_PS,insert_PS,retrive_one_record
+from .db_methods import update_PS, insert_PS, retrive_record_by_date, del_personnel_db, add_personnel_db, retrive_one_record
 
 bp = Blueprint('ps', __name__)
 
@@ -28,12 +26,12 @@ def index():
         pm_status = form.pm_status.data
         pm_remarks = form.pm_remarks.data
         updated = False
-        if retrive_one_record(db,personnel_id,status_date): 
+        if retrive_record_by_date(db,personnel_id,status_date): 
             update_PS(db,personnel_id, status_date, am_status, am_remarks, pm_status,pm_remarks)
             updated = True
         else: 
             insert_PS(db,personnel_id, status_date, am_status, am_remarks, pm_status,pm_remarks)
-        record = retrive_one_record(db,personnel_id,status_date)
+        record = retrive_record_by_date(db,personnel_id,status_date)
         return render_template('misc/success.html', updated=updated, personnel=record)
     return render_template('ps/index.html', form=form)
 
@@ -48,20 +46,45 @@ def paradestate():
     fmw = session.get('fmw')
     form = paradestateviewform()
     if form.validate_on_submit():
-        date =  form.date.data
-        personnels_status=retrieve_personnel_statuses(db,fmw,date)
-        # None handler for those who have not submitted
-        return render_template('ps/paradestate.html', personnels=personnels_status)
+        date = form.date.data
+        personnels_status, missing_status = retrieve_personnel_statuses(db,fmw,date)
+        if len(personnels_status) != 0:
+            return render_template('ps/paradestate.html', personnels=personnels_status,
+            missing_personnels=missing_status)
+        flash("No one has submitted PS. Please remind them to do so!")  
     return render_template('ps/paradestate.html', form=form)
+
+
+@bp.route('/strengthviewer', methods=('GET', 'POST'))
+@login_required
+def strengthviewer():
+    db = get_db()
+    fmw = session.get('fmw')
+    personnels = retrieve_personnel_list(db, fmw)
+    return render_template('ps/strengthviewer.html', personnels=personnels)
 
 # view only to admin
 @bp.route('/admin', methods=('GET', 'POST'))
 @login_required
 def admin():
     if session.get('user_id') == 'Admin':
-    # displays admin functions
-    # 1. add/remove people to db
-    # 2. any additional functions? Hq level scope?
-        return render_template('ps/admin.html')
+        db = get_db()
+        form = personnelseeker()
+        if form.validate_on_submit():
+            name =  form.name.data
+            rank =  form.rank.data
+            fmw =  form.fmw.data
+            add_del = form.add_del.data
+            if add_del == 'Add':
+                error = add_personnel_db(db,name,fmw,rank)
+                personnel = retrive_one_record(db,name,fmw)
+            else:
+                personnel = retrive_one_record(db,name,fmw)
+                if personnel != None: error = del_personnel_db(db,name,fmw)
+                else: error = "Personnel does not exist in the table, please check"
+            if error == None:
+                return render_template('ps/admin.html', add_del=add_del,personnel=personnel)
+            flash(error)
+        return render_template('ps/admin.html',form=form)
     # show error 401 and forces user to login again
     return 'You are not authorised, please log in as Admin'

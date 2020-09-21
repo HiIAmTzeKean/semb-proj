@@ -11,6 +11,7 @@
     <p>This is the current parade state</p>
     <table border="">
         <tr>
+            <td>No.</td>
             <td>Rank</td>
             <td>Name</td>
             <td>AM</td>
@@ -20,6 +21,7 @@
         </tr>
         {% for person in personnels %}
         <tr>
+            <td>{{ loop.index }}</td>
             <td>{{ person.rank }}</td>
             <td>{{ person.name }}</td>
             <td>{{ person.am_status }}</td>
@@ -30,12 +32,32 @@
         {% endfor %}
     </table>
 
+    <p>This is the missing personnels</p>
+    <table border="">
+        <tr>
+            <td>No.</td>
+            <td>Rank</td>
+            <td>Name</td>
+            <td>FMW</td>
+        </tr>
+        {% for person in missing_personnels %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ person.rank }}</td>
+            <td>{{ person.name }}</td>
+            <td>{{ person.fmw }}</td>
+        </tr>
+        
+        {% endfor %}
+    </table>
+
+
     {% else %}
     <form method="POST">
     {{ form.hidden_tag() }}
     <li>{{ form.date.label }} {{ form.date() }}</li>
     <li>{{ form.submit() }}</li>
-  </form>
+    </form>
     {% endif %}
 </div>
 {% endblock %}

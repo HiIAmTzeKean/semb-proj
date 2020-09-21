@@ -7,11 +7,9 @@
 {% block content %}
     {% if add_del == 'Add' %}
       <h3>Added a new member</h3>
-    {% elif add_del == 'Delete' %}
+    {% else %}
       <h3>Deleted a new member</h3>
     {% endif %}
-
-    {% if add_del %}
     <table border="">
       <tr>
         <td>Rank</td>
@@ -26,19 +24,4 @@
         {% endif %}
       </tr>
     </table>
-
-    {% else %}
-    <form method="POST">
-    {{ form.hidden_tag() }}
-    <li>{{ form.rank.label }} {{ form.rank() }}</li>
-    <li>{{ form.name.label }} {{ form.name() }}</li>
-    <li>{{ form.fmw.label }} {{ form.fmw() }}</li>
-    <li>{{ form.add_del.label }} {{ form.add_del() }}</li>
-    <li>{{ form.submit() }}</li>
-    </form>
-    {% endif %}
 {% endblock %}
-
-
-
-

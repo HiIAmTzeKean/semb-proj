@@ -15,7 +15,8 @@ def insert_PS(db,personnel_id, status_date, am_status, am_remarks, pm_status, pm
             (personnel_id, status_date, am_status, am_remarks, pm_status, pm_remarks))
     db.commit()
 
-def retrive_one_record(db,personnel_id,status_date):
+
+def retrive_record_by_date(db,personnel_id,status_date):
     record = db.execute("""
     SELECT date, am_status, am_remarks, pm_status, pm_remarks, name
     FROM personnel ,personnel_status
@@ -23,3 +24,47 @@ def retrive_one_record(db,personnel_id,status_date):
     """, (personnel_id, status_date)).fetchone()
     if record: return record
     return None
+
+
+def retrive_personnel_id(db,name,fmw):
+    record = db.execute("""
+    SELECT personnel.id
+    FROM personnel
+    WHERE name = ? AND fmw = ?
+    """, (name,fmw)).fetchone()
+    if record: return record['id']
+    return None
+
+
+def retrive_one_record(db,name,fmw):
+    record = db.execute("""
+    SELECT *
+    FROM personnel
+    WHERE name = ? AND fmw = ?
+    """, (name,fmw)).fetchone()
+    if record: return record
+    return None
+
+
+def add_personnel_db(db,name,fmw,rank):
+    try:
+        db.execute("""
+        INSERT INTO personnel
+        (name,fmw,rank)
+        VALUES (?,?,?)
+        """, (name,fmw,rank))
+        db.commit()
+        return None
+    except e as error:
+        return e
+
+
+def del_personnel_db(db,name,fmw):
+    try:
+        personnel_id = retrive_personnel_id(db,name,fmw)
+        db.execute("""DELETE FROM personnel_status WHERE id = ?""", (personnel_id,))
+        db.execute("""DELETE FROM personnel WHERE id = ?""", (personnel_id,))
+        db.commit()
+        return None
+    except e as error:
+        return e
