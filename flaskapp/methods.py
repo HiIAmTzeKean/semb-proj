@@ -46,17 +46,17 @@ def retrieve_personnel_statuses(db,fmw,date):
     WHERE personnel.id = personnel_status.personnel_id 
     AND personnel.fmw = ? AND personnel_status.date = ?
     """, (fmw,date) ).fetchall()
+    #not done
+        missing_status = db.execute("""
+    SELECT personnel.id, personnel.rank, personnel.name
+FROM personnel, personnel_status
+WHERE personnel.id NOT IN 
+(SELECT personnel_status.personnel_id, personnel_status.date 
+FROM )
+    """, () ).fetchall()
     #find out who has not submit their ps using ID
     #need to return as a sql query and those who did not submit
     return personnel_statuses
-
-
-def retrieve_personnel_id_from_fmw(db, fmw):
-    id_list = list()
-    personnels = retrieve_personnel_list(db,fmw)
-    for person in personnels:
-        id_list.append(person['id'])
-    return id_list
 
 
 def generate_PS():

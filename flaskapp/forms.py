@@ -1,5 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, PasswordField, SelectField, HiddenField
+from wtforms.fields.html5 import DateField
 from wtforms.validators import DataRequired
 
 # log admin into system
@@ -31,7 +32,7 @@ class paradestateform(FlaskForm):
     workshops = [("Sembwang"),("Bedok"),("Navy"),("HQ")]
     fmw = SelectField(label='FMW', choices=workshops)
     name = SelectField(label='Name', choices='', coerce=int)
-    status_date = HiddenField(label='Date')
+    status_date = DateField(label='Date', validators=[DataRequired()])
     am_status = SelectField(label='AM Status', choices=statuses)
     am_remarks = StringField(label='AM Remarks',)
     pm_status = SelectField(label='PM Status', choices=statuses)
@@ -39,7 +40,7 @@ class paradestateform(FlaskForm):
     submit = SubmitField('Submit')
 
 class paradestateviewform(FlaskForm):
-    date = StringField(label='Date',)
+    date = DateField(label='Date', validators=[DataRequired()])
     submit = SubmitField('Submit')
 
 # Admin updater to change parade state

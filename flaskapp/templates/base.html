@@ -1,23 +1,27 @@
 <!doctype html>
-<title>{% block title %}{% endblock %} - E-PS</title>
+{% extends "bootstrap/base.html" %}
 
-<nav>
-    {% if g.user %}
-      <h1>Logged in as: {{ g.user['username'] }}</h1>
-      <a href="{{ url_for('auth.logout') }}">Log Out</a>
-    {% endif %}
-	
-	<a href="{{ url_for('ps.index') }}">Home Page</a>
-	&nbsp
-	<a href="{{ url_for('ps.admin') }}">Admin Access</a>
-	&nbsp
-    <a href="{{ url_for('ps.paradestate') }}">Parade state Access</a>
-</nav>
+{% block title %}{% endblock %}
 
-<section class="content">
-  <header>
-    {% block header %}{% endblock %}
-  </header>
+
+{% block body %}
+{% block navbar %}
+	<nav>
+		{% if g.user %}
+		<h1>Logged in as: {{ g.user['username'] }}</h1>
+		<a href="{{ url_for('auth.logout') }}">Log Out</a>
+		{% endif %}
+		<a href="{{ url_for('ps.index') }}">Home Page</a>
+		&nbsp
+		<a href="{{ url_for('ps.admin') }}">Admin Access</a>
+		&nbsp
+		<a href="{{ url_for('ps.paradestate') }}">Parade state Access</a>
+	</nav>
+{% endblock %}
+
+
+{% block header %}{% endblock %}
+
 
   <div>
     <!--Time and date display-->
@@ -62,15 +66,19 @@
     </table>
   </div>
 
+
   {% for message in get_flashed_messages() %}
     <div class="flash">{{ message }}</div>
   {% endfor %}
 
-  {% block content %}{% endblock %}
-</section>
+
+{% block content %}
+{% endblock %}
+
 
 <footer>
   {% if session.get('fmw') %}
     {{ session.get('fmw') }}
   {% endif %}
 </footer>
+{% endblock body %}

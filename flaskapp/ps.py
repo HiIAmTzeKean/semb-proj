@@ -20,8 +20,6 @@ def index():
     names = nameconverter_paradestateform(rows)
     form = paradestateform()
     form.name.choices = names
-    # date to be changed to drop down box in the future for uploading
-    form.status_date.data = datetime.today().strftime('%Y-%m-%d')
     if form.validate_on_submit():
         status_date = form.status_date.data
         personnel_id = form.name.data
@@ -39,16 +37,20 @@ def index():
         return render_template('misc/success.html', updated=updated, personnel=record)
     return render_template('ps/index.html', form=form)
 
-# For COS to retrive parade state to send via whatsapp
 @bp.route('/paradestate', methods=('GET', 'POST'))
 @login_required
 def paradestate():
+    '''
+    To view paradestate with date input
+    View is only viewable to respective FMW lest Admin
+    '''
     db = get_db()
     fmw = session.get('fmw')
     form = paradestateviewform()
-    date = datetime.today().strftime('%Y-%m-%d')
     if form.validate_on_submit():
+        date =  form.date.data
         personnels_status=retrieve_personnel_statuses(db,fmw,date)
+        # None handler for those who have not submitted
         return render_template('ps/paradestate.html', personnels=personnels_status)
     return render_template('ps/paradestate.html', form=form)
 
