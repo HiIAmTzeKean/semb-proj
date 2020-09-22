@@ -55,12 +55,18 @@ def retrive_one_record(db,name,fmw):
     return None
 
 
-def check_personnel_fmw(db,name,fmw):
-    personnel_id = retrive_personnel_id(db,name,fmw)
-    if personnel_id == None:
-        return "User does not exist/not in your FMW"
-    record = db.execute("""SELECT personnel.fmw FROM personnel WHERE personnel.id = ?""", (personnel_id)).fetchone()
-    if record: return True
+def check_personnel_exist(db,name,fmw,rank):
+    record = db.execute("""SELECT * FROM personnel 
+    WHERE personnel.name = ? AND personnel.rank = ?""", (name,rank)).fetchone()
+    if record:
+        record2= db.execute("""SELECT * FROM personnel 
+        WHERE personnel.name = ? AND personnel.rank = ? AND personnel.fmw = ?""", (name,rank,fmw)).fetchone()
+        if record2:
+            return None
+        else:
+            return "User exist in the system, but you do not have admin rights over user."
+    else:
+        return "User does not exist in the system. Please check rank and name."
 
 def add_personnel_db(db,name,fmw,rank):
     try:
