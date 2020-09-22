@@ -1,86 +1,47 @@
-<!doctype html>
-{% extends "bootstrap/base.html" %}
+<!DOCTYPE html>
+<html lang="en">
 
-{% block title %}{% endblock %}
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
+    <title>Attendance {% block title %}- {% endblock %}</title>
 
-{% block body %}
-{% block navbar %}
-	<nav>
-		{% if g.user %}
-		<h1>Logged in as: {{ g.user['username'] }}</h1>
-		<a href="{{ url_for('auth.logout') }}">Log Out</a>
-		{% endif %}
-		<a href="{{ url_for('ps.index') }}">Home Page</a>
-		&nbsp
-		<a href="{{ url_for('ps.admin') }}">Admin Access</a>
-		&nbsp
-		<a href="{{ url_for('ps.paradestate') }}">Parade state Access</a>
-		&nbsp
-		<a href="{{ url_for('ps.strengthviewer') }}">Strength Viewer</a>
-	</nav>
-{% endblock %}
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+          integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z"
+          crossorigin="anonymous">
 
+    <!-- Custom Base CSS file -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Cabin&family=Montserrat&display=swap" rel="stylesheet">
 
-{% block header %}{% endblock %}
+    <!-- Custom Page Specific CSS -->
+    {% block styles %}{% endblock %}
+</head>
 
+<body>
+    {% include 'navbar.html' %}
+    {% block content %}{% endblock %}
 
-  <div>
-    <!--Time and date display-->
-    <table>
-      <tr>
-		<th>Time is:</th>
-		<th></th>
-        <th>Date is:</th>
-      </tr>
-      <tr>
-        <th>
-			<script type="text/javascript">
-			<!--
-			var currentTime = new Date()
-			var hours = currentTime.getHours()
-			var minutes = currentTime.getMinutes()
-			if (minutes < 10){
-			minutes = "0" + minutes
-			}
-			document.write(hours + ":" + minutes + " ")
-			if(hours > 11){
-			document.write("PM")
-			} else {
-			document.write("AM")
-			}
-			//-->
-			</script>
-			</th>
-			<th>&nbsp</th>
-			<th>
-			<script type="text/javascript">
-			<!--
-			var currentTime = new Date()
-			var month = currentTime.getMonth() + 1
-			var day = currentTime.getDate()
-			var year = currentTime.getFullYear()
-			document.write(year + "-" + month + "-" + day)
-			//-->
-			</script>
-			</th>
-      </tr>
-    </table>
-  </div>
+    <!-- Scripts -->
+    <!-- JQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+            integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+            crossorigin="anonymous">
+    </script>
+    <!-- Bootstrap tooltips -->
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
+            integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
+            crossorigin="anonymous">
+    </script>
+    <!-- Bootstrap core JavaScript -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
+            integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV"
+            crossorigin="anonymous">
+    </script>
 
 
-  {% for message in get_flashed_messages() %}
-    <div class="flash">{{ message }}</div>
-  {% endfor %}
-
-
-{% block content %}
-{% endblock %}
-
-
-<footer>
-  {% if session.get('fmw') %}
-    {{ session.get('fmw') }}
-  {% endif %}
-</footer>
-{% endblock body %}
+    <!-- Custom Page Specific Scripts -->
+    {% block scripts %}{% endblock %}
+</body>

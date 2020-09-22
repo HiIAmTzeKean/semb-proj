@@ -24,7 +24,7 @@ def login():
             session['fmw'] = user['fmw']
             return redirect(url_for('index'))
         flash(error)
-    return render_template('auth/login2.html',form=form)
+    return render_template('auth/login.html',form=form)
 
 @bp.before_app_request
 def load_logged_in_user():

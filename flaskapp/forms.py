@@ -2,12 +2,13 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, PasswordField, SelectField, HiddenField
 from wtforms.fields.html5 import DateField
 from wtforms.validators import DataRequired
+from datetime import datetime
 
 
 class loginform(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     password = PasswordField('Password',validators=[DataRequired()])
-    submit = SubmitField('Submit')
+    submit = SubmitField('Sign in')
 
 
 class paradestateform(FlaskForm):
@@ -32,7 +33,7 @@ class paradestateform(FlaskForm):
     workshops = [("Sembawang"),("Bedok"),("Navy"),("HQ")]
     fmw = SelectField(label='FMW', choices=workshops)
     name = SelectField(label='Name', choices='', coerce=int)
-    status_date = DateField(label='Date', validators=[DataRequired()])
+    status_date = DateField(label='Date', validators=[DataRequired()], default=datetime.today)
     am_status = SelectField(label='AM Status', choices=statuses)
     am_remarks = StringField(label='AM Remarks',)
     pm_status = SelectField(label='PM Status', choices=statuses)
@@ -41,7 +42,7 @@ class paradestateform(FlaskForm):
 
 
 class paradestateviewform(FlaskForm):
-    date = DateField(label='Date', validators=[DataRequired()])
+    date = DateField(label='Date', validators=[DataRequired()], default=datetime.today)
     submit = SubmitField('Submit')
 
 

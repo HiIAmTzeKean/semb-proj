@@ -23,6 +23,7 @@ def index():
     names = nameconverter_paradestateform(rows)
     form = paradestateform()
     form.name.choices = names
+    updated = False
     if form.validate_on_submit():
         status_date = form.status_date.data
         personnel_id = form.name.data
@@ -30,15 +31,15 @@ def index():
         am_remarks = form.am_remarks.data
         pm_status = form.pm_status.data
         pm_remarks = form.pm_remarks.data
-        updated = False
-        if retrive_record_by_date(db,personnel_id,status_date): 
-            update_PS(db,personnel_id, status_date, am_status, am_remarks, pm_status,pm_remarks)
-            updated = True
+        if retrive_record_by_date(db, personnel_id, status_date):
+            update_PS(db, personnel_id, status_date, am_status, am_remarks, pm_status, pm_remarks)
         else: 
-            insert_PS(db,personnel_id, status_date, am_status, am_remarks, pm_status,pm_remarks)
-        record = retrive_record_by_date(db,personnel_id,status_date)
-        return render_template('misc/success.html', updated=updated, personnel=record)
-    return render_template('ps/index.html', form=form)
+            insert_PS(db, personnel_id, status_date, am_status, am_remarks, pm_status, pm_remarks)
+        updated = True
+        record = retrive_record_by_date(db, personnel_id, status_date)
+        return render_template('ps/index.html', form=form, updated=updated, personnel=record)
+    return render_template('ps/index.html', form=form, updated=updated, personnel=None)
+
 
 @bp.route('/paradestate', methods=('GET', 'POST'))
 @login_required
@@ -55,7 +56,7 @@ def paradestate():
         personnels_status, missing_status = retrieve_personnel_statuses(db,fmw,date)
         if len(personnels_status) != 0:
             return render_template('ps/paradestate.html', personnels=personnels_status,
-            missing_personnels=missing_status)
+            missing_personnels=missing_status, date=date)
         flash("No one has submitted PS. Please remind them to do so!")  
     return render_template('ps/paradestate.html', form=form)
 
@@ -71,8 +72,8 @@ def strengthviewer():
     if form.validate_on_submit():
         fmw = form.fmw.data
         personnels = retrieve_personnel_list(db, fmw)
-        return render_template('ps/strengthviewer.html', personnels=personnels)
-    return render_template('ps/strengthviewer.html',form=form)
+        return render_template('ps/strengthviewer.html', fmw=fmw, personnels=personnels)
+    return render_template('ps/strengthviewer.html', form=form)
 
 
 @bp.route('/admin', methods=('GET', 'POST'))

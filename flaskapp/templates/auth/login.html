@@ -1,15 +1,42 @@
 {% extends 'base.html' %}
 
-{% block header %}
-  <h1>{% block title %}Log In{% endblock %}</h1>
+{% block title %}
+  {{ super() }}Sign in
 {% endblock %}
 
+
 {% block content %}
-  <form method="post">
-    <label for="username">Username</label>
-    <input name="username" id="username" required>
-    <label for="password">Password</label>
-    <input type="password" name="password" id="password" required>
-    <input type="submit" value="Log In">
-  </form>
+    <div class="container">
+        <div class="d-flex full-height justify-content-center align-items-center">
+            <div class="modal-dialog">
+                <div class="modal-content px-lg-4 py-lg-4">
+                    <div class="modal-body">
+                        <form action="" method="post">
+                            {{ form.hidden_tag() }}
+                            <h5 class="ml-lg-1 text-center">Please sign in to access protected functions.</h5>
+                            <div class="form-row mx-1 mt-3">
+                                <div class="col-md-3 font-weight-bold">
+                                    {{ form.username.label(class_="col-form-label") }}
+                                </div>
+                                <div class="col-md-9">
+                                    {{ form.username(class_="form-control") }}
+                                </div>
+                            </div>
+                            <div class="form-row mx-1 mt-3">
+                                <div class="col-md-3 font-weight-bold">
+                                    {{ form.password.label(class_="col-form-label") }}
+                                </div>
+                                <div class="col-md-9">
+                                    {{ form.password(class_="form-control") }}
+                                </div>
+                            </div>
+                            <div class="form-row mx-1 mt-3">
+                                {{ form.submit(class_="form-control btn btn-dark") }}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
