@@ -4,8 +4,11 @@
     <h1>{% block title %}Parade State{% endblock %}</h1>
 {% endblock %}
 
+
+
 {% block content %}
 <div>
+    {% if personnels %}
     <p>This is the strength</p>
     <table border="">
         <tr>
@@ -23,5 +26,13 @@
         </tr>
         {% endfor %}
     </table>
+    
+    {% else %}
+    <form method="POST">
+    {{ form.hidden_tag() }}
+    <li>{{ form.fmw.label }} {{ form.fmw() }}</li>
+    <li>{{ form.submit() }}</li>
+    </form>
+    {% endif %}
 </div>
 {% endblock %}

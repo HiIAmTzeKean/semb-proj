@@ -18,9 +18,10 @@ def insert_PS(db,personnel_id, status_date, am_status, am_remarks, pm_status, pm
 
 def retrive_record_by_date(db,personnel_id,status_date):
     record = db.execute("""
-    SELECT date, am_status, am_remarks, pm_status, pm_remarks, name
-    FROM personnel ,personnel_status
-    WHERE personnel_id = ? AND date = ?
+    SELECT personnel.name, personnel_status.date, personnel_status.am_status,
+    personnel_status.am_remarks, personnel_status.pm_status, personnel_status.pm_remarks
+    FROM personnel JOIN personnel_status ON personnel.id = personnel_status.personnel_id
+    WHERE personnel.id = ? AND personnel_status.date = ?
     """, (personnel_id, status_date)).fetchone()
     if record: return record
     return None

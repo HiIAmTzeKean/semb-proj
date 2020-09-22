@@ -2,17 +2,22 @@ from flask import (Blueprint, flash, g, redirect, render_template, session, url_
 from datetime import datetime
 from flaskapp.auth import login_required
 from flaskapp.db import get_db
-from .forms import paradestateform, paradestateviewform, personnelseeker
+from .forms import paradestateform, paradestateviewform, admin_add_del_form, admin_strength_viewer
 from .methods import nameconverter_paradestateform, retrieve_personnel_list, retrieve_personnel_statuses
 from .db_methods import update_PS, insert_PS, retrive_record_by_date, del_personnel_db, add_personnel_db, retrive_one_record
 
 bp = Blueprint('ps', __name__)
 
-# For all to submit their parade state
+
 @bp.route('/', methods=('GET', 'POST'))
 def index():
+    """
+    Open page to allow all to submit their parade state
+    No admin access is required. Once submitted, confirmation page will be given
+    """
     db = get_db()
     # Trial for Sembawang only
+    # form should display only fmw attributes once clicked on
     fmw = "Sembawang"
     rows = retrieve_personnel_list(db, fmw)
     names = nameconverter_paradestateform(rows)
@@ -58,18 +63,26 @@ def paradestate():
 @bp.route('/strengthviewer', methods=('GET', 'POST'))
 @login_required
 def strengthviewer():
+    # if admin rights, have a choice of the form to select
+    # else auto display current fmw
     db = get_db()
     fmw = session.get('fmw')
-    personnels = retrieve_personnel_list(db, fmw)
-    return render_template('ps/strengthviewer.html', personnels=personnels)
+    form = admin_strength_viewer()
+    if form.validate_on_submit():
+        fmw = form.fmw.data
+        personnels = retrieve_personnel_list(db, fmw)
+        return render_template('ps/strengthviewer.html', personnels=personnels)
+    return render_template('ps/strengthviewer.html',form=form)
 
-# view only to admin
+
 @bp.route('/admin', methods=('GET', 'POST'))
 @login_required
 def admin():
+    # need to have workshop specific page to add to only workshop
+    #eg semb add and del to only semb
     if session.get('user_id') == 'Admin':
         db = get_db()
-        form = personnelseeker()
+        form = admin_add_del_form()
         if form.validate_on_submit():
             name =  form.name.data
             rank =  form.rank.data

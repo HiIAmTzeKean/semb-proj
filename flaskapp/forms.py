@@ -29,7 +29,7 @@ class paradestateform(FlaskForm):
         'OTHERS': 'OTHERS'
     }
     statuses = statuses.items()
-    workshops = [("Sembwang"),("Bedok"),("Navy"),("HQ")]
+    workshops = [("Sembawang"),("Bedok"),("Navy"),("HQ")]
     fmw = SelectField(label='FMW', choices=workshops)
     name = SelectField(label='Name', choices='', coerce=int)
     status_date = DateField(label='Date', validators=[DataRequired()])
@@ -45,10 +45,16 @@ class paradestateviewform(FlaskForm):
     submit = SubmitField('Submit')
 
 
-class personnelseeker(FlaskForm):
+class admin_strength_viewer(FlaskForm):
+    workshops = [("Sembawang"),("Bedok"),("Navy"),("HQ")]
+    fmw = SelectField(label='FMW', choices=workshops)
+    submit = SubmitField('Submit')
+
+
+class admin_add_del_form(FlaskForm):
     name = StringField(label='Name', validators=[DataRequired()])
     rank = StringField(label='Rank', validators=[DataRequired()])
-    workshops = [("Sembwang"),("Bedok"),("Navy"),("HQ")]
+    workshops = [("Sembawang"),("Bedok"),("Navy"),("HQ")]
     fmw = SelectField(label='FMW', choices=workshops)
     add_del = SelectField(label='Add/Delete', choices=[('Add'),('Delete')])
     submit = SubmitField('Submit')
