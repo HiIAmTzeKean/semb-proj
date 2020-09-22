@@ -22,6 +22,7 @@ def login():
             session.clear()
             session['user_id'] = user['username']
             session['fmw'] = user['fmw']
+            session['clearance'] = user['clearance']
             return redirect(url_for('index'))
         flash(error)
     return render_template('auth/login2.html',form=form)
@@ -29,7 +30,7 @@ def login():
 @bp.before_app_request
 def load_logged_in_user():
     user_id = session.get('user_id')
-
+    clearance = session.get('clearance')
     if user_id is None:
         g.user = None
     else:
@@ -37,16 +38,35 @@ def load_logged_in_user():
             'SELECT * FROM user WHERE username = ?', (user_id,)
         ).fetchone()
 
+
 @bp.route('/logout')
 def logout():
     session.clear()
     return redirect(url_for('index'))
+
 
 def login_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
         if g.user is None:
             return redirect(url_for('auth.login'))
+        return view(**kwargs)
+    return wrapped_view
 
+def clearance_one_required(view):
+    @functools.wraps(view)
+    def wrapped_view(**kwargs):
+        if g.user["clearance"] != 1:
+            flash("You do not have rights to this page")
+            return redirect(url_for('auth.login'))
+        return view(**kwargs)
+    return wrapped_view
+
+def clearance_two_required(view):
+    @functools.wraps(view)
+    def wrapped_view(**kwargs):
+        if g.user["clearance"] < '2':
+            flash("You do not have rights to this page")
+            return redirect(url_for('auth.login'))
         return view(**kwargs)
     return wrapped_view

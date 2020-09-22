@@ -9,6 +9,7 @@
 	<nav>
 		{% if g.user %}
 		<h1>Logged in as: {{ g.user['username'] }}</h1>
+		<h1>Clearance: {{ g.user["clearance"] }}</h1>
 		<a href="{{ url_for('auth.logout') }}">Log Out</a>
 		{% endif %}
 		<a href="{{ url_for('ps.index') }}">Home Page</a>

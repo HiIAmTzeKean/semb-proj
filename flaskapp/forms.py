@@ -51,6 +51,12 @@ class admin_strength_viewer(FlaskForm):
     submit = SubmitField('Submit')
 
 
+class admin_three_add_del_form(FlaskForm):
+    name = StringField(label='Name', validators=[DataRequired()])
+    rank = StringField(label='Rank', validators=[DataRequired()])
+    add_del = SelectField(label='Add/Delete', choices=[('Add'),('Delete')])
+    submit = SubmitField('Submit')
+
 class admin_add_del_form(FlaskForm):
     name = StringField(label='Name', validators=[DataRequired()])
     rank = StringField(label='Rank', validators=[DataRequired()])

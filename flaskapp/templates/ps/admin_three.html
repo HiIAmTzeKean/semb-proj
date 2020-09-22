@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}FMW Admin Page{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+    {% if add_del == 'Add' %}
+      <h3>Added a new member</h3>
+    {% elif add_del == 'Delete' %}
+      <h3>Deleted a new member</h3>
+    {% endif %}
+
+    {% if add_del %}
+    <table border="">
+      <tr>
+        <td>Rank</td>
+        <td>Name</td>
+        <td>FMW</td>
+      </tr>
+      <tr>
+        {% if personnel %}
+        <td>{{ personnel.rank }}</td>
+        <td>{{ personnel.name }}</td>
+        <td>{{ personnel.fmw }}</td>
+        {% endif %}
+      </tr>
+    </table>
+
+    {% else %}
+    <form method="POST">
+    {{ form.hidden_tag() }}
+    <li>{{ form.rank.label }} {{ form.rank() }}</li>
+    <li>{{ form.name.label }} {{ form.name() }}</li>
+    <li>{{ form.add_del.label }} {{ form.add_del() }}</li>
+    <li>{{ form.submit() }}</li>
+    </form>
+    {% endif %}
+{% endblock %}

@@ -1,8 +1,8 @@
 from flask import (Blueprint, flash, g, redirect, render_template, session, url_for)
 from datetime import datetime
-from flaskapp.auth import login_required
+from flaskapp.auth import login_required, clearance_one_required
 from flaskapp.db import get_db
-from .forms import paradestateform, paradestateviewform, admin_add_del_form, admin_strength_viewer
+from .forms import paradestateform, paradestateviewform, admin_add_del_form, admin_strength_viewer,admin_three_add_del_form
 from .methods import nameconverter_paradestateform, retrieve_personnel_list, retrieve_personnel_statuses
 from .db_methods import update_PS, insert_PS, retrive_record_by_date, del_personnel_db, add_personnel_db, retrive_one_record
 
@@ -78,26 +78,46 @@ def strengthviewer():
 @bp.route('/admin', methods=('GET', 'POST'))
 @login_required
 def admin():
-    # need to have workshop specific page to add to only workshop
-    #eg semb add and del to only semb
-    if session.get('user_id') == 'Admin':
-        db = get_db()
-        form = admin_add_del_form()
-        if form.validate_on_submit():
-            name =  form.name.data
-            rank =  form.rank.data
-            fmw =  form.fmw.data
-            add_del = form.add_del.data
-            if add_del == 'Add':
-                error = add_personnel_db(db,name,fmw,rank)
-                personnel = retrive_one_record(db,name,fmw)
-            else:
-                personnel = retrive_one_record(db,name,fmw)
-                if personnel != None: error = del_personnel_db(db,name,fmw)
-                else: error = "Personnel does not exist in the table, please check"
-            if error == None:
-                return render_template('ps/admin.html', add_del=add_del,personnel=personnel)
-            flash(error)
-        return render_template('ps/admin.html',form=form)
-    # show error 401 and forces user to login again
-    return 'You are not authorised, please log in as Admin'
+    if session.get('clearance')==3:
+        # redirect to fmw page according to clearance level
+        return redirect(url_for("ps.admin_three"))
+    db = get_db()
+    form = admin_add_del_form()
+    if form.validate_on_submit():
+        name =  form.name.data
+        rank =  form.rank.data
+        fmw =  form.fmw.data
+        add_del = form.add_del.data
+        if add_del == 'Add':
+            error = add_personnel_db(db,name,fmw,rank)
+            personnel = retrive_one_record(db,name,fmw)
+        else:
+            personnel = retrive_one_record(db,name,fmw)
+            if personnel != None: error = del_personnel_db(db,name,fmw)
+            else: error = "Personnel does not exist in the table, please check"
+        if error == None:
+            return render_template('ps/admin.html', add_del=add_del,personnel=personnel)
+        flash(error)
+    return render_template('ps/admin.html',form=form)
+
+@bp.route('/admin_three', methods=('GET', 'POST'))
+@login_required
+def admin_three():
+    db = get_db()
+    form = admin_three_add_del_form()
+    if form.validate_on_submit():
+        name =  form.name.data
+        rank =  form.rank.data
+        fmw = session.get('fmw')
+        add_del = form.add_del.data
+        if add_del == 'Add':
+            error = add_personnel_db(db,name,fmw,rank)
+            personnel = retrive_one_record(db,name,fmw)
+        else:
+            personnel = retrive_one_record(db,name,fmw)
+            if personnel != None: error = del_personnel_db(db,name,fmw)
+            else: error = "Personnel does not exist in the table, please check"
+        if error == None:
+            return render_template('ps/admin_three.html', add_del=add_del,personnel=personnel)
+        flash(error)
+    return render_template('ps/admin_three.html',form=form)
