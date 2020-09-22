@@ -2,7 +2,8 @@ from flask import (Blueprint, flash, g, redirect, render_template, session, url_
 from datetime import datetime
 from flaskapp.auth import login_required, clearance_one_required
 from flaskapp.db import get_db
-from .forms import paradestateform, paradestateviewform, admin_add_del_form, admin_strength_viewer,admin_three_add_del_form
+from .forms import (paradestateform, paradestateviewform, admin_add_del_form,
+admin_strength_viewer,admin_three_add_del_form,admin_three_act_deact_form)
 from .methods import nameconverter_paradestateform, retrieve_personnel_list, retrieve_personnel_statuses
 from .db_methods import update_PS, insert_PS, retrive_record_by_date, del_personnel_db, add_personnel_db, retrive_one_record
 
@@ -100,6 +101,7 @@ def admin():
         flash(error)
     return render_template('ps/admin.html',form=form)
 
+
 @bp.route('/admin_three', methods=('GET', 'POST'))
 @login_required
 def admin_three():
@@ -118,6 +120,24 @@ def admin_three():
             if personnel != None: error = del_personnel_db(db,name,fmw)
             else: error = "Personnel does not exist in the table, please check"
         if error == None:
-            return render_template('ps/admin_three.html', add_del=add_del,personnel=personnel)
+            return render_template('ps/admin.html', add_del=add_del,personnel=personnel)
         flash(error)
-    return render_template('ps/admin_three.html',form=form)
+    return render_template('ps/admin.html',form=form)
+
+
+@bp.route('/admin_three/act_deact', methods=('GET', 'POST'))
+@login_required
+def admin_three_act_deact():
+    db = get_db()
+    form = admin_three_act_deact_form()
+    if form.validate_on_submit():
+        name =  form.name.data
+        rank =  form.rank.data
+        fmw = session.get('fmw')
+        act_deact = form.act_deact.data
+        if act_deact == 'Activate':
+            pass
+        else:
+            pass
+        return 'Awesome'
+    return render_template('ps/admin_act_deact.html',form=form)
