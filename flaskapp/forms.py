@@ -52,10 +52,22 @@ class admin_strength_viewer(FlaskForm):
     submit = SubmitField('Submit')
 
 
-class admin_add_del_form(FlaskForm):
+class admin_three_add_del_form(FlaskForm):
     name = StringField(label='Name', validators=[DataRequired()])
     rank = StringField(label='Rank', validators=[DataRequired()])
-    workshops = [("Sembawang"),("Bedok"),("Navy"),("HQ")]
-    fmw = SelectField(label='FMW', choices=workshops)
     add_del = SelectField(label='Add/Delete', choices=[('Add'),('Delete')])
     submit = SubmitField('Submit')
+
+class admin_add_del_form(admin_three_add_del_form):
+    workshops = [("Sembawang"),("Bedok"),("Navy"),("HQ")]
+    fmw = SelectField(label='FMW', choices=workshops)
+
+class admin_three_act_deact_form(FlaskForm):
+    name = StringField(label='Name', validators=[DataRequired()])
+    rank = StringField(label='Rank', validators=[DataRequired()])
+    act_deact = SelectField(label='Activate/Deactivate', choices=[(1,'Activate'),(0,'Deactivate')])
+    submit = SubmitField('Submit')
+
+class admin_act_deact_form(admin_three_act_deact_form):
+    workshops = [("Sembawang"),("Bedok"),("Navy"),("HQ")]
+    fmw = SelectField(label='FMW', choices=workshops)
