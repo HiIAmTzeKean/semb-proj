@@ -1,14 +1,8 @@
 import functools
-
-from flask import (
-    Blueprint, flash, g, redirect, render_template, request, session, url_for
-)
+from flask import (Blueprint, flash, g, redirect, render_template, request, session, url_for)
 from werkzeug.security import check_password_hash, generate_password_hash
-
 from flaskapp.db import get_db
-
-from .forms import loginform
-
+from .forms import loginform,admin_strength_viewer
 from .methods import authenticate_user
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
@@ -27,6 +21,17 @@ def login():
         flash(error)
     return render_template('auth/login.html',form=form)
 
+@bp.route('/load_fmw', methods=('GET', 'POST'))
+def load_fmw():
+    #form to select fmw
+    form = admin_strength_viewer()
+    if form.validate_on_submit():
+        fmw = form.fmw.data
+        session.clear()
+        session['fmw'] = fmw
+        return redirect(url_for('index'))
+    return render_template('auth/fmw.html',form=form)
+
 @bp.before_app_request
 def load_logged_in_user():
     user_id = session.get('user_id')
@@ -43,6 +48,14 @@ def load_logged_in_user():
 def logout():
     session.clear()
     return redirect(url_for('index'))
+
+def fmw_required(view):
+    @functools.wraps(view)
+    def wrapped_view(**kwargs):
+        if session.get('fmw') is None:
+            return redirect(url_for('auth.load_fmw'))
+        return view(**kwargs)
+    return wrapped_view
 
 
 def login_required(view):

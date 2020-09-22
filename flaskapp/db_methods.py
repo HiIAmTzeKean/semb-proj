@@ -68,6 +68,7 @@ def check_personnel_exist(db,name,fmw,rank):
     else:
         return "User does not exist in the system. Please check rank and name."
 
+
 def add_personnel_db(db,name,fmw,rank):
     try:
         db.execute("""
@@ -75,7 +76,7 @@ def add_personnel_db(db,name,fmw,rank):
         """, (name,fmw,rank))
         db.commit()
         return None
-    except e as error:
+    except Error as e:
         return e
 
 
@@ -86,7 +87,7 @@ def del_personnel_db(db,name,fmw):
         db.execute("""DELETE FROM personnel WHERE id = ?""", (personnel_id,))
         db.commit()
         return None
-    except e as error:
+    except Error as e:
         return e
 
 

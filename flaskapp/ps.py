@@ -1,6 +1,6 @@
 from flask import (Blueprint, flash, g, redirect, render_template, session, url_for)
 from datetime import datetime
-from flaskapp.auth import login_required, clearance_one_required
+from flaskapp.auth import login_required, clearance_one_required, fmw_required
 from flaskapp.db import get_db
 from .forms import (paradestateform, paradestateviewform, admin_add_del_form,
                     admin_strength_viewer, admin_three_add_del_form, admin_three_act_deact_form)
@@ -13,15 +13,16 @@ bp = Blueprint('ps', __name__)
 
 
 @bp.route('/', methods=('GET', 'POST'))
+@fmw_required
 def index():
     """
     Open page to allow all to submit their parade state
-    No admin access is required. Once submitted, confirmation page will be given
+    No admin access is required. Once submitted, confirmation will be given
     """
     db = get_db()
     # Trial for Sembawang only
     # form should display only fmw attributes once clicked on
-    fmw = "Sembawang"
+    fmw = session.get('fmw')
     rows = retrieve_personnel_list(db, fmw)
     names = nameconverter_paradestateform(rows)
     form = paradestateform()
