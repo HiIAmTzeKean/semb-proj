@@ -5,6 +5,4 @@ __pycache__/
 
 .idea/
 .vscode/settings.json
-venv/
-instance/flaskr.sqlite
 .vscode/.ropeproject
