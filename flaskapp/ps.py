@@ -5,7 +5,8 @@ from flaskapp.db import get_db
 from .forms import (paradestateform, paradestateviewform, admin_add_del_form,
 admin_strength_viewer,admin_three_add_del_form,admin_three_act_deact_form)
 from .methods import nameconverter_paradestateform, retrieve_personnel_list, retrieve_personnel_statuses
-from .db_methods import update_PS, insert_PS, retrive_record_by_date, del_personnel_db, add_personnel_db, retrive_one_record
+from .db_methods import (update_PS, insert_PS, retrive_record_by_date,
+del_personnel_db, add_personnel_db, retrive_one_record, act_deact_personnel_db,retrive_personnel_id)
 
 bp = Blueprint('ps', __name__)
 
@@ -135,9 +136,10 @@ def admin_three_act_deact():
         rank =  form.rank.data
         fmw = session.get('fmw')
         act_deact = form.act_deact.data
-        if act_deact == 'Activate':
-            pass
-        else:
-            pass
-        return 'Awesome'
+        error = retrive_personnel_id(db,name,fmw,rank=rank)
+        if error != None:
+            act_deact_personnel_db(db,act_deact,name,fmw)
+            personnel = retrive_one_record(db,name,fmw)
+            return render_template('ps/admin_act_deact.html', act_deact=act_deact,personnel=personnel)
+        flash('User does not exist in your FMW')
     return render_template('ps/admin_act_deact.html',form=form)

@@ -1,18 +1,19 @@
 {% extends 'base.html' %}
 
 {% block header %}
-  <h3>{% block title %}Add/Delete Personnel{% endblock %}</h3>
+  <h3>{% block title %}Activate/Deactivate Personnel{% endblock %}</h3>
 {% endblock %}
 
 {% block content %}
   <div>
     <a href="{{ url_for('ps.admin') }}">Add/Delete Personnel</a>
+    <a href="{{ url_for('ps.admin_three_act_deact') }}">Activate/Deactivate Personnel</a>
   </div>
 
-    {% if act_deact == 'Activate' %}
-      <h3>Added a new member</h3>
-    {% elif act_deact == 'Deactivate' %}
-      <h3>Deleted a new member</h3>
+    {% if act_deact == 1 %}
+      <h3>Activated a new member</h3>
+    {% elif act_deact == 0 %}
+      <h3>Deactivated a member</h3>
     {% endif %}
 
     {% if act_deact %}
