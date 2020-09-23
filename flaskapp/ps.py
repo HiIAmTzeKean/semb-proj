@@ -20,8 +20,6 @@ def index():
     No admin access is required. Once submitted, confirmation will be given
     """
     db = get_db()
-    # Trial for Sembawang only
-    # form should display only fmw attributes once clicked on
     fmw = session.get('fmw')
     rows = retrieve_personnel_list(db, fmw)
     names = nameconverter_paradestateform(rows)
