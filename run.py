@@ -1,6 +1,4 @@
-from flaskapp import create_app
-from flask_bootstrap import Bootstrap
+from flaskapp import app
 
-app = create_app()
-Bootstrap(app)
-app.run(debug=True)
+if __name__ == '__main__':
+    app.run(debug=True)
