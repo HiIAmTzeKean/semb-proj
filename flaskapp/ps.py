@@ -51,7 +51,7 @@ def index():
         record = retrive_record_by_date(db, personnel_id, start_date)
         resp = make_response(render_template('ps/index.html', form=form, updated=updated,
                             multi_date=multi_date, personnel=record, end_date=end_date))
-        resp.set_cookie('personnel_id', value = str(personnel_id), max_age=60*60*24*365*2)
+        resp.set_cookie('personnel_id', value = str(personnel_id), max_age=60*60*24)
         return resp
 
         # return render_template('ps/index.html', form=form, updated=updated,
