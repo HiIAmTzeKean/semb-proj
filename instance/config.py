@@ -1,4 +1,4 @@
 class Config:
-    DEBUG = True
-    SECRET_KEY = "Dev"
-    FLASK_ENV="development"
+    DEBUG = False
+    SECRET_KEY = "this_is_trial_run"
+    FLASK_ENV='production'
