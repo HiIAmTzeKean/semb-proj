@@ -43,6 +43,19 @@
             <!-- Panels -->
             <div class="tab-content" id="pills-tabContent">
                 <div class="tab-pane fade show active" id="AM-status" role="tabpanel" aria-labelledby="AM-status-tab">
+                    <div class="alert mt-2 {{ 'alert-danger' if missing_personnels else 'alert-info' }}" role="alert">
+                        <h4 class="alert-heading">Summary of AM Status</h4>
+                        <p>
+                            {% for group in personnels|groupby("am_status") %}
+                            {{ group.grouper }}: {{ group.list|length }}{{ ", " if not loop.last }}
+                            {% endfor %}
+                        </p>
+
+                        {% if missing_personnels %}
+                        <hr>
+                        <p class="mb-0">There are personnels which have not submitted their status, so numbers may be incorrect.</p>
+                        {% endif %}
+                    </div>
                     <table class="table mt-3">
                         <thead class="thead-dark">
                         <tr>
@@ -74,6 +87,20 @@
                 </div>
 
                 <div class="tab-pane fade" id="PM-status" role="tabpanel" aria-labelledby="PM-status-tab">
+                    <div class="alert mt-2 {{ 'alert-danger' if missing_personnels else 'alert-info' }}" role="alert">
+                        <h4 class="alert-heading">Summary of PM Status</h4>
+                        <p>
+                            {% for group in personnels|groupby("pm_status") %}
+                            {{ group.grouper }}: {{ group.list|length }}{{ ", " if not loop.last }}
+                            {% endfor %}
+                        </p>
+
+                        {% if missing_personnels %}
+                        <hr>
+                        <p class="mb-0">There are personnels which have not submitted their status, so numbers may be incorrect.</p>
+                        {% endif %}
+                    </div>
+
                     <table class="table mt-3">
                         <thead class="thead-dark">
                         <tr>
