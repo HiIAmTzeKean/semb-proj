@@ -78,7 +78,7 @@ def clearance_one_required(view):
 def clearance_two_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
-        if g.user["clearance"] < '2':
+        if g.user["clearance"] < 2:
             flash("You do not have rights to this page")
             return redirect(url_for('auth.login'))
         return view(**kwargs)

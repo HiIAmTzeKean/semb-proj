@@ -22,7 +22,7 @@ def authenticate_user(db, username, password):
     return error, user
 
 
-def retrieve_personnel_list(db, fmw):
+def retrieve_personnel_list(db, fmw,clearance=''):
     if fmw == "Admin": return db.execute('SELECT * FROM personnel').fetchall()
     return db.execute('SELECT * FROM personnel WHERE fmw = ?', (fmw,)).fetchall()
 

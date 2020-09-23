@@ -66,16 +66,23 @@ def paradestate():
 @bp.route('/strengthviewer', methods=('GET', 'POST'))
 @login_required
 def strengthviewer():
-    # if admin rights, have a choice of the form to select
-    # else auto display current fmw
     db = get_db()
-    fmw = session.get('fmw')
-    form = admin_strength_viewer()
-    if form.validate_on_submit():
-        fmw = form.fmw.data
+    # if admin rights, have a choice of the form to select
+    if session.get('clearance') <= 2:
+        form = admin_strength_viewer()
+        if form.validate_on_submit():
+            fmw = form.fmw.data
+            personnels = retrieve_personnel_list(db, fmw)
+            if personnels != []:
+                return render_template('ps/strengthviewer.html', fmw=fmw, personnels=personnels)
+            flash('No personnel in selected FMW yet.')
+        return render_template('ps/strengthviewer.html', form=form)
+    # else auto display current fmw
+    else:
+        fmw = session.get('fmw')
         personnels = retrieve_personnel_list(db, fmw)
         return render_template('ps/strengthviewer.html', fmw=fmw, personnels=personnels)
-    return render_template('ps/strengthviewer.html', form=form)
+    
 
 
 @bp.route('/admin', methods=('GET', 'POST'))
