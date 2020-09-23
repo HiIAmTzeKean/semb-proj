@@ -4,6 +4,24 @@
   {{ super() }}Parade State
 {% endblock %}
 
+{% block styles %}
+<style>
+    .nav-pills .nav-item {
+        width: 50%;
+        border: 1px solid #1F1F1F;
+        border-radius: 0.25rem;
+    }
+
+    .nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+        background-color: #1F1F1F;
+    }
+
+    .nav-item a {
+        color: #1F1F1F;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container">
     <!--display current parade state-->
@@ -11,42 +29,82 @@
     <div class="row">
         <div class="col">
             <h1 class="font-weight-bold">Parade State for {{ session['fmw'] }} on {{ date }}</h1>
-            <table class="table mt-3">
-                <thead class="thead-dark">
-                    <tr>
-                        <th scope="col">No.</th>
-                        <th scope="col">Rank & Name</th>
-                        <th scope="col">AM Status/ Remarks</th>
-                        <th scope="col">PM Status/ Remarks</th>
-                    </tr>
-                </thead>
-                {% for person in personnels %}
-                    <tr>
-                        <th scope="row">{{ loop.index }}</th>
-                        <td>{{ person.rank }} {{ person.name }}</td>
-                        <td>
-                            {{ person.am_status }}
-                            {% if person.am_remarks != '' %}
-                            <span>({{ person.am_remarks }})</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {{ person.pm_status }}
-                            {% if person.pm_remarks != '' %}
-                            <span>({{ person.pm_remarks }})</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                {% endfor %}
-                {% for person in missing_personnels %}
-                    <tr class="table-danger">
-                        <th scope="row">{{ loop.index + personnels|length }}</th>
-                        <td>{{ person.rank }} {{ person.name }}</td>
-                        <td>NONE PROVIDED</td>
-                        <td>NONE PROVIDED</td>
-                    </tr>
-                {% endfor %}
-            </table>
+            <!-- Navbar to select AM or PM status -->
+            <ul class="nav nav-pills" id="time-tab" role="tablist">
+                <li class="nav-item text-center">
+                    <a class="nav-link active" id="AM-status-tab" data-toggle="pill" href="#AM-status"
+                       role="tab" aria-controls="AM-status">AM Parade State</a>
+                </li>
+                <li class="nav-item text-center">
+                    <a class="nav-link" id="PM-status-tab" data-toggle="pill" href="#PM-status"
+                       role="tab" aria-controls="PM-status">PM Parade State</a>
+                </li>
+            </ul>
+
+            <!-- Panels -->
+            <div class="tab-content" id="pills-tabContent">
+                <div class="tab-pane fade show active" id="AM-status" role="tabpanel" aria-labelledby="AM-status-tab">
+                    <table class="table mt-3">
+                        <thead class="thead-dark">
+                        <tr>
+                            <th scope="col">No.</th>
+                            <th scope="col">Rank & Name</th>
+                            <th scope="col">AM Status/ Remarks</th>
+                        </tr>
+                        </thead>
+                        {% for person in personnels %}
+                            <tr>
+                                <th scope="row">{{ loop.index }}</th>
+                                <td>{{ person.rank }} {{ person.name }}</td>
+                                <td>
+                                    {{ person.am_status }}
+                                    {% if person.am_remarks != '' %}
+                                        <span>({{ person.am_remarks }})</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        {% for person in missing_personnels %}
+                            <tr class="table-danger">
+                                <th scope="row">{{ loop.index + personnels|length }}</th>
+                                <td>{{ person.rank }} {{ person.name }}</td>
+                                <td>NONE PROVIDED</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+
+                <div class="tab-pane fade" id="PM-status" role="tabpanel" aria-labelledby="PM-status-tab">
+                    <table class="table mt-3">
+                        <thead class="thead-dark">
+                        <tr>
+                            <th scope="col">No.</th>
+                            <th scope="col">Rank & Name</th>
+                            <th scope="col">PM Status/ Remarks</th>
+                        </tr>
+                        </thead>
+                        {% for person in personnels %}
+                            <tr>
+                                <th scope="row">{{ loop.index }}</th>
+                                <td>{{ person.rank }} {{ person.name }}</td>
+                                <td>
+                                    {{ person.pm_status }}
+                                    {% if person.pm_remarks != '' %}
+                                        <span>({{ person.pm_remarks }})</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        {% for person in missing_personnels %}
+                            <tr class="table-danger">
+                                <th scope="row">{{ loop.index + personnels|length }}</th>
+                                <td>{{ person.rank }} {{ person.name }}</td>
+                                <td>NONE PROVIDED</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 
