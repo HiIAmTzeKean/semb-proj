@@ -7,7 +7,7 @@
 {% block content %}
   <div>
     <a href="{{ url_for('ps.admin') }}">Add/Delete Personnel</a>
-    <a href="{{ url_for('ps.admin_three_act_deact') }}">Activate/Deactivate Personnel</a>
+    <a href="{{ url_for('ps.admin_act_deact') }}">Activate/Deactivate Personnel</a>
   </div>
 
     {% if add_del == 'Add' %}

@@ -6,7 +6,7 @@ from .forms import (paradestateform, paradestateviewform, admin_add_del_form,
                     admin_strength_viewer, admin_three_add_del_form, admin_three_act_deact_form)
 from .methods import nameconverter_paradestateform, retrieve_personnel_list, retrieve_personnel_statuses
 from .db_methods import (update_PS, insert_PS, retrive_record_by_date,
-                         del_personnel_db, add_personnel_db, retrive_one_record, act_deact_personnel_db,
+                         add_del_personnel_db, retrive_one_record, act_deact_personnel_db,
                          retrive_personnel_id, check_personnel_exist)
 
 bp = Blueprint('ps', __name__)
@@ -67,7 +67,6 @@ def paradestate():
 @login_required
 def strengthviewer():
     db = get_db()
-    # if admin rights, have a choice of the form to select
     if session.get('clearance') <= 2:
         form = admin_strength_viewer()
         if form.validate_on_submit():
@@ -84,69 +83,40 @@ def strengthviewer():
         return render_template('ps/strengthviewer.html', fmw=fmw, personnels=personnels)
     
 
-
-@bp.route('/admin', methods=('GET', 'POST'))
+@bp.route('/admin/add_del_personnel', methods=('GET', 'POST'))
 @login_required
 def admin():
-    if session.get('clearance') == 3:
-        # redirect to fmw page according to clearance level
-        return redirect(url_for("ps.admin_three"))
     db = get_db()
-    form = admin_add_del_form()
+    if session.get('clearance') <= 2:
+        form = admin_add_del_form()
+    else:
+        form = admin_three_add_del_form()
     if form.validate_on_submit():
         name = form.name.data
         rank = form.rank.data
-        fmw = form.fmw.data
+        if session.get('clearance') <= 2: fmw = form.fmw.data
+        else: fmw = session.get('fmw')
         add_del = form.add_del.data
-        if add_del == 'Add':
-            error = add_personnel_db(db, name, fmw, rank)
-            personnel = retrive_one_record(db, name, fmw)
-        else:
-            personnel = retrive_one_record(db, name, fmw)
-            if personnel != None:
-                error = del_personnel_db(db, name, fmw)
-            else:
-                error = "Personnel does not exist in the table, please check"
+        error, personnel = add_del_personnel_db(db,name,fmw,rank,add_del)
         if error == None:
             return render_template('ps/admin.html', add_del=add_del, personnel=personnel)
         flash(error)
     return render_template('ps/admin.html', form=form)
 
 
-@bp.route('/admin_three', methods=('GET', 'POST'))
+@bp.route('/admin/act_deact', methods=('GET', 'POST'))
 @login_required
-def admin_three():
+def admin_act_deact():
     db = get_db()
-    form = admin_three_add_del_form()
+    if session.get('clearance') <= 2:
+        form = admin_act_deact_form()
+    else:
+        form = admin_three_act_deact_form()
     if form.validate_on_submit():
         name = form.name.data
         rank = form.rank.data
-        fmw = session.get('fmw')
-        add_del = form.add_del.data
-        if add_del == 'Add':
-            error = add_personnel_db(db, name, fmw, rank)
-            personnel = retrive_one_record(db, name, fmw)
-        else:
-            personnel = retrive_one_record(db, name, fmw)
-            if personnel != None:
-                error = del_personnel_db(db, name, fmw)
-            else:
-                error = "Personnel does not exist in the table, please check"
-        if error == None:
-            return render_template('ps/admin.html', add_del=add_del, personnel=personnel)
-        flash(error)
-    return render_template('ps/admin.html', form=form)
-
-
-@bp.route('/admin_three/act_deact', methods=('GET', 'POST'))
-@login_required
-def admin_three_act_deact():
-    db = get_db()
-    form = admin_three_act_deact_form()
-    if form.validate_on_submit():
-        name = form.name.data
-        rank = form.rank.data
-        fmw = session.get('fmw')
+        if session.get('clearance') <= 2: fmw = form.fmw.data
+        else: fmw = session.get('fmw')
         act_deact = form.act_deact.data
         error = check_personnel_exist(db, name, fmw, rank)
         if error == None:

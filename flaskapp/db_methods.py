@@ -69,26 +69,41 @@ def check_personnel_exist(db,name,fmw,rank):
         return "User does not exist in the system. Please check rank and name."
 
 
-def add_personnel_db(db,name,fmw,rank):
-    try:
-        db.execute("""
-        INSERT INTO personnel (name,fmw,rank) VALUES (?,?,?)
-        """, (name,fmw,rank))
-        db.commit()
-        return None
-    except Error as e:
-        return e
+def add_del_check(db,name,fmw,rank,add_del):
+    '''
+    returns (check_status,record)
+    if check is valid, personnel record will be returned
+    else an error message will be returned
+    '''
+    record = db.execute("""SELECT * FROM personnel 
+    WHERE personnel.name = ? AND personnel.rank = ? AND personnel.fmw = ?""", (name,rank,fmw)).fetchone()
+    if add_del == 'Add':
+        if record:
+            return False, "Personnel already exist in your FMW!"
+        else: return True, record
+    else:
+        if record: return True, record
+        else:
+            return False, "Personnel does not exist in your FMW!"
 
 
-def del_personnel_db(db,name,fmw):
-    try:
+def add_del_personnel_db(db,name,fmw,rank,add_del):
+    '''
+    Output will return (error,personnel)
+    if error, personnel will be blank as he does not exist
+    else error will be none and valid personnel will be returned
+    '''
+    check, output = add_del_check(db,name,fmw,rank,add_del)
+    if check == False:
+        return output,''
+    if add_del == 'Add':
+        db.execute("""INSERT INTO personnel (name,fmw,rank) VALUES (?,?,?)""", (name,fmw,rank))
+    else:
         personnel_id = retrive_personnel_id(db,name,fmw)
         db.execute("""DELETE FROM personnel_status WHERE id = ?""", (personnel_id,))
         db.execute("""DELETE FROM personnel WHERE id = ?""", (personnel_id,))
-        db.commit()
-        return None
-    except Error as e:
-        return e
+    db.commit()
+    return None, output
 
 
 def act_deact_personnel_db(db,active,name,fmw):
