@@ -1,4 +1,4 @@
-from flask import (Blueprint, flash, g, redirect, render_template, session, url_for)
+from flask import (Blueprint, flash, g, redirect, render_template, session, url_for, make_response, request)
 from datetime import timedelta,datetime
 from flaskapp.auth import login_required, clearance_one_required, fmw_required
 from flaskapp.db import get_db
@@ -30,6 +30,9 @@ def index():
     if form.validate_on_submit():
         start_date = form.start_date.data
         end_date = form.end_date.data
+        if end_date>start_date:
+            flash("Your end date is earlier than your start date")
+            return render_template('ps/index.html', form=form, updated=updated, personnel=None)
         personnel_id = form.name.data
         am_status = form.am_status.data
         am_remarks = form.am_remarks.data
@@ -46,9 +49,16 @@ def index():
             multi_date =True
         updated = True
         record = retrive_record_by_date(db, personnel_id, start_date)
-        return render_template('ps/index.html', form=form, updated=updated,
-                                multi_date=multi_date, personnel=record, end_date=end_date)
-    return render_template('ps/index.html', form=form, updated=updated, personnel=None)
+        resp = make_response(render_template('ps/index.html', form=form, updated=updated,
+                            multi_date=multi_date, personnel=record, end_date=end_date))
+        resp.set_cookie('personnel_id', value = str(personnel_id), max_age=60*60*24*365*2)
+        return resp
+
+        # return render_template('ps/index.html', form=form, updated=updated,
+        #                         multi_date=multi_date, personnel=record, end_date=end_date)
+
+    record = retrive_record_by_date(db, request.cookies.get('personnel_id'), datetime.date(datetime.today()) )
+    return render_template('ps/index.html', form=form, updated=updated, personnel=record)
 
 
 @bp.route('/paradestate', methods=('GET', 'POST'))
