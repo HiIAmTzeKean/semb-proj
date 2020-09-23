@@ -103,3 +103,23 @@
         </div>
     </form>
 {% endblock %}
+
+{% block scripts %}
+    <script>
+        document.getElementById("start_date").addEventListener('change', function() {
+            var sdate = new Date(this.value);
+            var edate = new Date(document.getElementById("end_date").value);
+            if (sdate > edate) {
+                document.getElementById("end_date").value = this.value;
+            }
+        })
+
+        document.getElementById("end_date").addEventListener('change', function() {
+            var sdate = new Date(document.getElementById("start_date").value);
+            var edate = new Date(this.value);
+            if (edate < sdate) {
+                document.getElementById("start_date").value = this.value;
+            }
+        })
+    </script>
+{% endblock %}
