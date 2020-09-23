@@ -58,7 +58,14 @@ def index():
         #                         multi_date=multi_date, personnel=record, end_date=end_date)
 
     record = retrive_record_by_date(db, request.cookies.get('personnel_id'), datetime.date(datetime.today()) )
-    return render_template('ps/index.html', form=form, updated=updated, personnel=record)
+    if record:
+        form.name.data = record['id']
+        form.am_status.data = record['am_status']
+        form.am_remarks.data = record['am_remarks']
+        form.pm_status.data = record['pm_status']
+        form.pm_remarks.data = record['pm_remarks']
+        
+    return render_template('ps/index.html', form=form, updated=updated, personnel=None)
 
 
 @bp.route('/paradestate', methods=('GET', 'POST'))
