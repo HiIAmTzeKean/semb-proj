@@ -1,7 +1,4 @@
 # requirements.in
-django
 flask
 flask_bootstrap
-flask_moment
-wtform
 flask_wtf
