@@ -6,9 +6,30 @@
 
 {% block content %}
     <div class="container">
-        <h1 class="font-weight-bold">Status Update for Sembawang</h1>
+        <h1 class="font-weight-bold">Status Update for {{session.get('fmw')}}</h1>
 
+
+        <!--Flash success message to inform user-->
         {% if updated %}
+        {% if multi_date %}
+        <div class="alert alert-success pl-3" role="alert">
+            <h4 class="alert-heading">Status Updated</h4>
+            <p>{{ personnel.name }}'s status for {{ personnel.date }} to {{ end_date }} has been updated to:</p>
+            <p class="mb-0 font-weight-bold">
+                AM Status/Remarks:
+                <span class="font-weight-normal d-inline">{{ personnel.am_status }}</span>
+                {% if personnel.am_remarks != '' %}
+                <span class="font-weight-normal d-inline">({{ personnel.am_remarks }})</span>
+                {% endif %}
+            </p>
+            <p class="mb-0 font-weight-bold">
+                PM Status/Remarks:
+                <span class="font-weight-normal d-inline">{{ personnel.pm_status }}</span>
+                {% if personnel.pm_remarks != '' %}
+                <span class="font-weight-normal d-inline">({{ personnel.pm_remarks }})</span>
+                {% endif %}
+            </p>
+        {% else %}
         <div class="alert alert-success pl-3" role="alert">
             <h4 class="alert-heading">Status Updated</h4>
             <p>{{ personnel.name }}'s status for {{ personnel.date }} has been updated to:</p>
@@ -28,6 +49,7 @@
             </p>
         </div>
         {% endif %}
+        {% endif %}
 
         <form action="" method="post">
             {{ form.hidden_tag() }}
@@ -42,10 +64,19 @@
 
             <div class="form-row mt-3">
                 <div class="col-md-3 font-weight-bold">
-                    {{ form.status_date.label(class_="col-form-label") }}
+                    {{ form.start_date.label(class_="col-form-label") }}
                 </div>
                 <div class="col-md-9">
-                    {{ form.status_date(class_="form-control") }}
+                    {{ form.start_date(class_="form-control") }}
+                </div>
+            </div>
+
+            <div class="form-row mt-3">
+                <div class="col-md-3 font-weight-bold">
+                    {{ form.end_date.label(class_="col-form-label") }}
+                </div>
+                <div class="col-md-9">
+                    {{ form.end_date(class_="form-control") }}
                 </div>
             </div>
 

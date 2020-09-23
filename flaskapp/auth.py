@@ -30,7 +30,7 @@ def load_fmw():
         session.clear()
         session['fmw'] = fmw
         return redirect(url_for('index'))
-    return render_template('auth/fmw.html',form=form)
+    return render_template('ps/select_fmw.html',form=form)
 
 @bp.before_app_request
 def load_logged_in_user():

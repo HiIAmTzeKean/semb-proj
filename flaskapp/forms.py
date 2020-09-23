@@ -30,10 +30,12 @@ class paradestateform(FlaskForm):
         'OTHERS': 'OTHERS'
     }
     statuses = statuses.items()
-    workshops = [("Sembawang"),("Bedok"),("Navy"),("HQ")]
+    workshops = [("Sembawang"),("Bedok"),("Navy"),("Selarang"),("HQ")]
     fmw = SelectField(label='FMW', choices=workshops)
     name = SelectField(label='Name', choices='',validators=[DataRequired()], coerce=int)
-    status_date = DateField(label='Date', validators=[DataRequired()], default=datetime.today)
+    #status_date = DateField(label='Date', validators=[DataRequired()], default=datetime.today)
+    start_date = DateField(label='Start Date', validators=[DataRequired()], default=datetime.today)
+    end_date = DateField(label='End Date', validators=[DataRequired()], default=datetime.today)
     am_status = SelectField(label='AM Status', choices=statuses)
     am_remarks = StringField(label='AM Remarks',)
     pm_status = SelectField(label='PM Status', choices=statuses)
