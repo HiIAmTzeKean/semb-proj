@@ -51,7 +51,7 @@ def index():
         record = retrive_record_by_date(db, personnel_id, start_date)
         resp = make_response(render_template('ps/index.html', form=form, updated=updated,
                             multi_date=multi_date, personnel=record, end_date=end_date))
-        resp.set_cookie('personnel_id', value = str(personnel_id), max_age=60*60*24*365*2)
+        resp.set_cookie('personnel_id', value = str(personnel_id), max_age=60*60*24)
         return resp
 
         # return render_template('ps/index.html', form=form, updated=updated,
@@ -119,7 +119,7 @@ def strengthviewer():
 
 @bp.route('/admin/add_del_personnel', methods=('GET', 'POST'))
 @login_required
-def admin():
+def admin_add_del():
     db = get_db()
     if session.get('clearance') <= 2:
         form = admin_add_del_form()
@@ -133,9 +133,9 @@ def admin():
         add_del = form.add_del.data
         error, personnel = add_del_personnel_db(db,name,fmw,rank,add_del)
         if error == None:
-            return render_template('ps/admin.html', add_del=add_del, personnel=personnel)
+            return render_template('ps/admin_add_del.html', add_del=add_del, personnel=personnel)
         flash(error)
-    return render_template('ps/admin.html', form=form)
+    return render_template('ps/admin_add_del.html', form=form)
 
 
 @bp.route('/admin/act_deact', methods=('GET', 'POST'))
