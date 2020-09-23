@@ -93,7 +93,7 @@ def strengthviewer():
             if personnels != []:
                 return render_template('ps/strengthviewer.html', fmw=fmw, personnels=personnels)
             flash('No personnel in selected FMW yet.')
-        return render_template('ps/strengthviewer.html', form=form)
+        return render_template('ps/select_fmw.html', form=form)
     else:
         fmw = session.get('fmw')
         personnels = retrieve_personnel_list(db, fmw)

@@ -1,7 +1,10 @@
 {% extends 'base.html' %}
 
+{% block title %}
+  {{ super() }}Select FMW
+{% endblock %}
+
 {% block content %}
-<div class="container">
     <div class="d-flex full-height justify-content-center align-items-center">
         <div class="modal-dialog">
             <div class="modal-content px-lg-4 py-lg-4">
@@ -26,5 +29,4 @@
             </div>
         </div>
     </div>
-</div>
 {% endblock %}

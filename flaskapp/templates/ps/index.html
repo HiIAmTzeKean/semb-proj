@@ -5,123 +5,101 @@
 {% endblock %}
 
 {% block content %}
-    <div class="container">
-        <h1 class="font-weight-bold">Status Update for {{session.get('fmw')}}</h1>
+    <h1 class="font-weight-bold">Status Update for {{session.get('fmw')}}</h1>
 
 
-        <!--Flash success message to inform user-->
-        {% if updated %}
-        {% if multi_date %}
+    <!--Flash success message to inform user-->
+    {% if updated %}
         <div class="alert alert-success pl-3" role="alert">
             <h4 class="alert-heading">Status Updated</h4>
-            <p>{{ personnel.name }}'s status for {{ personnel.date }} to {{ end_date }} has been updated to:</p>
+            <p>{{ personnel.name }}'s status for {{ personnel.date }}  {{ ('to' + end_date) if multi_date else '' }} has been updated to:</p>
             <p class="mb-0 font-weight-bold">
                 AM Status/Remarks:
                 <span class="font-weight-normal d-inline">{{ personnel.am_status }}</span>
                 {% if personnel.am_remarks != '' %}
-                <span class="font-weight-normal d-inline">({{ personnel.am_remarks }})</span>
+                    <span class="font-weight-normal d-inline">({{ personnel.am_remarks }})</span>
                 {% endif %}
             </p>
             <p class="mb-0 font-weight-bold">
                 PM Status/Remarks:
                 <span class="font-weight-normal d-inline">{{ personnel.pm_status }}</span>
                 {% if personnel.pm_remarks != '' %}
-                <span class="font-weight-normal d-inline">({{ personnel.pm_remarks }})</span>
-                {% endif %}
-            </p>
-        {% else %}
-        <div class="alert alert-success pl-3" role="alert">
-            <h4 class="alert-heading">Status Updated</h4>
-            <p>{{ personnel.name }}'s status for {{ personnel.date }} has been updated to:</p>
-            <p class="mb-0 font-weight-bold">
-                AM Status/Remarks:
-                <span class="font-weight-normal d-inline">{{ personnel.am_status }}</span>
-                {% if personnel.am_remarks != '' %}
-                <span class="font-weight-normal d-inline">({{ personnel.am_remarks }})</span>
-                {% endif %}
-            </p>
-            <p class="mb-0 font-weight-bold">
-                PM Status/Remarks:
-                <span class="font-weight-normal d-inline">{{ personnel.pm_status }}</span>
-                {% if personnel.pm_remarks != '' %}
-                <span class="font-weight-normal d-inline">({{ personnel.pm_remarks }})</span>
+                    <span class="font-weight-normal d-inline">({{ personnel.pm_remarks }})</span>
                 {% endif %}
             </p>
         </div>
-        {% endif %}
-        {% endif %}
+    {% endif %}
 
-        <form action="" method="post">
-            {{ form.hidden_tag() }}
-            <div class="form-row mt-3">
-                <div class="col-md-3 font-weight-bold">
-                    {{ form.fmw.label(class_="col-form-label") }}
-                </div>
-                <div class="col-md-9">
-                    {{ form.fmw(class_="form-control custom-select") }}
-                </div>
+    <form action="" method="post">
+        {{ form.hidden_tag() }}
+        <div class="form-row mt-3">
+            <div class="col-md-3 font-weight-bold">
+                {{ form.fmw.label(class_="col-form-label") }}
             </div>
+            <div class="col-md-9">
+                {{ form.fmw(class_="form-control custom-select") }}
+            </div>
+        </div>
 
-            <div class="form-row mt-3">
-                <div class="col-md-3 font-weight-bold">
-                    {{ form.start_date.label(class_="col-form-label") }}
-                </div>
-                <div class="col-md-9">
-                    {{ form.start_date(class_="form-control") }}
-                </div>
+        <div class="form-row mt-3">
+            <div class="col-md-3 font-weight-bold">
+                {{ form.start_date.label(class_="col-form-label") }}
             </div>
+            <div class="col-md-9">
+                {{ form.start_date(class_="form-control") }}
+            </div>
+        </div>
 
-            <div class="form-row mt-3">
-                <div class="col-md-3 font-weight-bold">
-                    {{ form.end_date.label(class_="col-form-label") }}
-                </div>
-                <div class="col-md-9">
-                    {{ form.end_date(class_="form-control") }}
-                </div>
+        <div class="form-row mt-3">
+            <div class="col-md-3 font-weight-bold">
+                {{ form.end_date.label(class_="col-form-label") }}
             </div>
+            <div class="col-md-9">
+                {{ form.end_date(class_="form-control") }}
+            </div>
+        </div>
 
-            <div class="form-row mt-3">
-                <div class="col-md-3 font-weight-bold">
-                    {{ form.name.label(class_="col-form-label") }}
-                </div>
-                <div class="col-md-9">
-                    {{ form.name(class_="form-control custom-select") }}
-                </div>
+        <div class="form-row mt-3">
+            <div class="col-md-3 font-weight-bold">
+                {{ form.name.label(class_="col-form-label") }}
             </div>
+            <div class="col-md-9">
+                {{ form.name(class_="form-control custom-select") }}
+            </div>
+        </div>
 
-            <div class="form-row mt-3">
-                <div class="col-md-3 font-weight-bold">
-                    {{ form.am_status.label(class_="col-form-label") }}
-                    <span class="d-none d-md-inline">/ {{ form.am_remarks.label(class_="col-form-label") }}</span>
-                </div>
-                <div class="col-md-3 font-weight-bold">
-                    {{ form.am_status(class_="form-control custom-select") }}
-                </div>
-                <div class="col-md-6">
-                    <span class="d-md-none font-weight-bold">{{ form.am_remarks.label(class_="col-form-label") }}</span>
-                    {{ form.am_remarks(class_="form-control") }}
-                </div>
+        <div class="form-row mt-3">
+            <div class="col-md-3 font-weight-bold">
+                {{ form.am_status.label(class_="col-form-label") }}
+                <span class="d-none d-md-inline">/ {{ form.am_remarks.label(class_="col-form-label") }}</span>
             </div>
-            
-            <div class="form-row mt-3">
-                <div class="col-md-3 font-weight-bold">
-                    {{ form.pm_status.label(class_="col-form-label") }}
-                    <span class="d-none d-md-inline">/ {{ form.pm_remarks.label(class_="col-form-label") }}</span>
-                </div>
-                <div class="col-md-3 font-weight-bold">
-                    {{ form.pm_status(class_="form-control custom-select") }}
-                </div>
-                <div class="col-md-6">
-                    <span class="d-md-none font-weight-bold">{{ form.pm_remarks.label(class_="col-form-label") }}</span>
-                    {{ form.pm_remarks(class_="form-control") }}
-                </div>
+            <div class="col-md-3 font-weight-bold">
+                {{ form.am_status(class_="form-control custom-select") }}
             </div>
+            <div class="col-md-6">
+                <span class="d-md-none font-weight-bold">{{ form.am_remarks.label(class_="col-form-label") }}</span>
+                {{ form.am_remarks(class_="form-control") }}
+            </div>
+        </div>
 
-            <div class="form-row mt-3">
-                <div class="col">
-                    {{ form.submit(class_="form-control btn btn-dark") }}
-                </div>
+        <div class="form-row mt-3">
+            <div class="col-md-3 font-weight-bold">
+                {{ form.pm_status.label(class_="col-form-label") }}
+                <span class="d-none d-md-inline">/ {{ form.pm_remarks.label(class_="col-form-label") }}</span>
             </div>
-        </form>
-    </div>
+            <div class="col-md-3 font-weight-bold">
+                {{ form.pm_status(class_="form-control custom-select") }}
+            </div>
+            <div class="col-md-6">
+                <span class="d-md-none font-weight-bold">{{ form.pm_remarks.label(class_="col-form-label") }}</span>
+                {{ form.pm_remarks(class_="form-control") }}
+            </div>
+        </div>
+
+        <div class="form-row mt-3">
+            <div class="col">
+                {{ form.submit(class_="form-control btn btn-dark") }}
+            </div>
+        </div>
+    </form>
 {% endblock %}

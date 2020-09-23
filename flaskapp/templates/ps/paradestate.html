@@ -23,7 +23,6 @@
 {% endblock %}
 
 {% block content %}
-<div class="container">
     <!--display current parade state-->
     {% if personnels %}
     <div class="row">
@@ -115,6 +114,7 @@
                 <div class="modal-body">
                     <form action="" method="post">
                         {{ form.hidden_tag() }}
+
                         {% if form.fmw %}
                         <h5 class="ml-lg-1 text-center">Please select the FMW which you want to view:</h5>
                         <div class="form-row mx-1 mt-3">
@@ -126,13 +126,14 @@
                             </div>
                         </div>
                         {% endif %}
+
                         <h5 class="ml-lg-1 text-center">Please select the date which you want to view:</h5>
                         <div class="form-row mx-1 mt-3">
                             <div class="col-md-3 font-weight-bold">
                                 {{ form.date.label(class_="col-form-label") }}
                             </div>
                             <div class="col-md-9">
-                                {{ form.date(class_="form-control custom-select") }}
+                                {{ form.date(class_="form-control") }}
                             </div>
                         </div>
 
@@ -145,5 +146,4 @@
         </div>
     </div>
     {% endif %}
-</div>
 {% endblock %}

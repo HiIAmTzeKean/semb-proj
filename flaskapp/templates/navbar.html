@@ -8,10 +8,11 @@
     <div class="collapse navbar-collapse" id="navbar-content">
         <!-- Hyperlinks to various pages -->
         <ul class="navbar-nav mr-auto">
+            {% if g.user is none %}
             <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('auth.load_fmw') }}">Select FMW</a>
             </li>
-            {% if g.user is not none %}
+            {% else %}
             <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('ps.paradestate') }}">Parade State</a>
             </li>
