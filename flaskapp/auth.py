@@ -2,7 +2,7 @@ import functools
 from flask import (Blueprint, flash, g, redirect, render_template, request, session, url_for)
 from werkzeug.security import check_password_hash, generate_password_hash
 from flaskapp.db import get_db
-from .forms import loginform,admin_strength_viewer
+from .forms import loginform,strengthviewform
 from .methods import authenticate_user
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
@@ -24,7 +24,7 @@ def login():
 @bp.route('/load_fmw', methods=('GET', 'POST'))
 def load_fmw():
     #form to select fmw
-    form = admin_strength_viewer()
+    form = strengthviewform()
     if form.validate_on_submit():
         fmw = form.fmw.data
         session.clear()

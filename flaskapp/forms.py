@@ -48,8 +48,13 @@ class paradestateviewform(FlaskForm):
     submit = SubmitField('Submit')
 
 
-class admin_strength_viewer(FlaskForm):
-    workshops = [("Sembawang"),("Bedok"),("Navy"),("HQ")]
+class admin_paradestateviewform(paradestateviewform):
+    workshops = [("Sembawang"),("Bedok"),("Navy"),("Selarang"),("HQ")]
+    fmw = SelectField(label='FMW', choices=workshops)
+
+
+class strengthviewform(FlaskForm):
+    workshops = [("Sembawang"),("Bedok"),("Navy"),("Selarang"),("HQ")]
     fmw = SelectField(label='FMW', choices=workshops)
     submit = SubmitField('Submit')
 
@@ -62,7 +67,7 @@ class admin_three_add_del_form(FlaskForm):
 
 
 class admin_add_del_form(admin_three_add_del_form):
-    workshops = [("Sembawang"),("Bedok"),("Navy"),("HQ")]
+    workshops = [("Sembawang"),("Bedok"),("Navy"),("Selarang"),("HQ")]
     fmw = SelectField(label='FMW', choices=workshops)
 
 
@@ -74,5 +79,5 @@ class admin_three_act_deact_form(FlaskForm):
 
 
 class admin_act_deact_form(admin_three_act_deact_form):
-    workshops = [("Sembawang"),("Bedok"),("Navy"),("HQ")]
+    workshops = [("Sembawang"),("Bedok"),("Navy"),("Selarang"),("HQ")]
     fmw = SelectField(label='FMW', choices=workshops)

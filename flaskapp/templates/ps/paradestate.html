@@ -115,6 +115,17 @@
                 <div class="modal-body">
                     <form action="" method="post">
                         {{ form.hidden_tag() }}
+                        {% if form.fmw %}
+                        <h5 class="ml-lg-1 text-center">Please select the FMW which you want to view:</h5>
+                        <div class="form-row mx-1 mt-3">
+                            <div class="col-md-3 font-weight-bold">
+                                {{ form.fmw.label(class_="col-form-label") }}
+                            </div>
+                            <div class="col-md-9">
+                                {{ form.fmw(class_="form-control custom-select") }}
+                            </div>
+                        </div>
+                        {% endif %}
                         <h5 class="ml-lg-1 text-center">Please select the date which you want to view:</h5>
                         <div class="form-row mx-1 mt-3">
                             <div class="col-md-3 font-weight-bold">

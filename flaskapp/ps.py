@@ -2,8 +2,8 @@ from flask import (Blueprint, flash, g, redirect, render_template, session, url_
 from datetime import timedelta,datetime
 from flaskapp.auth import login_required, clearance_one_required, fmw_required
 from flaskapp.db import get_db
-from .forms import (paradestateform, paradestateviewform, admin_add_del_form,
-                    admin_strength_viewer, admin_three_add_del_form, admin_three_act_deact_form)
+from .forms import (paradestateform, paradestateviewform, admin_add_del_form, admin_paradestateviewform,
+                    strengthviewform, admin_three_add_del_form, admin_three_act_deact_form)
 from .methods import nameconverter_paradestateform, retrieve_personnel_list, retrieve_personnel_statuses
 from .db_methods import (retrive_record_by_date, submit_PS,
                          add_del_personnel_db, retrive_one_record, act_deact_personnel_db,
@@ -15,10 +15,11 @@ bp = Blueprint('ps', __name__)
 @bp.route('/', methods=('GET', 'POST'))
 @fmw_required
 def index():
-    """
-    Open page to allow all to submit their parade state
-    No admin access is required. Once submitted, confirmation will be given
-    """
+    '''
+    Uploading of parade state to DB
+    Clearance 1: Nil
+    Clearance 3: Nil
+    '''
     db = get_db()
     fmw = session.get('fmw')
     rows = retrieve_personnel_list(db, fmw)
@@ -54,13 +55,18 @@ def index():
 @login_required
 def paradestate():
     '''
-    To view paradestate with date input
-    View is only viewable to respective FMW lest Admin
+    View paradestate with date input
+    Clearance 1: Select FMW and FMD to view
+    Clearance 3: View current FMW
     '''
     db = get_db()
-    fmw = session.get('fmw')
-    form = paradestateviewform()
+    if session.get('clearance') <= 2:
+        form = admin_paradestateviewform()
+    else:
+        form = paradestateviewform()
     if form.validate_on_submit():
+        if session.get('clearance') <= 2: fmw = form.fmw.data
+        else: fmw = session.get('fmw')
         date = form.date.data
         personnels_status, missing_status = retrieve_personnel_statuses(db, fmw, date)
         if len(personnels_status) != 0:
@@ -73,9 +79,14 @@ def paradestate():
 @bp.route('/strengthviewer', methods=('GET', 'POST'))
 @login_required
 def strengthviewer():
+    '''
+    Display current strength in FMW
+    Clearance 1: Select FMW and FMD to view
+    Clearance 3: View current FMW
+    '''
     db = get_db()
     if session.get('clearance') <= 2:
-        form = admin_strength_viewer()
+        form = strengthviewform()
         if form.validate_on_submit():
             fmw = form.fmw.data
             personnels = retrieve_personnel_list(db, fmw)
@@ -83,7 +94,6 @@ def strengthviewer():
                 return render_template('ps/strengthviewer.html', fmw=fmw, personnels=personnels)
             flash('No personnel in selected FMW yet.')
         return render_template('ps/strengthviewer.html', form=form)
-    # else auto display current fmw
     else:
         fmw = session.get('fmw')
         personnels = retrieve_personnel_list(db, fmw)
