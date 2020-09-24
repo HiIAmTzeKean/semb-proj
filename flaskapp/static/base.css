@@ -19,5 +19,11 @@ p, h5 {
 }
 
 .full-height {
-    height: 100vh !important;
+    height: calc(100vh - 65px) !important;
+}
+
+@media (max-width: 600px) {
+    .full-height {
+    height: 75vh !important;
+}
 }
