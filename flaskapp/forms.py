@@ -59,28 +59,25 @@ class strengthviewform(FlaskForm):
     submit = SubmitField('Submit')
 
 
-class admin_three_add_del_form(FlaskForm):
+class admin_adddelform(FlaskForm):
     name = StringField(label='Name', validators=[DataRequired()])
     rank = StringField(label='Rank', validators=[DataRequired()])
     add_del = SelectField(label='Add/Delete', choices=[('Add'),('Delete')])
     submit = SubmitField('Submit')
-
-
-class admin_add_del_form(admin_three_add_del_form):
+    #for clearance 2 and above
     workshops = [("Sembawang"),("Bedok"),("Navy"),("Selarang"),("HQ")]
     fmw = SelectField(label='FMW', choices=workshops)
 
 
-class admin_three_act_deact_form(FlaskForm):
+class admin_actdeactform(FlaskForm):
     name = StringField(label='Name', validators=[DataRequired()])
     rank = StringField(label='Rank', validators=[DataRequired()])
     act_deact = SelectField(label='Activate/Deactivate', choices=[(1,'Activate'),(0,'Deactivate')])
     submit = SubmitField('Submit')
-
-
-class admin_act_deact_form(admin_three_act_deact_form):
+    #for clearance 2 and above
     workshops = [("Sembawang"),("Bedok"),("Navy"),("Selarang"),("HQ")]
     fmw = SelectField(label='FMW', choices=workshops)
+
 
 class admin_generateexcelform(FlaskForm):
     start_date = DateField(label='Start Date', validators=[DataRequired()], default=datetime.today)

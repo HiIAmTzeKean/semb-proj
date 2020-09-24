@@ -2,8 +2,8 @@ from flask import (Blueprint, flash, g, redirect, render_template, session, url_
 from datetime import timedelta,datetime
 from flaskapp.auth import login_required, clearance_one_required, fmw_required
 from flaskapp.db import get_db
-from .forms import (paradestateform, paradestateviewform, admin_add_del_form, admin_paradestateviewform,
-                    strengthviewform, admin_three_add_del_form, admin_three_act_deact_form,admin_act_deact_form, admin_generateexcelform)
+from .forms import (paradestateform, paradestateviewform, admin_adddelform, admin_paradestateviewform,
+                    strengthviewform, admin_actdeactform, admin_generateexcelform)
 from .methods import nameconverter_paradestateform, retrieve_personnel_list, retrieve_personnel_statuses, generate_PS
 from .db_methods import (retrive_record_by_date, submit_PS,
                          add_del_personnel_db, retrive_one_record, act_deact_personnel_db,
@@ -121,10 +121,7 @@ def strengthviewer():
 @login_required
 def admin_add_del():
     db = get_db()
-    if session.get('clearance') <= 2:
-        form = admin_add_del_form()
-    else:
-        form = admin_three_add_del_form()
+    form = admin_adddelform()
     if form.validate_on_submit():
         name = form.name.data
         rank = form.rank.data
@@ -142,10 +139,7 @@ def admin_add_del():
 @login_required
 def admin_act_deact():
     db = get_db()
-    if session.get('clearance') <= 2:
-        form = admin_act_deact_form()
-    else:
-        form = admin_three_act_deact_form()
+    form = admin_actdeactform()
     if form.validate_on_submit():
         name = form.name.data
         rank = form.rank.data
