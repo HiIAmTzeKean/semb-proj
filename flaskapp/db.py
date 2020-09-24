@@ -1,9 +1,6 @@
 import sqlite3
-
 import click
-
 from flask import current_app, g
-
 from flask.cli import with_appcontext
 
 def get_db():
@@ -34,5 +31,14 @@ def init_db_command():
     click.echo('Initialized the database.')
 
 def init_app(app):
+    '''
+    The close_db and init_db_command functions need to be registered with the application instance; 
+    otherwise, they won’t be used by the application. However, since you’re using a factory function,
+    that instance isn’t available when writing the functions. Instead, write a function that takes 
+    an application and does the registration.
+    
+    app.teardown_appcontext() tells Flask to call that function when cleaning up after returning the response.
+    app.cli.add_command() adds a new command that can be called with the flask command.
+    '''
     app.teardown_appcontext(close_db)
     app.cli.add_command(init_db_command)

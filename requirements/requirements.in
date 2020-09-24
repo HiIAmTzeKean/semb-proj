@@ -1,0 +1,4 @@
+# requirements.in
+flask
+flask_bootstrap
+flask_wtf

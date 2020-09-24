@@ -1,0 +1,41 @@
+﻿name,am_status,am_remarks,pm_status,pm_remarks
+Person 1,P,,P,
+Person 2,p,,p,
+Person 3,P,,OS,OSREMARKSOS
+Person 4,LL,,LL,
+Person 5,P,,P,
+Person 6,OC,OCREMARKSOC ,OC,OCREMARKSOC 
+Person 7,P,,P,
+Person 8,OC,OCREMARKSOC ,OC,OCREMARKSOC 
+Person 9,MA,,LL,
+Person 10,LL,,LL,
+Person 11,P,,P,
+Person 12,OC,OCREMARKSOC,OC,OCREMARKSOC
+Person 13,OC,OCREMARKSOC,OC,OCREMARKSOC
+Person 14,OC,OCREMARKSOC,OC,OCREMARKSOC
+Person 15,P,,P,
+Person 16,OC,OCREMARKSOC,OC,OCREMARKSOC
+Person 17,P,,P,
+Person 18,MC,TILL END OF DAY,MC,TILL END OF DAY
+Person 19,P,,OS,OSREMARKSOS
+Person 20,OFF,,OFF,
+Person 21,P,,P,
+Person 22,P,,P,
+Person 23,P,,P,
+Person 24,OC,OCREMARKSOC,OC,OCREMARKSOC
+Person 25,P,LATE,P,
+Person 26,P,,P,
+Person 27,P,,P,
+Person 28,P,,P,
+Person 29,DR,,OFF,
+Person 30,OC,OCREMARKSOC,OC,OCREMARKSOC
+Person 31,OC,OCREMARKSOC,OC,OCREMARKSOC
+Person 32,P,,P,
+Person 33,OFF,,OFF,
+Person 34,OC,OCREMARKSOC,OC,OCREMARKSOC
+Person 35,P,,P,
+Person 36,P,,P,
+Person 37,P,,P,
+Person 38,LL,,LL,
+Person 39,P,,P,
+Person 40,MC,,MC,
