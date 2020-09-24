@@ -94,5 +94,6 @@ def generate_PS(records,request_date=None):
             'Am status': record['am_status'],'Am Remarks': record['am_remarks'],
             'Pm status': record['pm_status'],'Pm Remarks': record['pm_remarks']})
 
-    #check if file exist before sending None back
-    return None
+    if Path(new_file_path).is_file():
+        return None
+    return 'File not created'
