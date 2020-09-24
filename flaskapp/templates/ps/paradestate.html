@@ -5,21 +5,22 @@
 {% endblock %}
 
 {% block styles %}
-<style>
-    .nav-pills .nav-item {
-        width: 50%;
-        border: 1px solid #1F1F1F;
-        border-radius: 0.25rem;
-    }
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.22/css/dataTables.bootstrap4.min.css">
+    <style>
+        .nav-pills .nav-item {
+            width: 50%;
+            border: 1px solid #1F1F1F;
+            border-radius: 0.25rem;
+        }
 
-    .nav-pills .nav-link.active, .nav-pills .show > .nav-link {
-        background-color: #1F1F1F;
-    }
+        .nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+            background-color: #1F1F1F;
+        }
 
-    .nav-item a {
-        color: #1F1F1F;
-    }
-</style>
+        .nav-item a {
+            color: #1F1F1F;
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
@@ -80,7 +81,7 @@
                             <tr class="table-danger">
                                 <th scope="row">{{ loop.index + personnels|length }}</th>
                                 <td>{{ person.rank }} {{ person.name }}</td>
-                                <td>NONE PROVIDED</td>
+                                <td>ZZ: NONE PROVIDED</td>
                             </tr>
                         {% endfor %}
                     </table>
@@ -125,7 +126,7 @@
                             <tr class="table-danger">
                                 <th scope="row">{{ loop.index + personnels|length }}</th>
                                 <td>{{ person.rank }} {{ person.name }}</td>
-                                <td>NONE PROVIDED</td>
+                                <td>ZZ: NONE PROVIDED</td>
                             </tr>
                         {% endfor %}
                     </table>
@@ -173,4 +174,17 @@
         </div>
     </div>
     {% endif %}
+{% endblock %}
+
+{% block scripts %}
+    <script src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.22/js/dataTables.bootstrap4.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            $('.table').DataTable({
+                "paging": false
+            });
+        } );
+    </script>
 {% endblock %}
