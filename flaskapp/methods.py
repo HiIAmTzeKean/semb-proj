@@ -80,7 +80,6 @@ def generate_PS(records,request_date=None):
     except FileExistsError:
         pass
     new_file_path = os.path.join(dir_path, str(request_date))
-
     with open(new_file_path, 'w', newline='') as csvfile:
         # write date first
         csvwriter = writer(csvfile)
