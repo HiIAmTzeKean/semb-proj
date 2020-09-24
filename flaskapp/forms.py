@@ -81,3 +81,8 @@ class admin_three_act_deact_form(FlaskForm):
 class admin_act_deact_form(admin_three_act_deact_form):
     workshops = [("Sembawang"),("Bedok"),("Navy"),("Selarang"),("HQ")]
     fmw = SelectField(label='FMW', choices=workshops)
+
+class admin_generateexcelform(FlaskForm):
+    start_date = DateField(label='Start Date', validators=[DataRequired()], default=datetime.today)
+    end_date = DateField(label='End Date', validators=[DataRequired()], default=datetime.today)
+    submit = SubmitField('Submit')

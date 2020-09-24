@@ -3,8 +3,8 @@ from datetime import timedelta,datetime
 from flaskapp.auth import login_required, clearance_one_required, fmw_required
 from flaskapp.db import get_db
 from .forms import (paradestateform, paradestateviewform, admin_add_del_form, admin_paradestateviewform,
-                    strengthviewform, admin_three_add_del_form, admin_three_act_deact_form)
-from .methods import nameconverter_paradestateform, retrieve_personnel_list, retrieve_personnel_statuses
+                    strengthviewform, admin_three_add_del_form, admin_three_act_deact_form,admin_act_deact_form, admin_generateexcelform)
+from .methods import nameconverter_paradestateform, retrieve_personnel_list, retrieve_personnel_statuses, generate_PS
 from .db_methods import (retrive_record_by_date, submit_PS,
                          add_del_personnel_db, retrive_one_record, act_deact_personnel_db,
                          retrive_personnel_id, check_personnel_exist)
@@ -30,7 +30,7 @@ def index():
     if form.validate_on_submit():
         start_date = form.start_date.data
         end_date = form.end_date.data
-        if end_date>start_date:
+        if end_date<start_date:
             flash("Your end date is earlier than your start date")
             return render_template('ps/index.html', form=form, updated=updated, personnel=None)
         personnel_id = form.name.data
@@ -159,3 +159,31 @@ def admin_act_deact():
             return render_template('ps/admin_act_deact.html', act_deact=act_deact, personnel=personnel)
         flash(error)
     return render_template('ps/admin_act_deact.html', form=form)
+
+@bp.route('/admin/generate_excel', methods=('GET', 'POST'))
+@login_required
+def admin_generate_excel():
+    db = get_db()
+    form = admin_generateexcelform()
+    if form.validate_on_submit():
+        start_date = form.start_date.data
+        end_date = form.end_date.data
+        if end_date<start_date:
+            flash("Your end date is earlier than your start date")
+            return render_template('ps/admin_generate_excel.html', form=form)
+        if start_date == end_date:
+            records = retrieve_personnel_statuses(db,'Admin',start_date,missing_status_needed=False)
+            error = generate_PS(records)
+            if error:
+                flash("Error in compiling data to excel file. Contact admin!")
+        else:
+            while start_date != (end_date + timedelta(days=1)):
+                records = retrieve_personnel_statuses(db,'Admin',start_date,missing_status_needed=False)
+                error = generate_PS(records,start_date)
+                if error:
+                    flash("Error in compiling multiple dates to excel file. Contact admin!")
+                start_date = start_date + timedelta(days=1)
+        if error == None:
+            flash('Success! Data is now stored in archives')
+            return redirect(url_for('ps.admin_add_del'))
+    return render_template('ps/admin_generate_excel.html', form=form)
