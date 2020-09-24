@@ -5,21 +5,22 @@
 {% endblock %}
 
 {% block styles %}
-<style>
-    .nav-pills .nav-item {
-        width: 50%;
-        border: 1px solid #1F1F1F;
-        border-radius: 0.25rem;
-    }
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.22/css/dataTables.bootstrap4.min.css">
+    <style>
+        .nav-pills .nav-item {
+            width: 50%;
+            border: 1px solid #1F1F1F;
+            border-radius: 0.25rem;
+        }
 
-    .nav-pills .nav-link.active, .nav-pills .show > .nav-link {
-        background-color: #1F1F1F;
-    }
+        .nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+            background-color: #1F1F1F;
+        }
 
-    .nav-item a {
-        color: #1F1F1F;
-    }
-</style>
+        .nav-item a {
+            color: #1F1F1F;
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
@@ -59,14 +60,12 @@
                     <table class="table mt-3">
                         <thead class="thead-dark">
                         <tr>
-                            <th scope="col">No.</th>
                             <th scope="col">Rank & Name</th>
                             <th scope="col">AM Status/ Remarks</th>
                         </tr>
                         </thead>
                         {% for person in personnels %}
                             <tr>
-                                <th scope="row">{{ loop.index }}</th>
                                 <td>{{ person.rank }} {{ person.name }}</td>
                                 <td>
                                     {{ person.am_status }}
@@ -78,9 +77,8 @@
                         {% endfor %}
                         {% for person in missing_personnels %}
                             <tr class="table-danger">
-                                <th scope="row">{{ loop.index + personnels|length }}</th>
                                 <td>{{ person.rank }} {{ person.name }}</td>
-                                <td>NONE PROVIDED</td>
+                                <td>ZZ: NONE PROVIDED</td>
                             </tr>
                         {% endfor %}
                     </table>
@@ -104,14 +102,12 @@
                     <table class="table mt-3">
                         <thead class="thead-dark">
                         <tr>
-                            <th scope="col">No.</th>
                             <th scope="col">Rank & Name</th>
                             <th scope="col">PM Status/ Remarks</th>
                         </tr>
                         </thead>
                         {% for person in personnels %}
                             <tr>
-                                <th scope="row">{{ loop.index }}</th>
                                 <td>{{ person.rank }} {{ person.name }}</td>
                                 <td>
                                     {{ person.pm_status }}
@@ -123,9 +119,8 @@
                         {% endfor %}
                         {% for person in missing_personnels %}
                             <tr class="table-danger">
-                                <th scope="row">{{ loop.index + personnels|length }}</th>
                                 <td>{{ person.rank }} {{ person.name }}</td>
-                                <td>NONE PROVIDED</td>
+                                <td>ZZ: NONE PROVIDED</td>
                             </tr>
                         {% endfor %}
                     </table>
@@ -144,7 +139,7 @@
 
                         {% if form.fmw %}
                         <h5 class="ml-lg-1 text-center">Please select the FMW which you want to view:</h5>
-                        <div class="form-row mx-1 mt-3">
+                        <div class="form-row mx-1 mt-lg-3">
                             <div class="col-md-3 font-weight-bold">
                                 {{ form.fmw.label(class_="col-form-label") }}
                             </div>
@@ -154,8 +149,8 @@
                         </div>
                         {% endif %}
 
-                        <h5 class="ml-lg-1 text-center">Please select the date which you want to view:</h5>
-                        <div class="form-row mx-1 mt-3">
+                        <h5 class="ml-lg-1 mt-3 text-center">Please select the date which you want to view:</h5>
+                        <div class="form-row mx-1 mt-lg-3">
                             <div class="col-md-3 font-weight-bold">
                                 {{ form.date.label(class_="col-form-label") }}
                             </div>
@@ -173,4 +168,17 @@
         </div>
     </div>
     {% endif %}
+{% endblock %}
+
+{% block scripts %}
+    <script src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.22/js/dataTables.bootstrap4.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            $('.table').DataTable({
+                "paging": false
+            });
+        } );
+    </script>
 {% endblock %}

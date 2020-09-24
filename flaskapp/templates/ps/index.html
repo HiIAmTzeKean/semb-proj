@@ -120,5 +120,15 @@
                 document.getElementById("start_date").value = this.value;
             }
         })
+
+        document.getElementById("name").addEventListener('change', function() {
+            // Since personnel is changed, existing AM and PM records are no longer valid
+            // as the existing status on the form may not be his
+            // so to play safe, the status fields and remarks fields are cleared.
+            document.getElementById("am_status").value = "P";
+            document.getElementById("am_remarks").value = "";
+            document.getElementById("pm_status").value = "P";
+            document.getElementById("pm_remarks").value = "";
+        })
     </script>
 {% endblock %}
