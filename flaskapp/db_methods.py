@@ -32,7 +32,7 @@ def retrive_record_by_date(db,personnel_id,status_date):
     # FROM personnel JOIN personnel_status ON personnel.id = personnel_status.personnel_id
     # WHERE personnel.id = ? AND personnel_status.date = ?
     # """, (personnel_id, status_date)).fetchone()
-    record = Personnel_status.query.fliter(Personnel_status.personnel_id==personnel_id,Personnel_status.date==status_date).first()
+    record = Personnel_status.query.filter(Personnel_status.personnel_id==personnel_id,Personnel_status.date==status_date).first()
     if record: return record
     return None
 
