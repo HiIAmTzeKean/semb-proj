@@ -1,30 +1,38 @@
+from .models import Personnel, Personnel_status, User
+
+
 def update_PS(db,personnel_id, status_date, am_status, am_remarks, pm_status, pm_remarks):
     # assume that record already exist
-    db.execute("""
-    UPDATE "personnel_status"
-    SET am_status = ?, am_remarks = ?, pm_status = ?, pm_remarks = ?
-    WHERE personnel_id = ? AND date = ?
-    """, (am_status, am_remarks, pm_status, pm_remarks,  personnel_id, status_date))
-    db.commit()
+    # db.execute("""
+    # UPDATE "personnel_status"
+    # SET am_status = ?, am_remarks = ?, pm_status = ?, pm_remarks = ?
+    # WHERE personnel_id = ? AND date = ?
+    # """, (am_status, am_remarks, pm_status, pm_remarks,  personnel_id, status_date))
+    status = Personnel_status(status_date, am_status, am_remarks, pm_status, pm_remarks, personnel_id )
+    db.session.add(status)
+    db.session.commit()
 
 
 def insert_PS(db,personnel_id, status_date, am_status, am_remarks, pm_status, pm_remarks):
-    db.execute('''INSERT INTO personnel_status
-            (personnel_id, date, am_status, am_remarks, pm_status, pm_remarks)
-            VALUES (?,?,?,?,?,?)''',
-            (personnel_id, status_date, am_status, am_remarks, pm_status, pm_remarks))
-    db.commit()
+    # db.execute('''INSERT INTO personnel_status
+    #         (personnel_id, date, am_status, am_remarks, pm_status, pm_remarks)
+    #         VALUES (?,?,?,?,?,?)''',
+    #         (personnel_id, status_date, am_status, am_remarks, pm_status, pm_remarks))
+    status = Personnel_status(status_date, am_status, am_remarks, pm_status, pm_remarks, personnel_id )
+    db.session.add(status)
+    db.session.commit()
 
 
 def retrive_record_by_date(db,personnel_id,status_date):
     if personnel_id == None or personnel_id == '' or personnel_id == []:
         return None
-    record = db.execute("""
-    SELECT personnel.id, personnel.name, personnel_status.date, personnel_status.am_status,
-    personnel_status.am_remarks, personnel_status.pm_status, personnel_status.pm_remarks
-    FROM personnel JOIN personnel_status ON personnel.id = personnel_status.personnel_id
-    WHERE personnel.id = ? AND personnel_status.date = ?
-    """, (personnel_id, status_date)).fetchone()
+    # record = db.execute("""
+    # SELECT personnel.id, personnel.name, personnel_status.date, personnel_status.am_status,
+    # personnel_status.am_remarks, personnel_status.pm_status, personnel_status.pm_remarks
+    # FROM personnel JOIN personnel_status ON personnel.id = personnel_status.personnel_id
+    # WHERE personnel.id = ? AND personnel_status.date = ?
+    # """, (personnel_id, status_date)).fetchone()
+    record = Personnel_status.query.fliter(Personnel_status.personnel_id==personnel_id,Personnel_status.date==status_date).first()
     if record: return record
     return None
 

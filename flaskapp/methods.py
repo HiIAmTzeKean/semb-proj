@@ -6,25 +6,28 @@ from pathlib import Path
 def nameconverter_paradestateform(rows):
     names = [] 
     for row in rows:
-        names.append((row["id"], row["name"]))
+        names.append((row.id, row.name))
     return names
 
 
-def authenticate_user(db, username, password):
+def authenticate_user(table, username, password):
     error = None
-    user = db.execute(
-             'SELECT * FROM user WHERE username = ?', (username,)
-         ).fetchone()
+    # user = db.execute(
+    #          'SELECT * FROM user WHERE username = ?', (username,)
+    #      ).fetchone()
+    user = table.query.filter_by(username=username).first()
     if user is None:
         error = 'Incorrect username.'
-    elif user['password'] != password:
+    elif user.password != password:
         error = 'Wrong password'
     return error, user
 
 
-def retrieve_personnel_list(db, fmw,clearance=''):
-    if fmw == "Admin": return db.execute('SELECT * FROM personnel').fetchall()
-    return db.execute('SELECT * FROM personnel WHERE fmw = ?', (fmw,)).fetchall()
+def retrieve_personnel_list(db, fmw,clearance=100):
+    #if fmw == "Admin": return db.execute('SELECT * FROM personnel').fetchall()
+    if fmw == "Admin" or clearance < 2: return db.query.all()
+    #return db.execute('SELECT * FROM personnel WHERE fmw = ?', (fmw,)).fetchall()
+    return db.query.filter_by(fmw=fmw).all()
 
 
 def retrieve_personnel_statuses(db,fmw,date,missing_status_needed=True):

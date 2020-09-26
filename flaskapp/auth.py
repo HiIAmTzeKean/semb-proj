@@ -1,9 +1,14 @@
 import functools
-from flask import (Blueprint, flash, g, redirect, render_template, request, session, url_for)
+
+from flask import (Blueprint, flash, g, redirect, render_template, request,
+                   session, url_for)
 from werkzeug.security import check_password_hash, generate_password_hash
-from flaskapp.db import get_db
-from .forms import loginform,strengthviewform
+
+from flaskapp import db
+
+from .forms import loginform, strengthviewform
 from .methods import authenticate_user
+from .models import User
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -11,12 +16,12 @@ bp = Blueprint('auth', __name__, url_prefix='/auth')
 def login():
     form = loginform()
     if form.validate_on_submit():
-        error, user = authenticate_user(get_db(), form.username.data, form.password.data)
+        error, user = authenticate_user(User, form.username.data, form.password.data)
         if error is None:
             session.clear()
-            session['user_id'] = user['username']
-            session['fmw'] = user['fmw']
-            session['clearance'] = user['clearance']
+            session['user_id'] = user.username
+            session['fmw'] = user.fmw
+            session['clearance'] = user.clearance
             return redirect(url_for('index'))
         flash(error)
     return render_template('auth/login.html',form=form)
@@ -39,15 +44,19 @@ def load_logged_in_user():
     if user_id is None:
         g.user = None
     else:
-        g.user = get_db().execute(
-            'SELECT * FROM user WHERE username = ?', (user_id,)
-        ).fetchone()
+        # g.user = get_db().execute(
+        #     'SELECT * FROM user WHERE username = ?', (user_id,)
+        # ).fetchone()
+        # g.user = User.query.fliter_by(username=user_id).first() 
+        # this return AttributeError: 'BaseQuery' object has no attribute 'fliter_by' WHY!!!!!
+        g.user = db.session.query(User).filter_by(username=user_id)
 
 
 @bp.route('/logout')
 def logout():
     session.clear()
     return redirect(url_for('index'))
+
 
 def fmw_required(view):
     @functools.wraps(view)
@@ -62,24 +71,6 @@ def login_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
         if g.user is None:
-            return redirect(url_for('auth.login'))
-        return view(**kwargs)
-    return wrapped_view
-
-def clearance_one_required(view):
-    @functools.wraps(view)
-    def wrapped_view(**kwargs):
-        if g.user["clearance"] != 1:
-            flash("You do not have rights to this page")
-            return redirect(url_for('auth.login'))
-        return view(**kwargs)
-    return wrapped_view
-
-def clearance_two_required(view):
-    @functools.wraps(view)
-    def wrapped_view(**kwargs):
-        if g.user["clearance"] < 2:
-            flash("You do not have rights to this page")
             return redirect(url_for('auth.login'))
         return view(**kwargs)
     return wrapped_view

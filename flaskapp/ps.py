@@ -1,13 +1,21 @@
-from flask import (Blueprint, flash, g, redirect, render_template, session, url_for, make_response, request)
-from datetime import timedelta,datetime
-from flaskapp.auth import login_required, clearance_one_required, fmw_required
-from flaskapp.db import get_db
-from .forms import (paradestateform, paradestateviewform, admin_adddelform, admin_paradestateviewform,
-                    strengthviewform, admin_actdeactform, admin_generateexcelform)
-from .methods import nameconverter_paradestateform, retrieve_personnel_list, retrieve_personnel_statuses, generate_PS
-from .db_methods import (retrive_record_by_date, submit_PS,
-                         add_del_personnel_db, retrive_one_record, act_deact_personnel_db,
-                         retrive_personnel_id, check_personnel_exist)
+from datetime import datetime, timedelta
+
+from flask import (Blueprint, flash, g, make_response, redirect,
+                   render_template, request, session, url_for)
+
+from flaskapp import db
+from flaskapp.auth import fmw_required, login_required
+
+from .db_methods import (act_deact_personnel_db, add_del_personnel_db,
+                         check_personnel_exist, retrive_one_record,
+                         retrive_personnel_id, retrive_record_by_date,
+                         submit_PS)
+from .forms import (admin_actdeactform, admin_adddelform,
+                    admin_generateexcelform, admin_paradestateviewform,
+                    paradestateform, paradestateviewform, strengthviewform)
+from .methods import (generate_PS, nameconverter_paradestateform,
+                      retrieve_personnel_list, retrieve_personnel_statuses)
+from .models import Personnel, Personnel_status, User
 
 bp = Blueprint('ps', __name__)
 
@@ -20,9 +28,10 @@ def index():
     Clearance 1: Nil
     Clearance 3: Nil
     '''
-    db = get_db()
     fmw = session.get('fmw')
-    rows = retrieve_personnel_list(db, fmw)
+    # rows = retrieve_personnel_list(Personnel, fmw)
+    # test base query error
+    rows = Personnel.query.filter_by(fmw=fmw).all()
     names = nameconverter_paradestateform(rows)
     form = paradestateform()
     form.name.choices = names
@@ -39,32 +48,49 @@ def index():
         pm_status = form.pm_status.data
         pm_remarks = form.pm_remarks.data
         if start_date == end_date:
-            submit_PS(db,personnel_id, start_date, am_status, am_remarks, pm_status, pm_remarks)
+            #submit_PS(db,personnel_id, start_date, am_status, am_remarks, pm_status, pm_remarks)
+            record = Personnel_status.query.fliter(Personnel_status.personnel_id==personnel_id,Personnel_status.date==status_date).first()
+            if record == None:
+                #insert
+                status = Personnel_status(status_date, am_status, am_remarks, pm_status, pm_remarks, personnel_id )
+                db.session.add()
+            else:
+                db.session.query(Personnel_status).filter(Personnel_status.personnel_id==personnel_id,Personnel_status.date==status_date).update({Personnel_status.am_status:am_status, Personnel_status.am_remarks:am_remarks,
+                Personnel_status.pm_status:pm_status, Personnel_status.pm_remarks:pm_remarks}, synchronize_session = False)
             multi_date = False
         else:
             date = start_date
             while date != (end_date + timedelta(days=1)):
-                submit_PS(db,personnel_id, date, am_status, am_remarks, pm_status, pm_remarks)
-                date = date + timedelta(days=1)
+                #submit_PS(db,personnel_id, date, am_status, am_remarks, pm_status, pm_remarks)
+                record = Personnel_status.query.fliter(Personnel_status.personnel_id==personnel_id,Personnel_status.date==status_date).first()
+                if record == None:
+                    #insert
+                    status = Personnel_status(date=status_date, am_status=am_status, am_remarks=am_remarks,
+                    pm_status=pm_status , pm_remarks=pm_remarks, personnel_id=personnel_id )
+                    db.session.add()
+                else:
+                    db.session.query(Personnel_status).filter(Personnel_status.personnel_id==personnel_id,Personnel_status.date==status_date).\
+                    update({Personnel_status.am_status:am_status, Personnel_status.am_remarks:am_remarks,
+                    Personnel_status.pm_status:pm_status, Personnel_status.pm_remarks:pm_remarks}, synchronize_session = False)
+                    date = date + timedelta(days=1)
             multi_date =True
         updated = True
-        record = retrive_record_by_date(db, personnel_id, start_date)
+        record = Personnel_status.query.fliter(Personnel_status.personnel_id==personnel_id,Personnel_status.date==status_date).first()
+        flash('yay')
         resp = make_response(render_template('ps/index.html', form=form, updated=updated,
                             multi_date=multi_date, personnel=record, end_date=end_date))
         resp.set_cookie('personnel_id', value = str(personnel_id), max_age=60*60*24)
         return resp
 
-        # return render_template('ps/index.html', form=form, updated=updated,
-        #                         multi_date=multi_date, personnel=record, end_date=end_date)
-
-    record = retrive_record_by_date(db, request.cookies.get('personnel_id'), datetime.date(datetime.today()) )
-    if record:
-        form.name.data = record['id']
-        form.am_status.data = record['am_status']
-        form.am_remarks.data = record['am_remarks']
-        form.pm_status.data = record['pm_status']
-        form.pm_remarks.data = record['pm_remarks']
-        
+    # record = retrive_record_by_date(db, request.cookies.get('personnel_id'), datetime.date(datetime.today()) )
+    record = Personnel_status.query.all() #.fliter(Personnel_status.personnel_id==request.cookies.get('personnel_id'),Personnel_status.date==datetime.date(datetime.today())).all()
+    print(record)
+    # if record:
+    #     form.name.data = record['id']
+    #     form.am_status.data = record['am_status']
+    #     form.am_remarks.data = record['am_remarks']
+    #     form.pm_status.data = record['pm_status']
+    #     form.pm_remarks.data = record['pm_remarks']
     return render_template('ps/index.html', form=form, updated=updated, personnel=None)
 
 
@@ -76,7 +102,6 @@ def paradestate():
     Clearance 1: Select FMW and FMD to view
     Clearance 3: View current FMW
     '''
-    db = get_db()
     if session.get('clearance') <= 2:
         form = admin_paradestateviewform()
     else:
@@ -101,7 +126,6 @@ def strengthviewer():
     Clearance 1: Select FMW and FMD to view
     Clearance 3: View current FMW
     '''
-    db = get_db()
     if session.get('clearance') <= 2:
         form = strengthviewform()
         if form.validate_on_submit():
@@ -120,7 +144,6 @@ def strengthviewer():
 @bp.route('/admin/add_del_personnel', methods=('GET', 'POST'))
 @login_required
 def admin_add_del():
-    db = get_db()
     form = admin_adddelform()
     if form.validate_on_submit():
         name = form.name.data
@@ -138,7 +161,6 @@ def admin_add_del():
 @bp.route('/admin/act_deact', methods=('GET', 'POST'))
 @login_required
 def admin_act_deact():
-    db = get_db()
     form = admin_actdeactform()
     if form.validate_on_submit():
         name = form.name.data
@@ -157,7 +179,6 @@ def admin_act_deact():
 @bp.route('/admin/generate_excel', methods=('GET', 'POST'))
 @login_required
 def admin_generate_excel():
-    db = get_db()
     form = admin_generateexcelform()
     if form.validate_on_submit():
         start_date = form.start_date.data
