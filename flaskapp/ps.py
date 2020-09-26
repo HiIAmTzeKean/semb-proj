@@ -86,7 +86,7 @@ def index():
     record = Personnel_status.query.all() #.fliter(Personnel_status.personnel_id==request.cookies.get('personnel_id'),Personnel_status.date==datetime.date(datetime.today())).all()
     test = Personnel_status
     test2 = Personnel
-    record2 = Personnel.query.fliter_by(fmw=fmw).all()
+    record2 = Personnel.query.filter_by(fmw=fmw).all()
     print(test)
     print(test2)
     print(record)
