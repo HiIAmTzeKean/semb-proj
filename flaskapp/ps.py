@@ -6,15 +6,15 @@ from flask import (Blueprint, flash, g, make_response, redirect,
 from flaskapp import db
 from flaskapp.auth import fmw_required, login_required
 
-from .db_methods import (act_deact_personnel_db, add_del_personnel_db,
-                         check_personnel_exist, retrive_one_record,
-                         retrive_personnel_id, retrive_record_by_date,
-                         submit_PS)
+# from .db_methods import (act_deact_personnel_db, add_del_personnel_db,
+#                          check_personnel_exist, retrive_one_record,
+#                          retrive_personnel_id, retrive_record_by_date,
+#                          submit_PS)
 from .forms import (admin_actdeactform, admin_adddelform,
                     admin_generateexcelform, admin_paradestateviewform,
                     paradestateform, paradestateviewform, strengthviewform)
-from .methods import (generate_PS, nameconverter_paradestateform,
-                      retrieve_personnel_list, retrieve_personnel_statuses)
+# from .methods import (generate_PS, nameconverter_paradestateform,
+#                       retrieve_personnel_list, retrieve_personnel_statuses)
 from .models import Personnel, Personnel_status, User
 
 bp = Blueprint('ps', __name__)
@@ -31,10 +31,10 @@ def index():
     fmw = session.get('fmw')
     # rows = retrieve_personnel_list(Personnel, fmw)
     # test base query error
-    rows = Personnel.query.filter_by(fmw=fmw).all()
-    names = nameconverter_paradestateform(rows)
+    # rows = Personnel.query.filter_by(fmw=fmw).all()
+    # names = nameconverter_paradestateform(rows)
     form = paradestateform()
-    form.name.choices = names
+    # form.name.choices = names
     updated = False
     if form.validate_on_submit():
         start_date = form.start_date.data
@@ -84,6 +84,11 @@ def index():
 
     # record = retrive_record_by_date(db, request.cookies.get('personnel_id'), datetime.date(datetime.today()) )
     record = Personnel_status.query.all() #.fliter(Personnel_status.personnel_id==request.cookies.get('personnel_id'),Personnel_status.date==datetime.date(datetime.today())).all()
+    test = Personnel_status
+    test2 = Personnel
+    record2 = Personnel.query.fliter_by(fmw=fmw).all()
+    print(test)
+    print(test2)
     print(record)
     # if record:
     #     form.name.data = record['id']
