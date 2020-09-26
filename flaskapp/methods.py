@@ -38,7 +38,7 @@ def retrieve_personnel_statuses(db,fmw,date,missing_status_needed=True):
         """, (date,) ).fetchall()
         if missing_status_needed==True:
             missing_status = db.execute("""
-            SELECT personnel.rank, personnel.name, personnel.fmw
+            SELECT personnel.id, personnel.rank, personnel.name, personnel.fmw
             FROM personnel
             WHERE personnel.id NOT IN 
                 (SELECT personnel.id FROM
@@ -56,7 +56,7 @@ def retrieve_personnel_statuses(db,fmw,date,missing_status_needed=True):
         #not done
         if missing_status_needed==True:
             missing_status = db.execute("""
-            SELECT personnel.rank, personnel.name, personnel.fmw
+            SELECT personnel.id, personnel.rank, personnel.name, personnel.fmw
             FROM personnel
             WHERE personnel.fmw = ? 
             AND personnel.id NOT IN 

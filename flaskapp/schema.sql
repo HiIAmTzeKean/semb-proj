@@ -28,9 +28,9 @@ CREATE TABLE "personnel_status" (
 	"id"	INTEGER,
 	"personnel_id"	INTEGER NOT NULL,
 	"date"	DATETIME NOT NULL,
-	"am_status"	TEXT NOT NULL,
+	"am_status"	TEXT,
 	"am_remarks"	TEXT,
-	"pm_status"	TEXT NOT NULL,
+	"pm_status"	TEXT,
 	"pm_remarks"	TEXT,
 	FOREIGN KEY("personnel_id") REFERENCES "personnel"("id"),
 	PRIMARY KEY("id" AUTOINCREMENT)

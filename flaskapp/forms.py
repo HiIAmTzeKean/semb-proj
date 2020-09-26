@@ -43,6 +43,14 @@ class paradestateform(FlaskForm):
     submit = SubmitField('Submit')
 
 
+class mark_personnel_present_form(FlaskForm):
+    fmw = HiddenField()  # so we can return to the paradestate page immediately after processing request
+    name = HiddenField(validators=[DataRequired()])
+    date = HiddenField(validators=[DataRequired()])
+    time = HiddenField(validators=[DataRequired()])
+    submit = SubmitField('Mark as Present')
+
+
 class paradestateviewform(FlaskForm):
     date = DateField(label='Date', validators=[DataRequired()], default=datetime.today)
     submit = SubmitField('Submit')

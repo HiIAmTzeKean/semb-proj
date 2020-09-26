@@ -3,7 +3,7 @@ from datetime import timedelta,datetime
 from flaskapp.auth import login_required, clearance_one_required, fmw_required
 from flaskapp.db import get_db
 from .forms import (paradestateform, paradestateviewform, admin_adddelform, admin_paradestateviewform,
-                    strengthviewform, admin_actdeactform, admin_generateexcelform)
+                    strengthviewform, admin_actdeactform, admin_generateexcelform, mark_personnel_present_form)
 from .methods import nameconverter_paradestateform, retrieve_personnel_list, retrieve_personnel_statuses, generate_PS
 from .db_methods import (retrive_record_by_date, submit_PS,
                          add_del_personnel_db, retrive_one_record, act_deact_personnel_db,
@@ -68,6 +68,30 @@ def index():
     return render_template('ps/index.html', form=form, updated=updated, personnel=None)
 
 
+@bp.route('/mark_personnel_present', methods=['POST'])
+@login_required
+def mark_personnel_present():
+    '''
+    This is a shortcut route to allow duty personnel to mark someone's status as Present easily from
+    the parade state page.
+    '''
+    db = get_db()
+    status_update_form = mark_personnel_present_form()
+    fmw = status_update_form.fmw.data if session.get('clearance') <= 2 else session.get('fmw')
+    date = None
+    if status_update_form.validate_on_submit():
+        personnel_id = int(status_update_form.name.data)
+        date = status_update_form.date.data
+        am_status = 'P' if status_update_form.time.data == 'AM' else None
+        pm_status = 'P' if status_update_form.time.data == 'PM' else None
+        submit_PS(db, personnel_id, date, am_status, '', pm_status, '')
+
+    else:
+        flash('Insufficient details provided.')
+
+    return redirect(url_for('ps.paradestate', fmw=fmw, date=date))  # TODO: bypass date form
+
+
 @bp.route('/paradestate', methods=('GET', 'POST'))
 @login_required
 def paradestate():
@@ -77,20 +101,38 @@ def paradestate():
     Clearance 3: View current FMW
     '''
     db = get_db()
+    status_update_form = mark_personnel_present_form()
     if session.get('clearance') <= 2:
         form = admin_paradestateviewform()
     else:
         form = paradestateviewform()
-    if form.validate_on_submit():
-        if session.get('clearance') <= 2: fmw = form.fmw.data
-        else: fmw = session.get('fmw')
+
+    if 'fmw' in request.args and 'date' in request.args:
+        # request was after somebody was marked as present
+        # so return to the parade state view immediately
+        fmw = request.args['fmw']
+        date = request.args['date']
+        personnels_status, missing_status = retrieve_personnel_statuses(db, fmw, date)
+        if len(personnels_status) != 0:
+            return render_template('ps/paradestate.html', personnels=personnels_status,
+                                   missing_personnels=missing_status, date=date,
+                                   status_update_form=status_update_form)
+        flash("No one has submitted PS. Please remind them to do so!")
+
+    elif form.validate_on_submit():
+        if session.get('clearance') <= 2:
+            fmw = form.fmw.data
+        else:
+            fmw = session.get('fmw')
         date = form.date.data
         personnels_status, missing_status = retrieve_personnel_statuses(db, fmw, date)
         if len(personnels_status) != 0:
             return render_template('ps/paradestate.html', personnels=personnels_status,
-                                   missing_personnels=missing_status, date=date)
+                                   missing_personnels=missing_status, date=date,
+                                   status_update_form=status_update_form)
         flash("No one has submitted PS. Please remind them to do so!")
-    return render_template('ps/paradestate.html', form=form)
+
+    return render_template('ps/paradestate.html', form=form, status_update_form=status_update_form)
 
 
 @bp.route('/strengthviewer', methods=('GET', 'POST'))
