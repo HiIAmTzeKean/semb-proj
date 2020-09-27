@@ -37,9 +37,6 @@ def index():
     if form.validate_on_submit():
         start_date = form.start_date.data
         end_date = form.end_date.data
-        if end_date<start_date:
-            flash("Your end date is earlier than your start date")
-            return render_template('ps/index.html', form=form, updated=updated, personnel=None)
         personnel_id = form.name.data
         am_status = form.am_status.data
         am_remarks = form.am_remarks.data
@@ -56,12 +53,11 @@ def index():
             multi_date =True
         updated = True
         record = Personnel_status.query.filter(Personnel_status.personnel_id==personnel_id,Personnel_status.date==start_date).first()
+        print(record)
         resp = make_response(render_template('ps/index.html', form=form, updated=updated,
                             multi_date=multi_date, personnel=record, end_date=end_date))
         resp.set_cookie('personnel_id', value = str(personnel_id), max_age=60*60*24)
         return resp
-
-    # record = retrive_record_by_date(db, request.cookies.get('personnel_id'), datetime.date(datetime.today()) )
     record = Personnel_status.query.filter(Personnel_status.personnel_id==request.cookies.get('personnel_id'),Personnel_status.date==datetime.date(datetime.today())).first()
     if record:
         form.name.data = record.id

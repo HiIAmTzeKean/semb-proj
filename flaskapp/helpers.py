@@ -1,4 +1,3 @@
-
 def statuses_type():
     statuses = {
             'P': 'PRESENT',
@@ -19,6 +18,16 @@ def statuses_type():
         }
     return statuses
 
-def workshop_type():
-    workshops = [("Sembawang"),("Bedok"),("Navy"),("Selarang"),("HQ")]
+
+def fmd_type():
+    fmd = [(93,92,9)]
+    return fmd
+
+def workshop_type(fmd):
+    if fmd == 9:
+        workshop = [("HQ")]
+    elif fmd == 92:
+        workshop = [("Kranji"),("HQ")]
+    elif fmd == 93:
+        workshop = [("Sembawang"),("Bedok"),("Navy"),("Selarang"),("HQ")]
     return workshop

@@ -73,3 +73,10 @@ class admin_generateexcelform(FlaskForm):
     start_date = DateField(label='Start Date', validators=[DataRequired()], default=datetime.today)
     end_date = DateField(label='End Date', validators=[DataRequired()], default=datetime.today)
     submit = SubmitField('Submit')
+    def validate(self):
+        if not FlaskForm.validate(self):
+            return False
+        if self.end_date.data < self.start_date.data:
+            self.end_date.errors.append('End Date must not come before Start Date!')
+            return False
+        return True

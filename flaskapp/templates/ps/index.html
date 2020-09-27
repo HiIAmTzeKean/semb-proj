@@ -11,7 +11,7 @@
     {% if updated %}
         <div class="alert alert-success pl-3" role="alert">
             <h4 class="alert-heading">Status Updated</h4>
-            <p>{{ personnel.name }}'s status for {{ personnel.date }}  {{ ('to ' + end_date|string) if multi_date else '' }} has been updated to:</p>
+            <p>{{ personnel.Person.name }}'s status for {{ personnel.date }}  {{ ('to ' + end_date|string) if multi_date else '' }} has been updated to:</p>
             <p class="mb-0 font-weight-bold">
                 AM Status/Remarks:
                 <span class="font-weight-normal d-inline">{{ personnel.am_status }}</span>
