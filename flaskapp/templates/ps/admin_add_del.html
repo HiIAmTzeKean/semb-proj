@@ -38,7 +38,7 @@
     {{ form.hidden_tag() }}
     <li>{{ form.rank.label }} {{ form.rank() }}</li>
     <li>{{ form.name.label }} {{ form.name() }}</li>
-    {% if form.fmw %}
+    {% if session.get('clearance')<2 %}
     <li>{{ form.fmw.label }} {{ form.fmw() }}</li>
     {% endif %}
     <li>{{ form.add_del.label }} {{ form.add_del() }}</li>

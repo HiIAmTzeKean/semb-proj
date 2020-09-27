@@ -31,18 +31,8 @@ def submit_PS(db,personnel_id, date, am_status, am_remarks, pm_status, pm_remark
 
 def retrive_personnel_id(db,name,fmw,rank=""):
     if rank != "":
-        # record = db.execute("""
-        # SELECT personnel.id
-        # FROM personnel
-        # WHERE name = ? AND fmw = ? AND rank = ?
-        # """, (name,fmw,rank)).fetchone()
         record = Personnel.query.filter_by(name=name,fmw=fmw,rank=rank).first()
     else:
-        # record = db.execute("""
-        # SELECT personnel.id
-        # FROM personnel
-        # WHERE name = ? AND fmw = ?
-        # """, (name,fmw)).fetchone()
         record = Personnel.query.filter_by(name=name,fmw=fmw).first()
     if record:
         return record.id
@@ -50,11 +40,6 @@ def retrive_personnel_id(db,name,fmw,rank=""):
 
 
 def retrive_one_record(db,name,fmw,rank=''):
-    # record = db.execute("""
-    # SELECT *
-    # FROM personnel
-    # WHERE name = ? AND fmw = ?
-    # """, (name,fmw)).fetchone()
     if rank != "":
         record = Personnel.query.filter_by(name=name,fmw=fmw,rank=rank).first()
     else:
@@ -64,12 +49,8 @@ def retrive_one_record(db,name,fmw,rank=''):
 
 
 def check_personnel_exist(db,name,fmw,rank):
-    # record = db.execute("""SELECT * FROM personnel 
-    # WHERE personnel.name = ? AND personnel.rank = ?""", (name,rank)).fetchone()
     record = Personnel.query.filter_by(name=name,rank=rank).first()
     if record:
-        # record2= db.execute("""SELECT * FROM personnel 
-        # WHERE personnel.name = ? AND personnel.rank = ? AND personnel.fmw = ?""", (name,rank,fmw)).fetchone()
         record2 = Personnel.query.filter_by(name=name,rank=rank,fmw=fmw).first()
         if record2:
             return None
@@ -79,14 +60,21 @@ def check_personnel_exist(db,name,fmw,rank):
         return "User does not exist in the system. Please check rank and name."
 
 
-def add_del_check(db,name,fmw,rank,add_del):
-    '''
-    returns (check_status,record)
-    if check is valid, personnel record will be returned
-    else an error message will be returned
-    '''
-    # record = db.execute("""SELECT * FROM personnel 
-    # WHERE personnel.name = ? AND personnel.rank = ? AND personnel.fmw = ?""", (name,rank,fmw)).fetchone()
+def add_del_check(db,add_del,name,fmw,rank):
+    """Does inital check for Add/Del
+
+    Args:
+        db ([type]): [description]
+        name ([type]): [description]
+        fmw ([type]): [description]
+        rank ([type]): [description]
+        add_del ([type]): [description]
+
+    Returns:
+        Boolean,
+        Error: [Error message] OR
+        record: [Personnel Queried]
+    """
     record = Personnel.query.filter_by(name=name,rank=rank,fmw=fmw).first()
     if add_del == 'Add':
         if record:
@@ -108,12 +96,8 @@ def add_del_personnel_db(db, add_del, rank, name, fmw, fmd=93):
     if check == False:
         return output,''
     if add_del == 'Add':
-        # db.execute("""INSERT INTO personnel (name,fmw,rank) VALUES (?,?,?)""", (name,fmw,rank))
         db.session.add(Personnel(rank,name,fmw,fmd))
     else:
-        # personnel_id = retrive_personnel_id(db,name,fmw)
-        # db.execute("""DELETE FROM personnel_status WHERE id = ?""", (personnel_id,))
-        # db.execute("""DELETE FROM personnel WHERE id = ?""", (personnel_id,))
         personnel_record = Personnel.query.filter_by(name=name,rank=rank,fmw=fmw).first()
         status_records = Personnel_status.query.filter(Personnel_status.personnel_id==personnel_record.id).all()
         db.session.delete(status_records)
@@ -122,11 +106,7 @@ def add_del_personnel_db(db, add_del, rank, name, fmw, fmd=93):
     return None, output
 
 
-def act_deact_personnel_db(db,active,rank,name,fmw):
-    # personnel_id = retrive_personnel_id(db,name,fmw)
-    # db.execute("""UPDATE personnel SET active = ? 
-    # WHERE personnel.id = ?
-    # """, (active,personnel_id))
-    db.session.query(Personnel).filter(Personnel.rank==rank,Personnel.name==name,Personnel.fmw==fmw).update(
-        {Personnel.active:active}, synchronize_session = False)
+def act_deact_personnel_db(db,active,rank,name,fmw,fmd):
+    record = db.session.query(Personnel).filter(Personnel.rank==rank,Personnel.name==name,Personnel.fmw==fmw,Personnel.fmd==fmd).first()
+    record.active = active
     db.session.commit()

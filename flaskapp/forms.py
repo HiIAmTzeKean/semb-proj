@@ -1,9 +1,9 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, PasswordField, SelectField, HiddenField
 from wtforms.fields.html5 import DateField
-from wtforms.validators import DataRequired
+from wtforms.validators import DataRequired, InputRequired
 from datetime import datetime
-from .helpers import statuses_type
+from .helpers import statuses_type,fmd_type
 
 
 class loginform(FlaskForm):
@@ -62,11 +62,11 @@ class admin_adddelform(FlaskForm):
 class admin_actdeactform(FlaskForm):
     name = StringField(label='Name', validators=[DataRequired()])
     rank = StringField(label='Rank', validators=[DataRequired()])
-    act_deact = SelectField(label='Activate/Deactivate', choices=[(1,'Activate'),(0,'Deactivate')])
+    act_deact = SelectField(label='Activate/Deactivate',validators=[InputRequired()],
+                            choices=[('True','Activate'),('False','Deactivate')], coerce=lambda x: x == 'True')
     submit = SubmitField('Submit')
-    #for clearance 2 and above
-    workshops = [("Sembawang"),("Bedok"),("Navy"),("Selarang"),("HQ")]
-    fmw = SelectField(label='FMW', choices=workshops)
+    fmd = SelectField(label='FMD', choices=fmd_type())
+    fmw = SelectField(label='FMW', choices='')
 
 
 class admin_generateexcelform(FlaskForm):

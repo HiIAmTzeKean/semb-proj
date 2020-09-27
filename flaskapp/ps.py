@@ -16,6 +16,7 @@ from .forms import (admin_actdeactform, admin_adddelform,
 from .methods import (generate_PS, nameconverter_paradestateform,
                       retrieve_personnel_list, retrieve_personnel_statuses)
 from .models import Personnel, Personnel_status, User
+from .helpers import workshop_type
 
 bp = Blueprint('ps', __name__)
 
@@ -129,6 +130,7 @@ def admin_add_del():
         if error == None:
             return render_template('ps/admin_add_del.html', add_del=add_del, personnel=personnel)
         flash(error)
+    flash(form.errors)
     return render_template('ps/admin_add_del.html', form=form)
 
 
@@ -136,6 +138,8 @@ def admin_add_del():
 @login_required
 def admin_act_deact():
     form = admin_actdeactform()
+    fmd = session.get('fmd')
+    form.fmw.choices = workshop_type(fmd)
     if form.validate_on_submit():
         name = form.name.data
         rank = form.rank.data
@@ -144,10 +148,11 @@ def admin_act_deact():
         act_deact = form.act_deact.data
         error = check_personnel_exist(db, name, fmw, rank)
         if error == None:
-            act_deact_personnel_db(db, act_deact, rank, name, fmw)
+            act_deact_personnel_db(db, act_deact, rank, name, fmw, fmd)
             personnel = retrive_one_record(db, name, fmw)
             return render_template('ps/admin_act_deact.html', act_deact=act_deact, personnel=personnel)
         flash(error)
+    flash(form.errors)
     return render_template('ps/admin_act_deact.html', form=form)
 
 @bp.route('/admin/generate_excel', methods=('GET', 'POST'))

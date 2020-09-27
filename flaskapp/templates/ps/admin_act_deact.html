@@ -11,13 +11,13 @@
     <a href="{{ url_for('ps.admin_generate_excel') }}">Generate Excel</a>
   </div>
 
-    {% if act_deact == 1 %}
+    {% if act_deact == True %}
       <h3>Activated a new member</h3>
-    {% elif act_deact == 0 %}
+    {% elif act_deact == False %}
       <h3>Deactivated a member</h3>
     {% endif %}
 
-    {% if act_deact %}
+    {% if act_deact==True or act_deact==False  %}
     <table border="">
       <tr>
         <td>Rank</td>
@@ -38,9 +38,8 @@
     {{ form.hidden_tag() }}
     <li>{{ form.rank.label }} {{ form.rank() }}</li>
     <li>{{ form.name.label }} {{ form.name() }}</li>
-    {% if form.fmw %}
     <li>{{ form.fmw.label }} {{ form.fmw() }}</li>
-    {% endif %}
+    <li>{{ form.fmd.label }} {{ form.fmd() }}</li>
     <li>{{ form.act_deact.label }} {{ form.act_deact() }}</li>
     <li>{{ form.submit() }}</li>
     </form>

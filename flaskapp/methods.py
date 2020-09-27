@@ -2,7 +2,7 @@ import os
 from csv import writer, DictWriter
 from datetime import timedelta,datetime
 from pathlib import Path
-from .models import Personnel,Personnel_status
+from .models import Personnel,Personnel_status,User
 
 def nameconverter_paradestateform(rows):
     names = [] 
@@ -11,12 +11,9 @@ def nameconverter_paradestateform(rows):
     return names
 
 
-def authenticate_user(table, username, password):
+def authenticate_user(username, password):
     error = None
-    # user = db.execute(
-    #          'SELECT * FROM user WHERE username = ?', (username,)
-    #      ).fetchone()
-    user = table.query.filter_by(username=username).first()
+    user = User.query.filter_by(username=username).first()
     if user is None:
         error = 'Incorrect username.'
     elif user.password != password:

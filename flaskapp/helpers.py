@@ -20,14 +20,14 @@ def statuses_type():
 
 
 def fmd_type():
-    fmd = [(93,92,9)]
+    fmd = [(93),(92),(9)]
     return fmd
 
 def workshop_type(fmd):
     if fmd == 9:
-        workshop = [("HQ")]
+        workshop = [("9HQ")]
     elif fmd == 92:
-        workshop = [("Kranji"),("HQ")]
+        workshop = [("Kranji"),("92HQ")]
     elif fmd == 93:
-        workshop = [("Sembawang"),("Bedok"),("Navy"),("Selarang"),("HQ")]
+        workshop = [("Sembawang"),("Bedok"),("Navy"),("Selarang"),("93HQ")]
     return workshop
