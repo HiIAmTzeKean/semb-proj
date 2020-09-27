@@ -70,9 +70,9 @@
 
                         {# List of Personnels without status provided at this timeslot #}
                         {% for person in personnels|rejectattr(time + "_status") %}
-                            <tr class="table-danger">
-                                <td>{{ person.rank }} {{ person.name }}</td>
-                                <td>ZZ: NONE PROVIDED</td>
+                            <tr class="table-danger align-items-center">
+                                <td class="align-middle">{{ person.rank }} {{ person.name }}</td>
+                                <td class="align-middle">ZZ: NONE PROVIDED</td>
                                 <td>
                                     <!-- Button to easily mark personnel as Present -->
                                     <form action="{{ url_for('ps.mark_personnel_present', form=form) }}" method="post">
@@ -82,15 +82,19 @@
                                         {{ status_update_form.time(value=time) }}
                                         {{ status_update_form.submit(class_="form-control btn btn-dark") }}
                                     </form>
+
+                                    <!-- 2nd button to mark this guy as other status, redirect to status page -->
+                                    <a href="{{ url_for('ps.index', name=person.id) }}" class="btn btn-dark w-100 mt-1">Other Status</a>
                                 </td>
                             </tr>
                         {% endfor %}
 
                         {% for person in missing_personnels %}
                             <tr class="table-danger">
-                                <td>{{ person.rank }} {{ person.name }}</td>
-                                <td>ZZ: NONE PROVIDED</td>
+                                <td class="align-middle">{{ person.rank }} {{ person.name }}</td>
+                                <td class="align-middle">ZZ: NONE PROVIDED</td>
                                 <td>
+                                    <!-- Button to easily mark personnel as Present -->
                                     <form action="{{ url_for('ps.mark_personnel_present', form=form) }}" method="post">
                                         {{ status_update_form.csrf_token }}
                                         {{ status_update_form.name(value=person.id) }}
@@ -98,6 +102,8 @@
                                         {{ status_update_form.time(value=time) }}
                                         {{ status_update_form.submit(class_="form-control btn btn-dark") }}
                                     </form>
+                                    <!-- 2nd button to mark this guy as other status, redirect to status page -->
+                                    <a href="{{ url_for('ps.index', name=person.id) }}" class="btn btn-dark w-100 mt-1">Other Status</a>
                                 </td>
                             </tr>
                         {% endfor %}

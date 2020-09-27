@@ -27,7 +27,23 @@ def index():
     form = paradestateform()
     form.name.choices = names
     updated = False
-    if form.validate_on_submit():
+    if 'name' in request.args:
+        today = datetime.date(datetime.today())
+        personnel_id = int(request.args['name'])
+        record = retrive_record_by_date(db, personnel_id, today)
+        if record:
+            form.name.data = record['id']
+            form.am_status.data = record['am_status']
+            form.am_remarks.data = record['am_remarks']
+            form.pm_status.data = record['pm_status']
+            form.pm_remarks.data = record['pm_remarks']
+        else:
+            form.name.data = personnel_id
+
+        return render_template('ps/index.html', form=form, updated=updated, personnel=None,
+                               redirect_to_paradestate=True, fmw=fmw, date=today)
+
+    elif form.validate_on_submit():
         start_date = form.start_date.data
         end_date = form.end_date.data
         if end_date<start_date:
@@ -49,15 +65,15 @@ def index():
             multi_date =True
         updated = True
         record = retrive_record_by_date(db, personnel_id, start_date)
-        resp = make_response(render_template('ps/index.html', form=form, updated=updated,
-                            multi_date=multi_date, personnel=record, end_date=end_date))
-        resp.set_cookie('personnel_id', value = str(personnel_id), max_age=60*60*24)
-        return resp
+        if 'redirect_to_paradestate' in request.args:
+            return redirect(url_for('ps.paradestate', fmw=fmw, date=start_date))
+        else:
+            resp = make_response(render_template('ps/index.html', form=form, updated=updated,
+                                multi_date=multi_date, personnel=record, end_date=end_date))
+            resp.set_cookie('personnel_id', value = str(personnel_id), max_age=60*60*24)
+            return resp
 
-        # return render_template('ps/index.html', form=form, updated=updated,
-        #                         multi_date=multi_date, personnel=record, end_date=end_date)
-
-    record = retrive_record_by_date(db, request.cookies.get('personnel_id'), datetime.date(datetime.today()) )
+    record = retrive_record_by_date(db, request.cookies.get('personnel_id'), datetime.date(datetime.today()))
     if record:
         form.name.data = record['id']
         form.am_status.data = record['am_status']
@@ -89,7 +105,7 @@ def mark_personnel_present():
     else:
         flash('Insufficient details provided.')
 
-    return redirect(url_for('ps.paradestate', fmw=fmw, date=date))  # TODO: bypass date form
+    return redirect(url_for('ps.paradestate', fmw=fmw, date=date))
 
 
 @bp.route('/paradestate', methods=('GET', 'POST'))
