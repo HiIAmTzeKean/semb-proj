@@ -3,6 +3,11 @@ from wtforms import StringField, SubmitField, PasswordField, SelectField, Hidden
 from wtforms.fields.html5 import DateField
 from wtforms.validators import DataRequired
 from datetime import datetime
+from .helpers import statuses_type
+
+def start_end_date_check(form, start_date, end_date):
+    if len(field.data) > 50:
+        raise ValidationError('Field must be less than 50 characters')
 
 
 class loginform(FlaskForm):
@@ -12,24 +17,7 @@ class loginform(FlaskForm):
 
 
 class paradestateform(FlaskForm):
-    statuses = {
-        'P': 'PRESENT',
-        'AO': 'ATTACHED OUT',
-        'DUTY': 'DUTY',
-        'OS': 'OUT STATION',
-        'OC': 'ON COURSE',
-        'OFF': 'OFF',
-        'LL': 'LOCAL LEAVE',
-        'OL': 'OVERSEAS LEAVE',
-        'MC': 'MC',
-        'MA': 'MA',
-        'RSO': 'RSO',
-        'RSI': 'RSI',
-        'SOL': 'SOL',
-        'DR': 'DUTY REST',
-        'OTHERS': 'OTHERS'
-    }
-    statuses = statuses.items()
+    statuses = statuses_type().items()
     workshops = [("Sembawang"),("Bedok"),("Navy"),("Selarang"),("HQ")]
     fmw = SelectField(label='FMW', choices=workshops)
     name = SelectField(label='Name', choices='',validators=[DataRequired()], coerce=int)

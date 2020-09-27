@@ -38,15 +38,14 @@ class Personnel(db.Model):
     fmd = db.Column(db.Integer, nullable=False)
     rank = db.Column(db.Text, nullable=False)
     active = db.Column(db.Boolean, nullable = False, default='True')
-    status = db.relationship('Personnel_status',backref=db.backref('PersonnelID', lazy=False))
+    status = db.relationship('Personnel_status',backref=db.backref('Person', lazy=False))
 
-    # def __init__(self):
-    #     self.name = name
-    #     self.fmw = fmw
-    #     self.fmd = fmd
-    #     self.rank = rank
-    #     self.active = active
-
+    def __init__(self, rank='', name='', fmw='', fmd=''):
+        self.rank = rank
+        self.name = name
+        self.fmw = fmw
+        self.fmd = fmd
+        
     def __repr__(self):
         return '<User {}>'.format(self.name)
 
@@ -61,13 +60,13 @@ class Personnel_status(db.Model):
     personnel_id = db.Column(db.Integer, db.ForeignKey('personnel.id'), nullable=False)
     
 
-    # def __init__(self,**kwargs):
-    #     super(Personnel_status, self).__init__(**kwargs)
-    #     self.date = date
-    #     self.am_status = am_status
-    #     self.am_remarks = am_remarks
-    #     self.pm_status = pm_status
-    #     self.pm_remarks = pm_remarks
+    def __init__(self,date='',am_status = '',am_remarks = '',pm_status = '',pm_remarks = '',personnel_id=''):
+        self.date = date
+        self.am_status = am_status
+        self.am_remarks = am_remarks
+        self.pm_status = pm_status
+        self.pm_remarks = pm_remarks
+        self.personnel_id = personnel_id
 
 
     def __repr__(self):

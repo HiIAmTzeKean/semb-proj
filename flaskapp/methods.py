@@ -2,6 +2,7 @@ import os
 from csv import writer, DictWriter
 from datetime import timedelta,datetime
 from pathlib import Path
+from .models import Personnel,Personnel_status
 
 def nameconverter_paradestateform(rows):
     names = [] 
@@ -23,50 +24,26 @@ def authenticate_user(table, username, password):
     return error, user
 
 
-def retrieve_personnel_list(db, fmw,clearance=100):
-    #if fmw == "Admin": return db.execute('SELECT * FROM personnel').fetchall()
-    if fmw == "Admin" or clearance < 2: return db.query.all()
-    #return db.execute('SELECT * FROM personnel WHERE fmw = ?', (fmw,)).fetchall()
-    return db.query.filter_by(fmw=fmw).all()
+def retrieve_personnel_list(fmw,clearance=100):
+    if fmw == "Admin" or clearance < 2: return Personnel.query.all()
+    return Personnel.query.filter_by(fmw=fmw).all()
 
 
-def retrieve_personnel_statuses(db,fmw,date,missing_status_needed=True):
-    if fmw == 'Admin':
-        personnel_statuses = db.execute("""
-        SELECT personnel.id, personnel.rank, personnel.name, personnel.fmw,
-        personnel_status.am_status, personnel_status.am_remarks, personnel_status.pm_status, personnel_status.pm_remarks
-        FROM personnel, personnel_status
-        WHERE personnel.id = personnel_status.personnel_id 
-        AND personnel_status.date = ?
-        """, (date,) ).fetchall()
+def retrieve_personnel_statuses(db,fmw,date,clearance=100,missing_status_needed=True):
+    if fmw == 'Admin' or clearance<2:
+        personnel_statuses = db.session.query(Personnel_status).filter(
+            Personnel_status.date==date,Personnel.id==Personnel_status.personnel_id).all()
+
         if missing_status_needed==True:
-            missing_status = db.execute("""
-            SELECT personnel.rank, personnel.name, personnel.fmw
-            FROM personnel
-            WHERE personnel.id NOT IN 
-                (SELECT personnel.id FROM
-                personnel_status INNER JOIN personnel ON personnel.id = personnel_status.personnel_id 
-                WHERE personnel_status.date = ? )
-            """, (date,) ).fetchall()
+            subquery = db.session.query(Personnel.id).join(Personnel_status, Personnel.id==Personnel_status.personnel_id).filter(Personnel_status.date==date)
+            missing_status = db.session.query(Personnel).filter(Personnel.id.notin_(subquery)).all()
     else:
-        personnel_statuses = db.execute("""
-        SELECT personnel.id, personnel.rank, personnel.name, personnel.fmw,
-        personnel_status.am_status, personnel_status.am_remarks, personnel_status.pm_status, personnel_status.pm_remarks
-        FROM personnel, personnel_status
-        WHERE personnel.id = personnel_status.personnel_id 
-        AND personnel.fmw = ? AND personnel_status.date = ?
-        """, (fmw,date) ).fetchall()
-        #not done
+        personnel_statuses = db.session.query(Personnel_status).filter(
+            Personnel_status.date==date,Personnel.id==Personnel_status.personnel_id,Personnel.fmw==fmw).all()
+            
         if missing_status_needed==True:
-            missing_status = db.execute("""
-            SELECT personnel.rank, personnel.name, personnel.fmw
-            FROM personnel
-            WHERE personnel.fmw = ? 
-            AND personnel.id NOT IN 
-                (SELECT personnel.id FROM
-                personnel_status INNER JOIN personnel ON personnel.id = personnel_status.personnel_id 
-                WHERE personnel_status.date = ? )
-            """, (fmw,date) ).fetchall()
+            subquery = db.session.query(Personnel.id).join(Personnel_status, Personnel.id==Personnel_status.personnel_id).filter(Personnel_status.date==date)
+            missing_status = db.session.query(Personnel).filter(Personnel.id.notin_(subquery),Personnel.fmw==fmw).all()
     return (personnel_statuses, missing_status) if (missing_status_needed == True) else (personnel_statuses)
 
 
@@ -92,9 +69,9 @@ def generate_PS(records,request_date=None):
         csvwriter = DictWriter(csvfile, fieldnames=fieldnames)
         csvwriter.writeheader()
         for record in records:
-            csvwriter.writerow({'fmw': record['fmw'], 'Name': record['name'],'Rank': record['rank'],
-            'Am status': record['am_status'],'Am Remarks': record['am_remarks'],
-            'Pm status': record['pm_status'],'Pm Remarks': record['pm_remarks']})
+            csvwriter.writerow({'fmw': record.Person.fmw, 'Name': record.Person.name, 'Rank': record.Person.rank,
+            'Am status': record.am_status,'Am Remarks': record.am_remarks,
+            'Pm status': record.pm_status,'Pm Remarks': record.pm_remarks})
 
     if Path(new_file_path).is_file():
         return None
