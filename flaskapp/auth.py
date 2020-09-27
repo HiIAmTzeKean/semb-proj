@@ -16,10 +16,11 @@ bp = Blueprint('auth', __name__, url_prefix='/auth')
 def login():
     form = loginform()
     if form.validate_on_submit():
-        error, user = authenticate_user(User, form.username.data, form.password.data)
+        error, user = authenticate_user(form.username.data, form.password.data)
         if error is None:
             session.clear()
             session['user_id'] = user.username
+            session['fmd'] = user.fmd
             session['fmw'] = user.fmw
             session['clearance'] = user.clearance
             return redirect(url_for('index'))
@@ -44,11 +45,6 @@ def load_logged_in_user():
     if user_id is None:
         g.user = None
     else:
-        # g.user = get_db().execute(
-        #     'SELECT * FROM user WHERE username = ?', (user_id,)
-        # ).fetchone()
-        # g.user = User.query.fliter_by(username=user_id).first() 
-        # this return AttributeError: 'BaseQuery' object has no attribute 'fliter_by' WHY!!!!!
         g.user = db.session.query(User).filter_by(username=user_id)
 
 
