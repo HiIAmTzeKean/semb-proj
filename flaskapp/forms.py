@@ -5,10 +5,6 @@ from wtforms.validators import DataRequired
 from datetime import datetime
 from .helpers import statuses_type
 
-def start_end_date_check(form, start_date, end_date):
-    if len(field.data) > 50:
-        raise ValidationError('Field must be less than 50 characters')
-
 
 class loginform(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
@@ -21,7 +17,6 @@ class paradestateform(FlaskForm):
     workshops = [("Sembawang"),("Bedok"),("Navy"),("Selarang"),("HQ")]
     fmw = SelectField(label='FMW', choices=workshops)
     name = SelectField(label='Name', choices='',validators=[DataRequired()], coerce=int)
-    #status_date = DateField(label='Date', validators=[DataRequired()], default=datetime.today)
     start_date = DateField(label='Start Date', validators=[DataRequired()], default=datetime.today)
     end_date = DateField(label='End Date', validators=[DataRequired()], default=datetime.today)
     am_status = SelectField(label='AM Status', choices=statuses)
@@ -29,6 +24,13 @@ class paradestateform(FlaskForm):
     pm_status = SelectField(label='PM Status', choices=statuses)
     pm_remarks = StringField(label='PM Remarks',)
     submit = SubmitField('Submit')
+    def validate(self):
+        if not FlaskForm.validate(self):
+            return False
+        if self.end_date.data < self.start_date.data:
+            self.end_date.errors.append('End Date must not come before Start Date!')
+            return False
+        return True
 
 
 class paradestateviewform(FlaskForm):

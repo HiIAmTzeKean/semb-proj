@@ -51,7 +51,14 @@
 
         <div class="form-row mt-3">
             <div class="col-md-3 font-weight-bold">
-                {{ form.end_date.label(class_="col-form-label") }}
+                {% if form.end_date.errors %}
+                    {{ form.end_date.label(class_="col-form-label") }}
+                    {% for error in form.end_date.errors %}
+                        {{ error }}
+                    {% endfor %}
+                {% else %}
+                    {{ form.end_date.label(class_="col-form-label") }}
+                {% endif %}
             </div>
             <div class="col-md-9">
                 {{ form.end_date(class_="form-control") }}
