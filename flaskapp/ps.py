@@ -2,11 +2,11 @@ from datetime import datetime, timedelta
 
 from flask import (Blueprint, flash, g, make_response, redirect,
                    render_template, request, session, url_for)
+from flask_login import current_user, login_required
 
 from flaskapp import db
-from flask_login import current_user, login_required
-from .auth import fmw_required
 
+from .auth import fmw_required
 from .db_methods import (act_deact_personnel_db, add_del_personnel_db,
                          check_personnel_exist, retrive_one_record,
                          retrive_personnel_id, retrive_record_by_date,
@@ -14,10 +14,10 @@ from .db_methods import (act_deact_personnel_db, add_del_personnel_db,
 from .forms import (admin_actdeactform, admin_adddelform,
                     admin_generateexcelform, admin_paradestateviewform,
                     paradestateform, paradestateviewform, strengthviewform)
-from .methods import (generate_PS, nameconverter_paradestateform,
-                      retrieve_personnel_list, retrieve_personnel_statuses)
-from .models import Personnel, Personnel_status, User
 from .helpers import workshop_type
+from .methods import (generate_PS, retrieve_personnel_list,
+                      retrieve_personnel_statuses)
+from .models import Personnel, Personnel_status, User
 
 bp = Blueprint('ps', __name__)
 

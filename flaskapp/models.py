@@ -114,4 +114,4 @@ class Unit(db.Model):
         self.fmd = fmd
         
     def __repr__(self):
-        return '<Unit {}>'.format(self.fmd)
+        return '<Unit {}>'.format(self.fmw)

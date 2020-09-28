@@ -34,18 +34,19 @@ def login():
         flash('Incorrect Username and Password')
     return render_template('auth/login.html',form=form)
 
+
 @bp.route('/load_fmw', methods=('GET', 'POST'))
 def load_fmw():
     form = strengthviewform()
     form.fmw.choices = [(coy.fmw) for coy in Unit.query.filter_by(fmd=9).all()]
     if request.method == "POST":
-    #if form.validate_on_submit():
         fmd = form.fmd.data
         fmw = form.fmw.data
         session['fmw']=fmw
         return redirect(url_for('index'))
     flash(form.errors)
     return render_template('ps/select_fmw.html',form=form)
+
 
 @bp.route('/fmw/<fmd>', methods=('GET', 'POST'))
 def fmw(fmd):
@@ -70,6 +71,7 @@ def logout():
     logout_user()
     flash('Logged out!')
     return redirect(url_for('index'))
+
 
 def fmw_required(view):
     @functools.wraps(view)

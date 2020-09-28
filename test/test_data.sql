@@ -5,7 +5,18 @@ VALUES
 ('93', 'Bedok'),
 ('93', 'Selarang'),
 ('93', 'Navy'),
-('92', 'Kranji');
+('92', 'Kranji')
+('9', 'Admin');
+
+INSERT INTO "user" ("username", "password", "fmw","fmd","clearance","unit_id")
+VALUES 
+('Admin','Admin','Admin',9,3,7),
+('9HQ','9HQ','9HQ',9,3,1),
+('Sembawang','Sembawang','Sembawang',93,3,2),
+('Bedok','Bedok','Bedok',93,3,3),
+('Selarang','Selarang','Selarang',93,3,4),
+('Navy','Navy','Navy',93,3,5),
+('Kranji','Kranji','Kranji',92,3,6);
 
 
 INSERT INTO "personnel" ("name","rank", "fmw","fmd","active","unit_id")
