@@ -14,8 +14,8 @@ class loginform(FlaskForm):
 
 class paradestateform(FlaskForm):
     statuses = statuses_type().items()
-    workshops = [("Sembawang"),("Bedok"),("Navy"),("Selarang"),("HQ")]
-    fmw = SelectField(label='FMW', choices=workshops)
+    # workshops = [("Sembawang"),("Bedok"),("Navy"),("Selarang"),("HQ")]
+    # fmw = SelectField(label='FMW', choices=workshops)
     name = SelectField(label='Name', choices='',validators=[DataRequired()], coerce=int)
     start_date = DateField(label='Start Date', validators=[DataRequired()], default=datetime.today)
     end_date = DateField(label='End Date', validators=[DataRequired()], default=datetime.today)
@@ -44,8 +44,8 @@ class admin_paradestateviewform(paradestateviewform):
 
 
 class strengthviewform(FlaskForm):
-    workshops = [("Sembawang"),("Bedok"),("Navy"),("Selarang"),("HQ")]
-    fmw = SelectField(label='FMW', choices=workshops)
+    fmw = SelectField(label='FMW', choices=[], id='fmw')
+    fmd = SelectField(label='FMW', choices=[(9),(92),(93)], id='fmd')
     submit = SubmitField('Submit')
 
 

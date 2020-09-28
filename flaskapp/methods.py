@@ -4,13 +4,6 @@ from datetime import timedelta,datetime
 from pathlib import Path
 from .models import Personnel,Personnel_status,User
 
-def nameconverter_paradestateform(rows):
-    names = [] 
-    for row in rows:
-        names.append((row.id, row.name))
-    return names
-
-
 def authenticate_user(username, password):
     error = None
     user = User.query.filter_by(username=username).first()

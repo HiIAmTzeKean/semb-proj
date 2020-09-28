@@ -2,12 +2,13 @@ import os
 from flask import Flask
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager
+from flask_bootstrap import Bootstrap
 from config import Config
 
 app = Flask(__name__, instance_relative_config=True, template_folder='templates')
 app.config.from_mapping(
     SECRET_KEY='dev',
-    DATABASE=os.path.join(app.instance_path, 'flaskapp.sqlite'),
 )
 
 # load the instance config
@@ -20,8 +21,10 @@ try:
 except OSError:
     pass
 
-from flask_bootstrap import Bootstrap
 Bootstrap(app)
+login_manager = LoginManager(app)
+login_manager.login_view = 'auth.login'
+
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
@@ -30,7 +33,6 @@ from . import models
 from . import auth
 app.register_blueprint(auth.bp)
 
-# for parade state page
 from . import ps
 app.register_blueprint(ps.bp)
 app.add_url_rule('/', endpoint='index')

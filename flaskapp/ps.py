@@ -4,7 +4,8 @@ from flask import (Blueprint, flash, g, make_response, redirect,
                    render_template, request, session, url_for)
 
 from flaskapp import db
-from flaskapp.auth import fmw_required, login_required
+from flask_login import current_user, login_required
+from .auth import fmw_required
 
 from .db_methods import (act_deact_personnel_db, add_del_personnel_db,
                          check_personnel_exist, retrive_one_record,
@@ -30,10 +31,10 @@ def index():
     Clearance 3: Nil
     '''
     fmw = session.get('fmw')
-    rows = retrieve_personnel_list(fmw,clearance=100)
-    names = nameconverter_paradestateform(rows)
+    if session.get('clearance') is None: clearance = 100
+    else: clearance = session.get('clearance')
     form = paradestateform()
-    form.name.choices = names
+    form.name.choices = [(pers.id,pers.name) for pers in retrieve_personnel_list(fmw,clearance)]
     updated = False
     if form.validate_on_submit():
         start_date = form.start_date.data
@@ -77,7 +78,7 @@ def paradestate():
     Clearance 1: Select FMW and FMD to view
     Clearance 3: View current FMW
     '''
-    if session.get('clearance') <= 2: form = admin_paradestateviewform()
+    if session.clearance <= 2: form = admin_paradestateviewform()
     else: form = paradestateviewform()
     if form.validate_on_submit():
         if session.get('clearance') <= 2: fmw = form.fmw.data
@@ -101,7 +102,7 @@ def strengthviewer():
     Clearance 1: Select FMW and FMD to view
     Clearance 3: View current FMW
     '''
-    if session.get('clearance') <= 2:
+    if current_user.clearance <= 2:
         form = strengthviewform()
         if form.validate_on_submit():
             fmw = form.fmw.data
@@ -111,7 +112,7 @@ def strengthviewer():
             flash('No personnel in selected FMW yet.')
         return render_template('ps/select_fmw.html', form=form)
     else:
-        fmw = session.get('fmw')
+        fmw = current_user.fmw
         personnels = retrieve_personnel_list(fmw)
         return render_template('ps/strengthviewer.html', fmw=fmw, personnels=personnels)
     
@@ -162,9 +163,6 @@ def admin_generate_excel():
     if form.validate_on_submit():
         start_date = form.start_date.data
         end_date = form.end_date.data
-        if end_date<start_date:
-            flash("Your end date is earlier than your start date")
-            return render_template('ps/admin_generate_excel.html', form=form)
         if start_date == end_date:
             records = retrieve_personnel_statuses(db,'Admin',start_date,missing_status_needed=False)
             error = generate_PS(records)

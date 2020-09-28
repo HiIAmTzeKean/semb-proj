@@ -12,6 +12,16 @@
                     <form action="" method="post">
                         {{ form.hidden_tag() }}
                         <h5 class="ml-lg-1 text-center">Please select your FMW:</h5>
+
+                        <div class="form-row mx-1 mt-3">
+                            <div class="col-md-3 font-weight-bold">
+                                {{ form.fmd.label(class_="col-form-label") }}
+                            </div>
+                            <div class="col-md-9">
+                                {{ form.fmd(class_="form-control custom-select") }}
+                            </div>
+                        </div>
+
                         <div class="form-row mx-1 mt-3">
                             <div class="col-md-3 font-weight-bold">
                                 {{ form.fmw.label(class_="col-form-label") }}
@@ -29,4 +39,29 @@
             </div>
         </div>
     </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let fmd_select = document.getElementById('fmd')
+    let fmw_select = document.getElementById('fmw')
+
+    fmd_select.onchange = function() {
+        fmd = fmd_select.value;
+        
+        fetch('fmw/' + fmd).then(function(response){
+
+            response.json().then(function(data){
+
+                let optionHTML = '';
+
+                for (let fmw of data.fmws){
+                    optionHTML += '<option value="'+fmw.fmw+'">' + fmw.fmw + '</option>';
+                }
+
+                fmw_select.innerHTML = optionHTML
+            });
+        });
+    }
+</script>
 {% endblock %}
