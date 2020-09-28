@@ -17,9 +17,5 @@ from pathlib import Path
 # x = datetime.today()
 # print(x)
 # print("File      Path:", Path(__file__).absolute())
-print("Directory Path:", Path().absolute())
+# print("Directory Path:", Path().absolute())
 # print ("Is it Directory?" + str(path.isdir('csv_archives')))
-
-from flaskapp import db
-from .flaskapp.models import User,Personnel,Personnel_status
-record =Personnel_status(id=1,date='2020-09-26',am_status='P',am_remarks='P',pm_status='P',pm_remarks='P',personnel_id=1)
