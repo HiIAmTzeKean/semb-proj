@@ -24,7 +24,7 @@ def retrive_record_by_date(personnel_id,date):
 
 
 def submit_PS(db,personnel_id, date, am_status, am_remarks, pm_status, pm_remarks):
-    if retrive_record_by_date(db, personnel_id, date):
+    if retrive_record_by_date(personnel_id, date):
         update_PS(db, personnel_id, date, am_status, am_remarks, pm_status, pm_remarks)
     else:
         insert_PS(db, personnel_id, date, am_status, am_remarks, pm_status, pm_remarks)

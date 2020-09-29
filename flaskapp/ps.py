@@ -13,7 +13,7 @@ from .db_methods import (act_deact_personnel_db, add_del_personnel_db,
                          submit_PS_helper)
 from .forms import (admin_actdeactform, admin_adddelform,
                     admin_generateexcelform, admin_paradestateviewform,
-                    paradestateform, strengthviewform, admin_statuschangerform)
+                    paradestateform, strengthviewform)
 from .helpers import workshop_type
 from .methods import (generate_PS, retrieve_personnel_list,
                       retrieve_personnel_statuses)
@@ -38,12 +38,11 @@ def index():
     updated = False
 
     if request.args.get('status_change') is not None:
-        personnel_id = request.args.get('personnel_id')
+        personnel_id = int(request.args.get('personnel_id'))
         date = request.args.get('date')
-        date = datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
+        date = datetime.strptime(date, '%Y-%m-%d')
         fmw_id= request.args.get('fmw_id')
         if request.args.get('status_change') == True:
-            print('looping through True')
             record = retrive_record_by_date(personnel_id, date)
             form.start_date.data = record.date
             form.end_date.data = record.date
@@ -53,10 +52,9 @@ def index():
             form.pm_status.data = record.pm_status
             form.pm_remarks.data = record.pm_remarks
         else:
-            print('looping through false')
             form.name.data = personnel_id
         return render_template('ps/index.html', form=form, updated=updated, personnel=None,
-                               redirect_to_paradestate=True, date=date)
+                               date=date, redirect_to_paradestate=True, fmw_id=fmw_id)
 
     if form.validate_on_submit():
         start_date = form.start_date.data
@@ -71,10 +69,13 @@ def index():
         updated = True
         record = Personnel_status.query.filter(Personnel_status.personnel_id==personnel_id,Personnel_status.date==start_date).first()
 
-        resp = make_response(render_template('ps/index.html', form=form, updated=updated,
-                            multi_date=multi_date, personnel=record, end_date=end_date))
-        resp.set_cookie('personnel_id', value = str(personnel_id), max_age=60*60*24)
-        return resp
+        if request.args.get('redirect_to_paradestate'):
+            return redirect(url_for('ps.paradestate', redirect_to_paradestate=True ,fmw_id=request.args.get('fmw_id'), date=request.args.get('date')))
+        else:
+            resp = make_response(render_template('ps/index.html', form=form, updated=updated,
+                                multi_date=multi_date, personnel=record, end_date=end_date))
+            resp.set_cookie('personnel_id', value = str(personnel_id), max_age=60*60*24)
+            return resp
     
     record = Personnel_status.query.filter(Personnel_status.personnel_id==request.cookies.get('personnel_id'),Personnel_status.date==datetime.date(datetime.today())).first()
     if record:
@@ -94,13 +95,13 @@ def paradestate():
     Clearance 1: Select FMW and FMD to view
     Clearance 3: View current FMW
     '''
-    statusupdate_form = admin_statuschangerform()
     form = admin_paradestateviewform()
     if request.args.get('redirect_to_paradestate'):
         fmw_id = request.args.get('fmw_id')
         # i will change search to find by fmw id instead later on in methods
         fmw = Fmw.query.filter_by(id=fmw_id).first()
         date = request.args.get('date')
+        date = datetime.strptime(date, '%Y-%m-%d %H:%M:%S').date()
         personnels_status, missing_status = retrieve_personnel_statuses(db, fmw.name, date, session.get('clearance'))
         if len(personnels_status) != 0:
             return render_template('ps/paradestate.html', personnels=personnels_status,
@@ -124,7 +125,7 @@ def statuschange(personnel_id,date):
     record = Personnel_status.query.filter_by(personnel_id=personnel_id,date=date).first()
     fmw_id = request.args.get('fmw_id')
     time = request.args.get('time')
-    date = datetime.strptime(date, '%Y-%m-%d')
+    date = datetime.strptime(date, '%Y-%m-%d').date()
 
     if 'set_present' in request.args:
         print('setting present')
@@ -132,6 +133,7 @@ def statuschange(personnel_id,date):
             record = Personnel_status(date, 'P', '', None, '', personnel_id)
         else:
             record = Personnel_status(date, None, '', 'P', '', personnel_id)
+        print(personnel_id)
         db.session.add(record)
         db.session.commit()
         flash('Updated Personnel selected!')

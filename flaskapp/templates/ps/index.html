@@ -29,7 +29,7 @@
         </div>
     {% endif %}
 
-    <form action="" method="post">
+    <form action="{{ url_for('ps.index', redirect_to_paradestate=True, fmw_id = fmw_id, date=date) if redirect_to_paradestate }}" method="post">
         {{ form.hidden_tag() }}   
     
         <div class="form-row mt-3">

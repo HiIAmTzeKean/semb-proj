@@ -97,9 +97,3 @@ class admin_generateexcelform(FlaskForm):
             self.end_date.errors.append('End Date must not come before Start Date!')
             return False
         return True
-
-
-class admin_statuschangerform(FlaskForm):
-    mark_present = BooleanField(label='Mark present', validators=[Optional()])
-    submit = SubmitField('Submit')
-
