@@ -7,11 +7,8 @@ from flask_bootstrap import Bootstrap
 from config import Config
 
 app = Flask(__name__, instance_relative_config=True, template_folder='templates')
-# app.config.from_mapping(
-#     SECRET_KEY='dev',
-# )
 
-# load the instance config
+# load config
 app.config.from_pyfile('config.py', silent=False)
 app.config.from_object(Config)
 

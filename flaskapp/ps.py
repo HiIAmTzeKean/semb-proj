@@ -13,7 +13,7 @@ from .db_methods import (act_deact_personnel_db, add_del_personnel_db,
                          submit_PS)
 from .forms import (admin_actdeactform, admin_adddelform,
                     admin_generateexcelform, admin_paradestateviewform,
-                    paradestateform, strengthviewform)
+                    paradestateform, strengthviewform, mark_personnel_present_form)
 from .helpers import workshop_type
 from .methods import (generate_PS, retrieve_personnel_list,
                       retrieve_personnel_statuses)
@@ -36,7 +36,24 @@ def index():
     form = paradestateform()
     form.name.choices = [(pers.id,pers.name) for pers in retrieve_personnel_list(fmw,clearance)]
     updated = False
-    if form.validate_on_submit():
+
+    if 'name' in request.args:
+        today = datetime.date(datetime.today())
+        personnel_id = int(request.args['name'])
+        record = retrive_record_by_date(db, personnel_id, today)
+        if record:
+            form.name.data = record['id']
+            form.am_status.data = record['am_status']
+            form.am_remarks.data = record['am_remarks']
+            form.pm_status.data = record['pm_status']
+            form.pm_remarks.data = record['pm_remarks']
+        else:
+            form.name.data = personnel_id
+
+        return render_template('ps/index.html', form=form, updated=updated, personnel=None,
+                               redirect_to_paradestate=True, fmw=fmw, date=today)
+
+    elif form.validate_on_submit():
         start_date = form.start_date.data
         end_date = form.end_date.data
         personnel_id = form.name.data
@@ -55,7 +72,7 @@ def index():
             multi_date =True
         updated = True
         record = Personnel_status.query.filter(Personnel_status.personnel_id==personnel_id,Personnel_status.date==start_date).first()
-        print(record)
+
         resp = make_response(render_template('ps/index.html', form=form, updated=updated,
                             multi_date=multi_date, personnel=record, end_date=end_date))
         resp.set_cookie('personnel_id', value = str(personnel_id), max_age=60*60*24)
