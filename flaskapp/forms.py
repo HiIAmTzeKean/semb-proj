@@ -98,6 +98,7 @@ class admin_generateexcelform(FlaskForm):
             return False
         return True
 
+
 class mark_personnel_present_form(FlaskForm):
     fmw = HiddenField()  # so we can return to the paradestate page immediately after processing request
     name = HiddenField(validators=[DataRequired()])

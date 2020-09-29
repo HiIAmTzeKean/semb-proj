@@ -36,7 +36,7 @@ def index():
     form = paradestateform()
     form.name.choices = [(pers.id,pers.name) for pers in retrieve_personnel_list(fmw,clearance)]
     updated = False
-
+    print(request.args)
     if 'name' in request.args:
         today = datetime.date(datetime.today())
         personnel_id = int(request.args['name'])
@@ -95,17 +95,31 @@ def paradestate():
     Clearance 1: Select FMW and FMD to view
     Clearance 3: View current FMW
     '''
+    status_update_form = mark_personnel_present_form()
     form = admin_paradestateviewform()
-    if request.method == "POST":
+    if 'fmw' in request.args and 'date' in request.args:
+        # request was after somebody was marked as present
+        # so return to the parade state view immediately
+        fmw = request.args['fmw']
+        date = request.args['date']
+        personnels_status, missing_status = retrieve_personnel_statuses(db, fmw, date)
+        if len(personnels_status) != 0:
+            return render_template('ps/paradestate.html', personnels=personnels_status,
+                                   missing_personnels=missing_status, date=date,
+                                   status_update_form=status_update_form)
+        flash("No one has submitted PS. Please remind them to do so!")
+    
+    # elif request.method == "POST":
+    elif form.validate_on_submit():
         if current_user.clearance <= 1: fmw = form.fmw.data
         else: fmw = current_user.fmw.name
         date = form.date.data
         personnels_status, missing_status = retrieve_personnel_statuses(db, fmw, date, session.get('clearance'))
         if len(personnels_status) != 0:
             return render_template('ps/paradestate.html', personnels=personnels_status,
-                                   missing_personnels=missing_status, date=date)
+                                   missing_personnels=missing_status, date=date, status_update_form=status_update_form)
         flash("No one has submitted PS. Please remind them to do so!")
-    return render_template('ps/paradestate.html', form=form)
+    return render_template('ps/paradestate.html', form=form, status_update_form=status_update_form)
 
 
 @bp.route('/strengthviewer', methods=('GET', 'POST'))
