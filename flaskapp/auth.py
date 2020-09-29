@@ -44,7 +44,6 @@ def load_fmw():
         fmw = form.fmw.data
         session['fmw']=fmw
         return redirect(url_for('index'))
-    flash(form.errors)
     return render_template('ps/select_fmw.html',form=form)
 
 

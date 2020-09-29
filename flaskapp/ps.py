@@ -17,7 +17,7 @@ from .forms import (admin_actdeactform, admin_adddelform,
 from .helpers import workshop_type
 from .methods import (generate_PS, retrieve_personnel_list,
                       retrieve_personnel_statuses)
-from .models import Personnel, Personnel_status, User
+from .models import Personnel, Personnel_status, User, Unit
 
 bp = Blueprint('ps', __name__)
 
@@ -78,13 +78,16 @@ def paradestate():
     Clearance 1: Select FMW and FMD to view
     Clearance 3: View current FMW
     '''
-    if session.clearance <= 2: form = admin_paradestateviewform()
+    if current_user.clearance <= 2: form = admin_paradestateviewform()
     else: form = paradestateviewform()
+    form.fmw.choices = [(coy.fmw) for coy in Unit.query.filter_by(fmd=9).all()]
     if form.validate_on_submit():
-        if session.get('clearance') <= 2: fmw = form.fmw.data
+        if current_user.clearance <= 2: fmw = form.fmw.data
         else: fmw = session.get('fmw')
         date = form.date.data
         personnels_status, missing_status = retrieve_personnel_statuses(db, fmw, date,session.get('clearance'))
+        print(personnels_status)
+        print('space')
         print(missing_status)
         if len(personnels_status) != 0:
             ## To retrive data from personnel table, use query.Person.whateverdatayouneed
@@ -104,13 +107,14 @@ def strengthviewer():
     '''
     if current_user.clearance <= 2:
         form = strengthviewform()
+        form.fmw.choices = [(coy.fmw) for coy in Unit.query.filter_by().all()]
         if form.validate_on_submit():
             fmw = form.fmw.data
             personnels = retrieve_personnel_list(fmw)
             if personnels != []:
                 return render_template('ps/strengthviewer.html', fmw=fmw, personnels=personnels)
             flash('No personnel in selected FMW yet.')
-        return render_template('ps/select_fmw.html', form=form)
+        return render_template('ps/select_fmw2.html', form=form)
     else:
         fmw = current_user.fmw
         personnels = retrieve_personnel_list(fmw)

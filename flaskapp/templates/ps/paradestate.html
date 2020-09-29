@@ -66,7 +66,7 @@
                         </thead>
                         {% for person in personnels %}
                             <tr>
-                                <td>{{ person.rank }} {{ person.name }}</td>
+                                <td>{{ person.Person.rank }} {{ person.Person.name }}</td>
                                 <td>
                                     {{ person.am_status }}
                                     {% if person.am_remarks != '' %}
@@ -108,7 +108,7 @@
                         </thead>
                         {% for person in personnels %}
                             <tr>
-                                <td>{{ person.rank }} {{ person.name }}</td>
+                                <td>{{ person.Person.rank }} {{ person.Person.name }}</td>
                                 <td>
                                     {{ person.pm_status }}
                                     {% if person.pm_remarks != '' %}
@@ -138,6 +138,16 @@
                         {{ form.hidden_tag() }}
 
                         {% if form.fmw %}
+                        <h5 class="ml-lg-1 text-center">Please select the FMD which you want to view:</h5>
+                        <div class="form-row mx-1 mt-lg-3">
+                            <div class="col-md-3 font-weight-bold">
+                                {{ form.fmd.label(class_="col-form-label") }}
+                            </div>
+                            <div class="col-md-9">
+                                {{ form.fmd(class_="form-control custom-select") }}
+                            </div>
+                        </div>
+
                         <h5 class="ml-lg-1 text-center">Please select the FMW which you want to view:</h5>
                         <div class="form-row mx-1 mt-lg-3">
                             <div class="col-md-3 font-weight-bold">
@@ -180,5 +190,27 @@
                 "paging": false
             });
         } );
+    </script>
+    <script>
+        let fmd_select = document.getElementById('fmd')
+        let fmw_select = document.getElementById('fmw')
+    
+        fmd_select.onchange = function() {
+            fmd = fmd_select.value;
+            
+            fetch('auth/fmw/' + fmd).then(function(response){
+    
+                response.json().then(function(data){
+    
+                    let optionHTML = '';
+    
+                    for (let fmw of data.fmws){
+                        optionHTML += '<option value="'+fmw.fmw+'">' + fmw.fmw + '</option>';
+                    }
+    
+                    fmw_select.innerHTML = optionHTML
+                });
+            });
+        }
     </script>
 {% endblock %}
