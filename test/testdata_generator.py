@@ -61,24 +61,16 @@ def write_testdata_file():
 def generate_personnels():
     text =''
     for i in range(100):
-        if i <30:
-            fmw='Sembawang'
-            fmd=93
+        if i<=30:
             unit_id = 2
-        elif i>30 and i<50: 
-            fmw='Bedok'
-            fmd=93
+        elif i>30 and i<=50: 
             unit_id = 3
-        elif i>50 and i <80:
-            fmw='Kranji'
-            fmd=92
+        elif i>50 and i <=80:
             unit_id = 6
         else:
-            fmw='9HQ'
-            fmd=9
             unit_id = 1
-        print("('{}','{}','{}',{},{},{}),".format("Person"+str(i),"RANK"+str(i),fmw,fmd,1,unit_id))
+        print("('{}','{}',{},{}),".format("Person"+str(i),"RANK"+str(i),1,unit_id))
     return text
 
 if __name__ == "__main__":
-    # generate_personnels()
+    generate_personnels()

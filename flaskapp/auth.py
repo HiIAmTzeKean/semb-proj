@@ -7,9 +7,8 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from flaskapp import db, login_manager
 from flask_login import current_user, login_user, logout_user, login_required
 from datetime import timedelta
-from .forms import loginform, strengthviewform
-from .methods import authenticate_user
-from .models import User, Unit
+from .forms import loginform, strengthviewform, loadfmwform
+from .models import User, Unit, Fmw
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -27,7 +26,7 @@ def login():
         if user and user.password==form.password.data:
             session.clear()
             login_user(user, remember=True, duration=timedelta(minutes=10))
-            session['fmw'] = user.fmw
+            session['fmw'] = user.fmw.name
             session['clearance'] = user.clearance
             next_page = request.args.get('next')
             return redirect(next_page) if next_page else redirect(url_for('index'))
@@ -37,8 +36,7 @@ def login():
 
 @bp.route('/load_fmw', methods=('GET', 'POST'))
 def load_fmw():
-    form = strengthviewform()
-    form.fmw.choices = [(coy.fmw) for coy in Unit.query.filter_by(fmd=9).all()]
+    form = loadfmwform()
     if request.method == "POST":
         fmd = form.fmd.data
         fmw = form.fmw.data
@@ -49,12 +47,15 @@ def load_fmw():
 
 @bp.route('/fmw/<fmd>', methods=('GET', 'POST'))
 def fmw(fmd):
-    fmws = Unit.query.filter_by(fmd=fmd).all()
+    # query fmw on fmd provided
+    # fmws = Unit.query.filter_by(fmd=fmd).all()
+    subquery = Unit.query.filter_by(name=fmd).first()
+    fmws = Fmw.query.filter_by(fmd_id = subquery.id).all()
     fmw_array = []
     for fmw in fmws:
         fmwObj ={}
         #fmwObj['id']=fmw.id
-        fmwObj['fmw']=fmw.fmw
+        fmwObj['fmw']=fmw.name
         fmw_array.append(fmwObj)
     return jsonify({'fmws': fmw_array})
 

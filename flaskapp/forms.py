@@ -4,10 +4,12 @@ from flask_wtf import FlaskForm
 from wtforms import (HiddenField, PasswordField, SelectField, StringField,
                      SubmitField)
 from wtforms.fields.html5 import DateField
-from wtforms.validators import DataRequired, InputRequired
+from wtforms.validators import DataRequired, InputRequired, Optional
+
+from flaskapp import db
 
 from .helpers import fmd_type, statuses_type
-from .models import Unit
+from .models import Fmw, Unit
 
 
 class loginform(FlaskForm):
@@ -18,8 +20,6 @@ class loginform(FlaskForm):
 
 class paradestateform(FlaskForm):
     statuses = statuses_type().items()
-    # workshops = [("Sembawang"),("Bedok"),("Navy"),("Selarang"),("HQ")]
-    # fmw = SelectField(label='FMW', choices=workshops)
     name = SelectField(label='Name', choices='',validators=[DataRequired()], coerce=int)
     start_date = DateField(label='Start Date', validators=[DataRequired()], default=datetime.today)
     end_date = DateField(label='End Date', validators=[DataRequired()], default=datetime.today)
@@ -37,20 +37,32 @@ class paradestateform(FlaskForm):
         return True
 
 
-class paradestateviewform(FlaskForm):
+class admin_paradestateviewform(FlaskForm):
+    fmds = [(coy.name) for coy in Unit.query.all()]
+    fmd = SelectField(label='FMD', choices=fmds, validators=[Optional()], default=None)
+    default_unit_display = Unit.query.filter_by(name=0).first()
+    fmws = [(coy.name) for coy in Fmw.query.filter_by(fmd_id = default_unit_display.id).all()]
+    fmw = SelectField(label='FMW', choices=fmws, validators=[Optional()], default=None)
+    # Complusory fields
     date = DateField(label='Date', validators=[DataRequired()], default=datetime.today)
     submit = SubmitField('Submit')
 
 
-class admin_paradestateviewform(paradestateviewform):
-    # workshops = [("Sembawang"),("Bedok"),("Navy"),("Selarang"),("HQ")]
-    fmd = SelectField(label='FMD', choices=[(9),(92),(93)],default=0)
-    fmw = SelectField(label='FMW', choices=[])
-
-
 class strengthviewform(FlaskForm):
-    fmw = SelectField(label='FMW', choices=[], id='fmw')
-    fmd = SelectField(label='FMD', choices=[(9),(92),(93)], id='fmd')
+    fmds = [(coy.name) for coy in Unit.query.all()]
+    fmd = SelectField(label='FMD', choices=fmds, id='fmd')
+    default_unit_display = Unit.query.filter_by(name=0).first()
+    fmws = [(coy.name) for coy in Fmw.query.filter_by(fmd_id = default_unit_display.id).all()]
+    fmw = SelectField(label='FMW', choices=fmws, id='fmw')
+    submit = SubmitField('Submit')
+
+
+class loadfmwform(FlaskForm):
+    fmds = [(coy.name) for coy in db.session.query(Unit).filter(Unit.name!=0).all()]
+    fmd = SelectField(label='FMD', choices=fmds, id='fmd')
+    default_unit_display = Unit.query.filter_by(name=9).first()
+    fmws = [(coy.name) for coy in Fmw.query.filter_by(fmd_id = default_unit_display.id).all()]
+    fmw = SelectField(label='FMW', choices=fmws, id='fmw')
     submit = SubmitField('Submit')
 
 

@@ -2,7 +2,7 @@ import git
 from flask import (Blueprint, flash, g, redirect, render_template, request,
                    session, url_for)
 from flaskapp import db
-from .models import User, Unit, Personnel
+from .models import User, Unit, Personnel, Fmw
 from .forms import paradestateform
 
 bp = Blueprint('misc', __name__)
@@ -14,10 +14,11 @@ def success():
 
 @bp.route('/generate_testdata', methods=('GET', 'POST'))
 def testdata():
-    coys = Unit.query.all()
-    # ("username", "password", "fmw","fmd","clearance","unit_id")
+    coys = Fmw.query.all()
+    print(coys)
+    # ("username", "password","clearance","unit_id")
     for coy in coys:
-        print("('{}','{}','{}',{},{},{}),".format(coy.fmw,coy.fmw,coy.fmw,coy.fmd,3,coy.id))
+        print("('{}','{}',{},{}),".format(coy.name,coy.name,3,coy.id))
     return('hi')
 
 # generate route for webhook

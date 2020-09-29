@@ -137,7 +137,7 @@
                     <form action="" method="post">
                         {{ form.hidden_tag() }}
 
-                        {% if form.fmw %}
+                        {% if current_user.clearance <2 %}
                         <h5 class="ml-lg-1 text-center">Please select the FMD which you want to view:</h5>
                         <div class="form-row mx-1 mt-lg-3">
                             <div class="col-md-3 font-weight-bold">

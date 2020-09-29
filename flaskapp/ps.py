@@ -13,7 +13,7 @@ from .db_methods import (act_deact_personnel_db, add_del_personnel_db,
                          submit_PS)
 from .forms import (admin_actdeactform, admin_adddelform,
                     admin_generateexcelform, admin_paradestateviewform,
-                    paradestateform, paradestateviewform, strengthviewform)
+                    paradestateform, strengthviewform)
 from .helpers import workshop_type
 from .methods import (generate_PS, retrieve_personnel_list,
                       retrieve_personnel_statuses)
@@ -78,19 +78,13 @@ def paradestate():
     Clearance 1: Select FMW and FMD to view
     Clearance 3: View current FMW
     '''
-    if current_user.clearance <= 2: form = admin_paradestateviewform()
-    else: form = paradestateviewform()
-    form.fmw.choices = [(coy.fmw) for coy in Unit.query.filter_by(fmd=9).all()]
-    if form.validate_on_submit():
-        if current_user.clearance <= 2: fmw = form.fmw.data
-        else: fmw = session.get('fmw')
+    form = admin_paradestateviewform()
+    if request.method == "POST":
+        if current_user.clearance <= 1: fmw = form.fmw.data
+        else: fmw = current_user.fmw.name
         date = form.date.data
-        personnels_status, missing_status = retrieve_personnel_statuses(db, fmw, date,session.get('clearance'))
-        print(personnels_status)
-        print('space')
-        print(missing_status)
+        personnels_status, missing_status = retrieve_personnel_statuses(db, fmw, date, session.get('clearance'))
         if len(personnels_status) != 0:
-            ## To retrive data from personnel table, use query.Person.whateverdatayouneed
             return render_template('ps/paradestate.html', personnels=personnels_status,
                                    missing_personnels=missing_status, date=date)
         flash("No one has submitted PS. Please remind them to do so!")
@@ -107,8 +101,7 @@ def strengthviewer():
     '''
     if current_user.clearance <= 2:
         form = strengthviewform()
-        form.fmw.choices = [(coy.fmw) for coy in Unit.query.filter_by().all()]
-        if form.validate_on_submit():
+        if request.method == "POST":
             fmw = form.fmw.data
             personnels = retrieve_personnel_list(fmw)
             if personnels != []:
@@ -116,7 +109,7 @@ def strengthviewer():
             flash('No personnel in selected FMW yet.')
         return render_template('ps/select_fmw2.html', form=form)
     else:
-        fmw = current_user.fmw
+        fmw = current_user.fmw.name
         personnels = retrieve_personnel_list(fmw)
         return render_template('ps/strengthviewer.html', fmw=fmw, personnels=personnels)
     

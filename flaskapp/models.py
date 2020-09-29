@@ -32,10 +32,9 @@ class User(db.Model,UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.Text, nullable=False,)
     password = db.Column(db.Text, nullable=False)
-    fmw = db.Column(db.Text, nullable=False)
-    fmd = db.Column(db.Integer, nullable=False)
     clearance = db.Column(db.Integer, nullable=False)
-    unit_id = db.Column(db.Integer,db.ForeignKey('unit.id'), nullable=False)
+
+    fmw_id = db.Column(db.Integer,db.ForeignKey('fmw.id'), nullable=False)
 
     @validates('clearance')
     def validate_clearance(self, key, clearance):
@@ -43,17 +42,8 @@ class User(db.Model,UserMixin):
             raise AssertionError('Clearance should be an int value form 1 to 3') 
         return clearance @validates('clearance')
 
-    @validates('fmd') 
-    def validate_fmd(self, key, fmd):
-        if fmd!=1 or fmd!=2:
-            raise AssertionError('FMD should be 93 or 92') 
-        return fmd @validates('fmd') 
-
     def __init__(self, username=''):
         self.username = username
-    
-    def get_fmw(self):
-        return self.fmw
 
     def __repr__(self):
         return '<User {}>'.format(self.username)
@@ -62,12 +52,11 @@ class Personnel(db.Model):
     __tablename = "personnel"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.Text, nullable=False)
-    fmw = db.Column(db.Text, nullable=False)
-    fmd = db.Column(db.Integer, nullable=False)
     rank = db.Column(db.Text, nullable=False)
     active = db.Column(db.Boolean, nullable = False, default='True')
-    unit_id = db.Column(db.Integer,db.ForeignKey('unit.id'), nullable=False)
-    status = db.relationship('Personnel_status',backref=db.backref('Person', lazy=False))
+
+    fmw_id = db.Column(db.Integer,db.ForeignKey('fmw.id'), nullable=False)
+    statuses = db.relationship('Personnel_status',backref=db.backref('Person', lazy=False) )
 
     def __init__(self, rank='', name='', fmw='', fmd=''):
         self.rank = rank
@@ -86,9 +75,9 @@ class Personnel_status(db.Model):
     am_remarks = db.Column(db.Text, nullable=False)
     pm_status = db.Column(db.Text, nullable=False)
     pm_remarks = db.Column(db.Text)
+
     personnel_id = db.Column(db.Integer, db.ForeignKey('personnel.id'), nullable=False)
     
-
     def __init__(self,date='',am_status = '',am_remarks = '',pm_status = '',pm_remarks = '',personnel_id=''):
         self.date = date
         self.am_status = am_status
@@ -101,17 +90,30 @@ class Personnel_status(db.Model):
     def __repr__(self):
         return '<Record {}>'.format(self.date)
 
+class Fmw(db.Model):
+    __tablename = "fmw"
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.Text,nullable=False)
+
+    fmd_id = db.Column(db.Integer,db.ForeignKey('unit.id'), nullable=False)
+    personnels = db.relationship('Personnel',backref=db.backref('fmw', lazy=False))
+    users = db.relationship('User',backref=db.backref('fmw', lazy=False))
+
+    def __init__(self, name=''):
+        self.name = name
+        
+    def __repr__(self):
+        return '<Fmw {}>'.format(self.name)
+
 class Unit(db.Model):
     __tablename = "unit"
     id = db.Column(db.Integer, primary_key=True)
-    fmd = db.Column(db.Integer,nullable=False)
-    fmw = db.Column(db.Text,nullable=False)
-    coy = db.relationship('Personnel',backref=db.backref('unit', lazy=False))
-    member = db.relationship('User',backref=db.backref('unit', lazy=False))
+    name = db.Column(db.Integer,nullable=False)
 
-    def __init__(self, fmw='', fmd=''):
-        self.fmw = fmw
-        self.fmd = fmd
+    fmws = db.relationship('Fmw',backref=db.backref('unit', lazy=False))
+
+    def __init__(self, name=''):
+        self.name = name
         
     def __repr__(self):
-        return '<Unit {}>'.format(self.fmw)
+        return '<Unit {}>'.format(self.name)

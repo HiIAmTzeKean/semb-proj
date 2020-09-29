@@ -7,9 +7,9 @@ from flask_bootstrap import Bootstrap
 from config import Config
 
 app = Flask(__name__, instance_relative_config=True, template_folder='templates')
-app.config.from_mapping(
-    SECRET_KEY='dev',
-)
+# app.config.from_mapping(
+#     SECRET_KEY='dev',
+# )
 
 # load the instance config
 app.config.from_pyfile('config.py', silent=False)
@@ -25,7 +25,6 @@ Bootstrap(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'auth.login'
 
-
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 from . import models
@@ -37,7 +36,6 @@ from . import ps
 app.register_blueprint(ps.bp)
 app.add_url_rule('/', endpoint='index')
 
-# for misc pages
 from . import misc
 app.register_blueprint(misc.bp)
 
