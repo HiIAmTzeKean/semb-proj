@@ -2,7 +2,7 @@ from datetime import datetime
 
 from flask_wtf import FlaskForm
 from wtforms import (HiddenField, PasswordField, SelectField, StringField,
-                     SubmitField)
+                     SubmitField, BooleanField)
 from wtforms.fields.html5 import DateField
 from wtforms.validators import DataRequired, InputRequired, Optional
 
@@ -99,10 +99,7 @@ class admin_generateexcelform(FlaskForm):
         return True
 
 
-class mark_personnel_present_form(FlaskForm):
-    fmw = HiddenField()  # so we can return to the paradestate page immediately after processing request
-    name = HiddenField(validators=[DataRequired()])
-    date = HiddenField(validators=[DataRequired()])
-    time = HiddenField(validators=[DataRequired()])
-    submit = SubmitField('Mark as Present')
+class admin_statuschangerform(FlaskForm):
+    mark_present = BooleanField(label='Mark present', validators=[Optional()])
+    submit = SubmitField('Submit')
 

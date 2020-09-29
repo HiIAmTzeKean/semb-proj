@@ -10,14 +10,14 @@ from .auth import fmw_required
 from .db_methods import (act_deact_personnel_db, add_del_personnel_db,
                          check_personnel_exist, retrive_one_record,
                          retrive_personnel_id, retrive_record_by_date,
-                         submit_PS)
+                         submit_PS_helper)
 from .forms import (admin_actdeactform, admin_adddelform,
                     admin_generateexcelform, admin_paradestateviewform,
-                    paradestateform, strengthviewform, mark_personnel_present_form)
+                    paradestateform, strengthviewform, admin_statuschangerform)
 from .helpers import workshop_type
 from .methods import (generate_PS, retrieve_personnel_list,
                       retrieve_personnel_statuses)
-from .models import Personnel, Personnel_status, User, Unit
+from .models import Personnel, Personnel_status, User, Unit, Fmw
 
 bp = Blueprint('ps', __name__)
 
@@ -36,24 +36,29 @@ def index():
     form = paradestateform()
     form.name.choices = [(pers.id,pers.name) for pers in retrieve_personnel_list(fmw,clearance)]
     updated = False
-    print(request.args)
-    if 'name' in request.args:
-        today = datetime.date(datetime.today())
-        personnel_id = int(request.args['name'])
-        record = retrive_record_by_date(db, personnel_id, today)
-        if record:
-            form.name.data = record['id']
-            form.am_status.data = record['am_status']
-            form.am_remarks.data = record['am_remarks']
-            form.pm_status.data = record['pm_status']
-            form.pm_remarks.data = record['pm_remarks']
+
+    if request.args.get('status_change') is not None:
+        personnel_id = request.args.get('personnel_id')
+        date = request.args.get('date')
+        date = datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
+        fmw_id= request.args.get('fmw_id')
+        if request.args.get('status_change') == True:
+            print('looping through True')
+            record = retrive_record_by_date(personnel_id, date)
+            form.start_date.data = record.date
+            form.end_date.data = record.date
+            form.name.data = record.personnel_id
+            form.am_status.data = record.am_status
+            form.am_remarks.data = record.am_remarks
+            form.pm_status.data = record.pm_status
+            form.pm_remarks.data = record.pm_remarks
         else:
+            print('looping through false')
             form.name.data = personnel_id
-
         return render_template('ps/index.html', form=form, updated=updated, personnel=None,
-                               redirect_to_paradestate=True, fmw=fmw, date=today)
+                               redirect_to_paradestate=True, date=date)
 
-    elif form.validate_on_submit():
+    if form.validate_on_submit():
         start_date = form.start_date.data
         end_date = form.end_date.data
         personnel_id = form.name.data
@@ -61,15 +66,8 @@ def index():
         am_remarks = form.am_remarks.data
         pm_status = form.pm_status.data
         pm_remarks = form.pm_remarks.data
-        if start_date == end_date:
-            submit_PS(db,personnel_id, start_date, am_status, am_remarks, pm_status, pm_remarks)
-            multi_date = False
-        else:
-            date = start_date
-            while date != (end_date + timedelta(days=1)):
-                submit_PS(db,personnel_id, date, am_status, am_remarks, pm_status, pm_remarks)
-                date = date + timedelta(days=1)
-            multi_date =True
+
+        multi_date = submit_PS_helper(db,personnel_id, start_date, end_date, am_status, am_remarks, pm_status, pm_remarks)
         updated = True
         record = Personnel_status.query.filter(Personnel_status.personnel_id==personnel_id,Personnel_status.date==start_date).first()
 
@@ -77,6 +75,7 @@ def index():
                             multi_date=multi_date, personnel=record, end_date=end_date))
         resp.set_cookie('personnel_id', value = str(personnel_id), max_age=60*60*24)
         return resp
+    
     record = Personnel_status.query.filter(Personnel_status.personnel_id==request.cookies.get('personnel_id'),Personnel_status.date==datetime.date(datetime.today())).first()
     if record:
         form.name.data = record.id
@@ -95,21 +94,19 @@ def paradestate():
     Clearance 1: Select FMW and FMD to view
     Clearance 3: View current FMW
     '''
-    status_update_form = mark_personnel_present_form()
+    statusupdate_form = admin_statuschangerform()
     form = admin_paradestateviewform()
-    if 'fmw' in request.args and 'date' in request.args:
-        # request was after somebody was marked as present
-        # so return to the parade state view immediately
-        fmw = request.args['fmw']
-        date = request.args['date']
-        personnels_status, missing_status = retrieve_personnel_statuses(db, fmw, date)
+    if request.args.get('redirect_to_paradestate'):
+        fmw_id = request.args.get('fmw_id')
+        # i will change search to find by fmw id instead later on in methods
+        fmw = Fmw.query.filter_by(id=fmw_id).first()
+        date = request.args.get('date')
+        personnels_status, missing_status = retrieve_personnel_statuses(db, fmw.name, date, session.get('clearance'))
         if len(personnels_status) != 0:
             return render_template('ps/paradestate.html', personnels=personnels_status,
-                                   missing_personnels=missing_status, date=date,
-                                   status_update_form=status_update_form)
+                                   missing_personnels=missing_status, date=date)
         flash("No one has submitted PS. Please remind them to do so!")
-    
-    # elif request.method == "POST":
+
     elif form.validate_on_submit():
         if current_user.clearance <= 1: fmw = form.fmw.data
         else: fmw = current_user.fmw.name
@@ -117,9 +114,37 @@ def paradestate():
         personnels_status, missing_status = retrieve_personnel_statuses(db, fmw, date, session.get('clearance'))
         if len(personnels_status) != 0:
             return render_template('ps/paradestate.html', personnels=personnels_status,
-                                   missing_personnels=missing_status, date=date, status_update_form=status_update_form)
+                                   missing_personnels=missing_status, date=date)
         flash("No one has submitted PS. Please remind them to do so!")
-    return render_template('ps/paradestate.html', form=form, status_update_form=status_update_form)
+    return render_template('ps/paradestate.html', form=form)
+
+@bp.route('/statuschange/<personnel_id>/<date>', methods=('GET', 'POST'))
+@login_required
+def statuschange(personnel_id,date):
+    record = Personnel_status.query.filter_by(personnel_id=personnel_id,date=date).first()
+    fmw_id = request.args.get('fmw_id')
+    time = request.args.get('time')
+    date = datetime.strptime(date, '%Y-%m-%d')
+
+    if 'set_present' in request.args:
+        print('setting present')
+        if request.args.get('time') == "AM":
+            record = Personnel_status(date, 'P', '', None, '', personnel_id)
+        else:
+            record = Personnel_status(date, None, '', 'P', '', personnel_id)
+        db.session.add(record)
+        db.session.commit()
+        flash('Updated Personnel selected!')
+        return redirect(url_for('ps.paradestate', redirect_to_paradestate=True, fmw_id=fmw_id, date=date))
+
+    elif record is None:
+        print('no record, lets set it')
+        return redirect(url_for('index', status_change=False,redirect_to_paradestate=True,personnel_id=personnel_id,date=date, fmw_id=fmw_id))
+
+    elif record:
+        # load record and allow for edits
+        print('loading records')
+        return redirect(url_for('index', status_change=True,redirect_to_paradestate=True,personnel_id=personnel_id,date=date,fmw_id=fmw_id))
 
 
 @bp.route('/strengthviewer', methods=('GET', 'POST'))

@@ -1,4 +1,5 @@
 from .models import Personnel, Personnel_status, User
+from datetime import timedelta
 
 
 def update_PS(db,personnel_id, date, am_status, am_remarks, pm_status, pm_remarks):
@@ -14,7 +15,7 @@ def insert_PS(db,personnel_id, date, am_status, am_remarks, pm_status, pm_remark
     db.session.commit()
 
 
-def retrive_record_by_date(db,personnel_id,date):
+def retrive_record_by_date(personnel_id,date):
     if personnel_id == None or personnel_id == '' or personnel_id == []:
         return None
     record = Personnel_status.query.filter(Personnel_status.personnel_id==personnel_id,Personnel_status.date==date).first()
@@ -27,6 +28,21 @@ def submit_PS(db,personnel_id, date, am_status, am_remarks, pm_status, pm_remark
         update_PS(db, personnel_id, date, am_status, am_remarks, pm_status, pm_remarks)
     else:
         insert_PS(db, personnel_id, date, am_status, am_remarks, pm_status, pm_remarks)
+
+
+def submit_PS_helper(db,personnel_id, start_date, end_date, am_status, am_remarks, pm_status, pm_remarks, multi_date_needed = True):
+    if start_date == end_date:
+        submit_PS(db,personnel_id, start_date, am_status, am_remarks, pm_status, pm_remarks)
+        multi_date = False
+    else:
+        date = start_date
+        while date != (end_date + timedelta(days=1)):
+            submit_PS(db,personnel_id, date, am_status, am_remarks, pm_status, pm_remarks)
+            date = date + timedelta(days=1)
+        multi_date =True
+    if multi_date_needed == False:
+        return
+    return multi_date
 
 
 def retrive_personnel_id(db,name,fmw,rank=""):

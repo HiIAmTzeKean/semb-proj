@@ -72,8 +72,8 @@ class Personnel_status(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Date, nullable=False)
     am_status = db.Column(db.Text)
-    am_remarks = db.Column(db.Text, nullable=False)
-    pm_status = db.Column(db.Text, nullable=False)
+    am_remarks = db.Column(db.Text)
+    pm_status = db.Column(db.Text)
     pm_remarks = db.Column(db.Text)
 
     personnel_id = db.Column(db.Integer, db.ForeignKey('personnel.id'), nullable=False)

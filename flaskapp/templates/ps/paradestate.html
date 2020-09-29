@@ -79,6 +79,10 @@
                             <tr class="table-danger">
                                 <td>{{ person.rank }} {{ person.name }}</td>
                                 <td>ZZ: NONE PROVIDED</td>
+                                <td>
+                                    <a href="{{ url_for('ps.statuschange', personnel_id=person.id, date=date, fmw_id=person.fmw.id, time = 'AM', set_present=True)}}" class="btn btn-dark w-100 mt-1">Mark Present</a>
+                                    <a href="{{ url_for('ps.statuschange', personnel_id=person.id, date=date, fmw_id=person.fmw.id)}}" class="btn btn-dark w-100 mt-1">Other Status</a>
+                                </td>
                             </tr>
                         {% endfor %}
                     </table>
