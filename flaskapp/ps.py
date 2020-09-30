@@ -8,10 +8,10 @@ from flaskapp import db
 
 from .auth import fmw_required
 from .db_methods import (act_deact_personnel_db, add_del_personnel_db,
-                         check_personnel_exist, retrive_one_record,
+                         check_personnel_exist,
                          retrive_record_by_date,
                          submit_PS_helper)
-from .forms import (admin_actdeactform, admin_adddelform,
+from .forms import (admin_adddelform, submitform,
                     admin_generateexcelform, admin_paradestateviewform,
                     paradestateform, strengthviewform)
 from .helpers import workshop_type
@@ -92,12 +92,19 @@ def index():
 @bp.route('/paradestate', methods=('GET', 'POST'))
 @login_required
 def paradestate():
-    '''
-    View paradestate with date input
-    Clearance 1: Select FMW and FMD to view
-    Clearance 3: View current FMW
-    '''
+    """View paradestate with date input
+       Clearance 1: Select FMW and FMD to view
+       Clearance 3: View current FMW
+
+    Methods:
+        Set Present: [Button in html. Set present for selected time. Redirects user back
+        to same view again]
+        Other Status: [Button in html. Set other status for Person. 
+        Redirects user to Index page then back to paradestate page again]
+    """
+
     form = admin_paradestateviewform()
+    # return to display at which user was at
     if request.args.get('redirect_to_paradestate'):
         fmw_id = request.args.get('fmw_id')
         date = request.args.get('date')
@@ -119,19 +126,22 @@ def paradestate():
                                    missing_personnels=missing_status, date=date,
                                    fmw_name=db.session.query(Fmw.name).filter_by(id=fmw_id).scalar())
         flash("No one has submitted PS. Please remind them to do so!")
-
+    
     return render_template('ps/paradestate.html', form=form)
 
 @bp.route('/statuschange/<personnel_id>/<date>', methods=('GET', 'POST'))
 @login_required
 def statuschange(personnel_id,date):
     """Route to change paradestate for personnel
-
+    Methods:
+        set_present: [Set status to present for time arg provided]
+        redirect index: [Redirect for setting of status (Setting of other status or status was not set
+        in the first place)]
     Args:
         personnel_id
         date ([str]): [%Y-%m-%d]
         fmw_id: [fmw_id belonging to personnel]
-        set_present: [Boolean]
+        set_present ([Boolean])
         time ([str]): [AM/PM]
 
     Redirects:
@@ -163,64 +173,98 @@ def statuschange(personnel_id,date):
 @bp.route('/strengthviewer', methods=('GET', 'POST'))
 @login_required
 def strengthviewer():
-    '''
-    Display current strength in FMW
-    Clearance 1: Select FMW and FMD to view
-    Clearance 3: View current FMW
-    '''
+    """Display current strength in FMW
+       Clearance 1: Select FMW and FMD to view
+       Clearance 3: View current FMW
+
+    Methods:
+        Add: [redirect user to add_del route on form submission]
+        Del: [redirect user to add_del route. Button is in html form]
+        Deactivate (not done)
+        Activate (not done)
+    """
+    add_form = admin_adddelform()
+    if add_form.validate_on_submit():
+        #for workshop level add first
+        #TODO admin id shouldnt be tagged to personnel look at comment below
+        fmw_id = current_user.fmw.id
+        return redirect(url_for('ps.add_del', personnel_name=add_form.name.data,
+                                fmw_id=fmw_id, rank=add_form.rank.data, add_del='add'))
+
+    # redirect from add/del and activate/deactivate
+    if request.args.get('redirect_to_strenghtviewer') and request.args.get('cancel_request'):
+        flash('Cancelled!')
+    else: 
+        flash('Success!')
+    
+    #TODO set cookie to save current fmw and user for easy redirect. Need to consider lapse if user is admin
     if current_user.clearance <= 2:
         form = strengthviewform()
         if form.validate_on_submit():
             fmw_id = form.fmw.data
             personnels = retrieve_personnel_list(fmw_id,current_user.clearance)
             if personnels != []:
-                return render_template('ps/strengthviewer.html', fmw=fmw_id, personnels=personnels)
+                return render_template('ps/strengthviewer.html', personnels=personnels,add_form=add_form)
             flash('No personnel in selected FMW yet.')
-        return render_template('ps/select_fmw_strengthviewer.html', form=form)
+        return render_template('ps/select_fmw_strengthviewer.html', form=form, add_form=add_form)
     else:
-        fmw_id = current_user.fmw.id
-        personnels = retrieve_personnel_list(current_user.clearance)
-        return render_template('ps/strengthviewer.html', fmw=fmw_id, personnels=personnels)
-    
+        personnels = retrieve_personnel_list(current_user.fmw.id, current_user.clearance)
+        return render_template('ps/strengthviewer.html', personnels=personnels,add_form=add_form)
 
-@bp.route('/admin/add_del_personnel', methods=('GET', 'POST'))
+
+@bp.route('/add_del_personnel/<rank>/<personnel_name>/<fmw_id>/<add_del>', methods=('GET', 'POST'))
 @login_required
-def admin_add_del():
-    form = admin_adddelform()
-    if form.validate_on_submit():
-        name = form.name.data
-        rank = form.rank.data
-        if session.get('clearance') <= 2: fmw_id = form.fmw.data
-        else: fmw_id = session.get('fmw_id')
-        add_del = form.add_del.data
-        error, personnel = add_del_personnel_db(db, add_del, rank, name, fmw_id)
-        if error == None:
-            return render_template('ps/admin_add_del.html', add_del=add_del, personnel=personnel)
-        flash(error)
-    flash(form.errors)
-    return render_template('ps/admin_add_del.html', form=form)
+def add_del(rank,personnel_name,fmw_id,add_del):
+    """Add/Del personnel from DB
+
+    Args:
+        rank
+        personnel_name
+        fmw_id
+        add_del
+        personnel_id
+
+    Returns:
+        redirect_to_strenghtviewer ([Boolean])
+        cancel_request ([Boolean]): [If user wants to cancel request, cancel button is in html page]
+    """
+    form = submitform()
+    if add_del == 'del' and form.validate_on_submit():
+        status_records = Personnel_status.query.filter(Personnel_status.personnel_id==request.args.get('personnel_id')).all()
+        record = Personnel.query.filter_by(id=request.args.get('personnel_id')).first()
+        for status in status_records:
+            db.session.delete(status)
+        db.session.commit()
+        db.session.delete(record)
+        db.session.commit()
+        return redirect(url_for('ps.strengthviewer', redirect_to_strenghtviewer=True))
+    elif add_del == 'add' and form.validate_on_submit():
+        db.session.add(Personnel(rank,personnel_name,fmw_id))
+        db.session.commit()
+        return redirect(url_for('ps.strengthviewer', redirect_to_strenghtviewer=True))
+    return render_template('ps/admin_add_del.html',form=form,rank=rank,personnel_name=personnel_name,fmw_id=fmw_id)
 
 
-@bp.route('/admin/act_deact', methods=('GET', 'POST'))
-@login_required
-def admin_act_deact():
-    form = admin_actdeactform()
-    fmd = session.get('fmd')
-    form.fmw.choices = workshop_type(fmd)
-    if form.validate_on_submit():
-        name = form.name.data
-        rank = form.rank.data
-        if session.get('clearance') <= 2: fmw = form.fmw.data
-        else: fmw = session.get('fmw')
-        act_deact = form.act_deact.data
-        error = check_personnel_exist(db, name, fmw_id, rank)
-        if error == None:
-            act_deact_personnel_db(db, act_deact, rank, name, fmw, fmd)
-            personnel = retrive_one_record(db, name, fmw_id)
-            return render_template('ps/admin_act_deact.html', act_deact=act_deact, personnel=personnel)
-        flash(error)
-    flash(form.errors)
-    return render_template('ps/admin_act_deact.html', form=form)
+# @bp.route('/admin/act_deact', methods=('GET', 'POST'))
+# @login_required
+# def admin_act_deact():
+#     form = admin_actdeactform()
+#     fmd = session.get('fmd')
+#     form.fmw.choices = workshop_type(fmd)
+#     if form.validate_on_submit():
+#         name = form.name.data
+#         rank = form.rank.data
+#         if session.get('clearance') <= 2: fmw = form.fmw.data
+#         else: fmw = session.get('fmw')
+#         act_deact = form.act_deact.data
+#         error = check_personnel_exist(db, name, fmw_id, rank)
+#         if error == None:
+#             act_deact_personnel_db(db, act_deact, rank, name, fmw, fmd)
+#             personnel = retrive_one_record(db, name, fmw_id)
+#             return render_template('ps/admin_act_deact.html', act_deact=act_deact, personnel=personnel)
+#         flash(error)
+#     flash(form.errors)
+#     return render_template('ps/admin_act_deact.html', form=form)
 
 @bp.route('/admin/generate_excel', methods=('GET', 'POST'))
 @login_required

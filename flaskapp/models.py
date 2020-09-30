@@ -58,10 +58,11 @@ class Personnel(db.Model):
     fmw_id = db.Column(db.Integer,db.ForeignKey('fmw.id'), nullable=False)
     statuses = db.relationship('Personnel_status',backref=db.backref('Person', lazy=False) )
 
-    def __init__(self, rank='', name='', fmw=''):
+    def __init__(self, rank='', name='',fmw_id='', active=True):
         self.rank = rank
         self.name = name
-        self.fmw = fmw
+        self.active = active
+        self.fmw_id = fmw_id
         
     def __repr__(self):
         return '<User {}>'.format(self.name)

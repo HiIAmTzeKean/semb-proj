@@ -55,14 +55,6 @@ def retrive_personnel_id(db,name,fmw_id,rank=""):
     return None
 
 
-def retrive_one_record(db,name,fmw_id,rank=''):
-    if rank != "":
-        record = Personnel.query.filter_by(name=name,fmw_id=fmw_id,rank=rank).first()
-    else:
-        record = Personnel.query.filter_by(name=name,fmw_id=fmw_id).first()
-    if record: return record
-    return None
-
 
 def check_personnel_exist(db,name,fmw_id,rank):
     record = Personnel.query.filter_by(name=name,rank=rank).first()

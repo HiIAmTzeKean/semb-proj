@@ -10,17 +10,20 @@
         <div class="col">
             <h1 class="font-weight-bold">Personnel List for {{ current_user.fmw.name }}</h1>
 
+            <form action="" method="post">
+            {{ add_form.hidden_tag() }} 
             <table>
                 <tr>
-                    <th>Rank</th>
-                    <th>Name</th>
-                    <th><a href="">submit</a></th>
+                    <th>{{ add_form.rank.label }}</th>
+                    <th>{{ add_form.name.label }}</th>
+                    <th>{{ add_form.submit }}</a></th>
                 </tr>
                 <tr>
-                    <th>box</th>
-                    <th>box</th>
+                    <th>{{ add_form.rank }}</th>
+                    <th>{{ add_form.name }}</th>
                 </tr>
             </table>
+            </form>
 
             <table class="table mt-3">
                 <thead class="thead-dark">
@@ -43,7 +46,7 @@
                         <td>{{ person.fmw.name }}</td>
                         <td>{{ person.active }}</td>
                         <td>
-                            <a href="">Delete</a>
+                            <a href="{{ url_for('ps.add_del', rank=person.rank, personnel_name=person.name, fmw_id=person.fmw.id,personnel_id=person.id, add_del='del' )}}">Delete</a>
                             <a href="">Deactivate</a>
                         </td>
                     </tr>

@@ -37,14 +37,12 @@ class paradestateform(FlaskForm):
         return True
 
 
-class admin_paradestateviewform(FlaskForm):
-    fmds = [(coy.id, coy.name) for coy in Unit.query.all()]
-    fmd = SelectField(label='FMD', choices=fmds, validators=[Optional()], default=None)
-    default_unit_display = Unit.query.filter_by(name=0).first()
+class loadfmwform(FlaskForm):
+    fmds = [(coy.id, coy.name) for coy in db.session.query(Unit).filter(Unit.name!=0).all()]
+    fmd = SelectField(label='FMD', choices=fmds, default=None)
+    default_unit_display = Unit.query.filter_by(name=9).first()
     fmws = [(coy.id, coy.name) for coy in Fmw.query.filter_by(fmd_id = default_unit_display.id).all()]
-    fmw = SelectField(label='FMW', choices=fmws, validators=[Optional()], validate_choice=False, default=None)
-    # Complusory fields
-    date = DateField(label='Date', validators=[DataRequired()], default=datetime.today)
+    fmw = SelectField(label='FMW', choices=fmws, default=None)
     submit = SubmitField('Submit')
 
 
@@ -57,23 +55,20 @@ class strengthviewform(FlaskForm):
     submit = SubmitField('Submit')
 
 
-class loadfmwform(FlaskForm):
-    fmds = [(coy.id, coy.name) for coy in db.session.query(Unit).filter(Unit.name!=0).all()]
-    fmd = SelectField(label='FMD', choices=fmds, id='fmd')
-    default_unit_display = Unit.query.filter_by(name=9).first()
-    fmws = [(coy.id, coy.name) for coy in Fmw.query.filter_by(fmd_id = default_unit_display.id).all()]
-    fmw = SelectField(label='FMW', choices=fmws, id='fmw')
-    submit = SubmitField('Submit')
+class admin_paradestateviewform(strengthviewform):
+    date = DateField(label='Date', validators=[DataRequired()], default=datetime.today)
+
 
 ################################ Pending del after init of del methods
+class submitform(FlaskForm):
+    submit = SubmitField('Submit')
+
+
 class admin_adddelform(FlaskForm):
     name = StringField(label='Name', validators=[DataRequired()])
     rank = StringField(label='Rank', validators=[DataRequired()])
-    add_del = SelectField(label='Add/Delete', choices=[('Add'),('Delete')])
     submit = SubmitField('Submit')
-    #for clearance 2 and above
-    workshops = [("Sembawang"),("Bedok"),("Navy"),("Selarang"),("HQ")]
-    fmw = SelectField(label='FMW', choices=workshops)
+    fmw = SelectField(label='FMW', choices=[], validators=[Optional()], validate_choice=False, default=None)
 
 
 class admin_actdeactform(FlaskForm):
