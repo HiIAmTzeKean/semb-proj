@@ -6,14 +6,14 @@ from pathlib import Path
 from .models import Fmw, Personnel, Personnel_status, User
 
 
-def retrieve_personnel_list(fmw,clearance=100):
-    if fmw == "Admin" or clearance < 2: return Personnel.query.all()
-    subquery = Fmw.query.filter_by(name=fmw).first()
-    return Personnel.query.filter_by(fmw_id=subquery.id).all()
+def retrieve_personnel_list(fmw_id,clearance=100,query_all=False):
+    if query_all == True and clearance <= 2: return Personnel.query.all()
+    # subquery = Fmw.query.filter_by(name=fmw).first()
+    return Personnel.query.filter_by(fmw_id=fmw_id).all()
 
 
-def retrieve_personnel_statuses(db,fmw,date,clearance=100,missing_status_needed=True):
-    if fmw == 'Admin' and clearance<2:
+def retrieve_personnel_statuses(db,fmw_id,date,clearance=100,missing_status_needed=True,query_all=False):
+    if clearance<=2 and query_all==True:
         # query all
         personnel_statuses = db.session.query(Personnel_status).filter(
             Personnel_status.date==date,Personnel.id==Personnel_status.personnel_id).all()
@@ -22,14 +22,14 @@ def retrieve_personnel_statuses(db,fmw,date,clearance=100,missing_status_needed=
             subquery = db.session.query(Personnel.id).join(Personnel_status, Personnel.id==Personnel_status.personnel_id).filter(Personnel_status.date==date)
             missing_status = db.session.query(Personnel).filter(Personnel.id.notin_(subquery)).all()
     else:
-        fmw_query = Fmw.query.filter_by(name=fmw).first()
+        #fmw_query = Fmw.query.filter_by(name=fmw).first()
         personnel_statuses = db.session.query(Personnel_status).filter(
-            Personnel_status.date==date,Personnel.id==Personnel_status.personnel_id,Personnel.fmw_id==fmw_query.id).all()
+            Personnel_status.date==date,Personnel.id==Personnel_status.personnel_id,Personnel.fmw_id==fmw_id).all()
             
         if missing_status_needed==True:
             subquery = db.session.query(Personnel.id).join(Personnel_status, Personnel.id==Personnel_status.personnel_id).filter(Personnel_status.date==date)
-            fmw_query = Fmw.query.filter_by(name=fmw).first()
-            missing_status = db.session.query(Personnel).filter(Personnel.id.notin_(subquery),Personnel.fmw_id==fmw_query.id).all()
+            # fmw_query = Fmw.query.filter_by(name=fmw).first()
+            missing_status = db.session.query(Personnel).filter(Personnel.id.notin_(subquery),Personnel.fmw_id==fmw_id).all()
     return (personnel_statuses, missing_status) if (missing_status_needed == True) else (personnel_statuses)
 
 

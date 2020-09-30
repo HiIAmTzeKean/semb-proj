@@ -26,7 +26,7 @@ def login():
         if user and user.password==form.password.data:
             session.clear()
             login_user(user, remember=True, duration=timedelta(minutes=10))
-            session['fmw'] = user.fmw.name
+            session['fmw_id'] = user.fmw_id
             session['clearance'] = user.clearance
             next_page = request.args.get('next')
             return redirect(next_page) if next_page else redirect(url_for('index'))
@@ -38,23 +38,21 @@ def login():
 def load_fmw():
     form = loadfmwform()
     if request.method == "POST":
-        fmd = form.fmd.data
-        fmw = form.fmw.data
-        session['fmw']=fmw
+        fmd_id = form.fmd.data
+        fmw_id = form.fmw.data
+        session['fmw_id']=fmw_id
         return redirect(url_for('index'))
     return render_template('ps/select_fmw.html',form=form)
 
 
-@bp.route('/fmw/<fmd>', methods=('GET', 'POST'))
-def fmw(fmd):
-    # query fmw on fmd provided
-    # fmws = Unit.query.filter_by(fmd=fmd).all()
-    subquery = Unit.query.filter_by(name=fmd).first()
+@bp.route('/fmw/<fmd_id>', methods=('GET', 'POST'))
+def fmw(fmd_id):
+    subquery = Unit.query.filter_by(id=fmd_id).first()
     fmws = Fmw.query.filter_by(fmd_id = subquery.id).all()
     fmw_array = []
     for fmw in fmws:
         fmwObj ={}
-        #fmwObj['id']=fmw.id
+        fmwObj['id']=fmw.id
         fmwObj['fmw']=fmw.name
         fmw_array.append(fmwObj)
     return jsonify({'fmws': fmw_array})
@@ -76,7 +74,7 @@ def logout():
 def fmw_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
-        if session.get('fmw') is None:
+        if session.get('fmw_id') is None:
             return redirect(url_for('auth.load_fmw'))
         return view(**kwargs)
     return wrapped_view

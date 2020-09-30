@@ -45,29 +45,29 @@ def submit_PS_helper(db,personnel_id, start_date, end_date, am_status, am_remark
     return multi_date
 
 
-def retrive_personnel_id(db,name,fmw,rank=""):
+def retrive_personnel_id(db,name,fmw_id,rank=""):
     if rank != "":
-        record = Personnel.query.filter_by(name=name,fmw=fmw,rank=rank).first()
+        record = Personnel.query.filter_by(name=name,fmw_id=fmw_id,rank=rank).first()
     else:
-        record = Personnel.query.filter_by(name=name,fmw=fmw).first()
+        record = Personnel.query.filter_by(name=name,fmw_id=fmw_id).first()
     if record:
         return record.id
     return None
 
 
-def retrive_one_record(db,name,fmw,rank=''):
+def retrive_one_record(db,name,fmw_id,rank=''):
     if rank != "":
-        record = Personnel.query.filter_by(name=name,fmw=fmw,rank=rank).first()
+        record = Personnel.query.filter_by(name=name,fmw_id=fmw_id,rank=rank).first()
     else:
-        record = Personnel.query.filter_by(name=name,fmw=fmw).first()
+        record = Personnel.query.filter_by(name=name,fmw_id=fmw_id).first()
     if record: return record
     return None
 
 
-def check_personnel_exist(db,name,fmw,rank):
+def check_personnel_exist(db,name,fmw_id,rank):
     record = Personnel.query.filter_by(name=name,rank=rank).first()
     if record:
-        record2 = Personnel.query.filter_by(name=name,rank=rank,fmw=fmw).first()
+        record2 = Personnel.query.filter_by(name=name,rank=rank,fmw_id=fmw_id).first()
         if record2:
             return None
         else:
@@ -91,7 +91,7 @@ def add_del_check(db,add_del,name,fmw,rank):
         Error: [Error message] OR
         record: [Personnel Queried]
     """
-    record = Personnel.query.filter_by(name=name,rank=rank,fmw=fmw).first()
+    record = Personnel.query.filter_by(name=name,rank=rank,fmw_id=fmw_id).first()
     if add_del == 'Add':
         if record:
             return False, "Personnel already exist in your FMW!"
@@ -102,19 +102,19 @@ def add_del_check(db,add_del,name,fmw,rank):
             return False, "Personnel does not exist in your FMW!"
 
 
-def add_del_personnel_db(db, add_del, rank, name, fmw, fmd=93):
+def add_del_personnel_db(db, add_del, rank, name, fmw_id):
     '''
     Output will return (error,personnel)
     if error, personnel will be blank as he does not exist
     else error will be none and valid personnel will be returned
     '''
-    check, output = add_del_check(db,name,fmw,rank,add_del)
+    check, output = add_del_check(db,name,fmw_id,rank,add_del)
     if check == False:
         return output,''
     if add_del == 'Add':
-        db.session.add(Personnel(rank,name,fmw,fmd))
+        db.session.add(Personnel(rank,name,fmw_id))
     else:
-        personnel_record = Personnel.query.filter_by(name=name,rank=rank,fmw=fmw).first()
+        personnel_record = Personnel.query.filter_by(name=name,rank=rank,fmw_id=fmw_id).first()
         status_records = Personnel_status.query.filter(Personnel_status.personnel_id==personnel_record.id).all()
         db.session.delete(status_records)
         db.session.delete(personnel_record)
@@ -122,7 +122,7 @@ def add_del_personnel_db(db, add_del, rank, name, fmw, fmd=93):
     return None, output
 
 
-def act_deact_personnel_db(db,active,rank,name,fmw,fmd):
-    record = db.session.query(Personnel).filter(Personnel.rank==rank,Personnel.name==name,Personnel.fmw==fmw,Personnel.fmd==fmd).first()
+def act_deact_personnel_db(db,active,rank,name,fmw_id):
+    record = db.session.query(Personnel).filter(Personnel.rank==rank,Personnel.name==name,Personnel.fmw_id==fmw_id).first()
     record.active = active
     db.session.commit()

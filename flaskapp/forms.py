@@ -38,34 +38,34 @@ class paradestateform(FlaskForm):
 
 
 class admin_paradestateviewform(FlaskForm):
-    fmds = [(coy.name) for coy in Unit.query.all()]
+    fmds = [(coy.id, coy.name) for coy in Unit.query.all()]
     fmd = SelectField(label='FMD', choices=fmds, validators=[Optional()], default=None)
     default_unit_display = Unit.query.filter_by(name=0).first()
-    fmws = [(coy.name) for coy in Fmw.query.filter_by(fmd_id = default_unit_display.id).all()]
-    fmw = SelectField(label='FMW', choices=fmws, validators=[Optional()], default=None)
+    fmws = [(coy.id, coy.name) for coy in Fmw.query.filter_by(fmd_id = default_unit_display.id).all()]
+    fmw = SelectField(label='FMW', choices=fmws, validators=[Optional()], validate_choice=False, default=None)
     # Complusory fields
     date = DateField(label='Date', validators=[DataRequired()], default=datetime.today)
     submit = SubmitField('Submit')
 
 
 class strengthviewform(FlaskForm):
-    fmds = [(coy.name) for coy in Unit.query.all()]
-    fmd = SelectField(label='FMD', choices=fmds, id='fmd')
+    fmds = [(coy.id, coy.name) for coy in Unit.query.all()]
+    fmd = SelectField(label='FMD', choices=fmds, validators=[Optional()], default=None)
     default_unit_display = Unit.query.filter_by(name=0).first()
-    fmws = [(coy.name) for coy in Fmw.query.filter_by(fmd_id = default_unit_display.id).all()]
-    fmw = SelectField(label='FMW', choices=fmws, id='fmw')
+    fmws = [(coy.id, coy.name) for coy in Fmw.query.filter_by(fmd_id = default_unit_display.id).all()]
+    fmw = SelectField(label='FMW', choices=fmws, validators=[Optional()], validate_choice=False, default=None)
     submit = SubmitField('Submit')
 
 
 class loadfmwform(FlaskForm):
-    fmds = [(coy.name) for coy in db.session.query(Unit).filter(Unit.name!=0).all()]
+    fmds = [(coy.id, coy.name) for coy in db.session.query(Unit).filter(Unit.name!=0).all()]
     fmd = SelectField(label='FMD', choices=fmds, id='fmd')
     default_unit_display = Unit.query.filter_by(name=9).first()
-    fmws = [(coy.name) for coy in Fmw.query.filter_by(fmd_id = default_unit_display.id).all()]
+    fmws = [(coy.id, coy.name) for coy in Fmw.query.filter_by(fmd_id = default_unit_display.id).all()]
     fmw = SelectField(label='FMW', choices=fmws, id='fmw')
     submit = SubmitField('Submit')
 
-
+################################ Pending del after init of del methods
 class admin_adddelform(FlaskForm):
     name = StringField(label='Name', validators=[DataRequired()])
     rank = StringField(label='Rank', validators=[DataRequired()])
@@ -84,7 +84,7 @@ class admin_actdeactform(FlaskForm):
     submit = SubmitField('Submit')
     fmd = SelectField(label='FMD', choices=fmd_type())
     fmw = SelectField(label='FMW', choices='')
-
+##################################
 
 class admin_generateexcelform(FlaskForm):
     start_date = DateField(label='Start Date', validators=[DataRequired()], default=datetime.today)

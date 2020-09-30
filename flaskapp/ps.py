@@ -9,7 +9,7 @@ from flaskapp import db
 from .auth import fmw_required
 from .db_methods import (act_deact_personnel_db, add_del_personnel_db,
                          check_personnel_exist, retrive_one_record,
-                         retrive_personnel_id, retrive_record_by_date,
+                         retrive_record_by_date,
                          submit_PS_helper)
 from .forms import (admin_actdeactform, admin_adddelform,
                     admin_generateexcelform, admin_paradestateviewform,
@@ -25,22 +25,23 @@ bp = Blueprint('ps', __name__)
 @bp.route('/', methods=('GET', 'POST'))
 @fmw_required
 def index():
-    '''
-    Uploading of parade state to DB
-    Clearance 1: Nil
-    Clearance 3: Nil
-    '''
-    fmw = session.get('fmw')
+    """[summary]
+
+    Returns:
+        [type]: [description]
+    """
+    fmw_id = session.get('fmw_id')
     if session.get('clearance') is None: clearance = 100
-    else: clearance = session.get('clearance')
+    else: clearance = current_user.clearance
     form = paradestateform()
-    form.name.choices = [(pers.id,pers.name) for pers in retrieve_personnel_list(fmw,clearance)]
+    form.name.choices = [(pers.id,pers.name) for pers in retrieve_personnel_list(fmw_id,clearance)]
     updated = False
 
     if request.args.get('status_change') is not None:
         personnel_id = int(request.args.get('personnel_id'))
+        print(personnel_id)
         date = request.args.get('date')
-        date = datetime.strptime(date, '%Y-%m-%d')
+        date = datetime.strptime(date, '%Y-%m-%d').date()
         fmw_id= request.args.get('fmw_id')
         if request.args.get('status_change') == True:
             record = retrive_record_by_date(personnel_id, date)
@@ -52,6 +53,7 @@ def index():
             form.pm_status.data = record.pm_status
             form.pm_remarks.data = record.pm_remarks
         else:
+            print('setting id for you')
             form.name.data = personnel_id
         return render_template('ps/index.html', form=form, updated=updated, personnel=None,
                                date=date, redirect_to_paradestate=True, fmw_id=fmw_id)
@@ -70,7 +72,7 @@ def index():
         record = Personnel_status.query.filter(Personnel_status.personnel_id==personnel_id,Personnel_status.date==start_date).first()
 
         if request.args.get('redirect_to_paradestate'):
-            return redirect(url_for('ps.paradestate', redirect_to_paradestate=True ,fmw_id=request.args.get('fmw_id'), date=request.args.get('date')))
+            return redirect(url_for('ps.paradestate', redirect_to_paradestate=True ,fmw_id=fmw_id, date=request.args.get('date')))
         else:
             resp = make_response(render_template('ps/index.html', form=form, updated=updated,
                                 multi_date=multi_date, personnel=record, end_date=end_date))
@@ -98,55 +100,64 @@ def paradestate():
     form = admin_paradestateviewform()
     if request.args.get('redirect_to_paradestate'):
         fmw_id = request.args.get('fmw_id')
-        # i will change search to find by fmw id instead later on in methods
-        fmw = Fmw.query.filter_by(id=fmw_id).first()
         date = request.args.get('date')
-        date = datetime.strptime(date, '%Y-%m-%d %H:%M:%S').date()
-        personnels_status, missing_status = retrieve_personnel_statuses(db, fmw.name, date, session.get('clearance'))
+        date = datetime.strptime(date, '%Y-%m-%d').date()
+        personnels_status, missing_status = retrieve_personnel_statuses(db, fmw_id, date, clearance=current_user.clearance)
         if len(personnels_status) != 0:
             return render_template('ps/paradestate.html', personnels=personnels_status,
-                                   missing_personnels=missing_status, date=date)
+                                   missing_personnels=missing_status, date=date,
+                                   fmw_name=db.session.query(Fmw.name).filter_by(id=fmw_id).scalar())
         flash("No one has submitted PS. Please remind them to do so!")
 
     elif form.validate_on_submit():
-        if current_user.clearance <= 1: fmw = form.fmw.data
-        else: fmw = current_user.fmw.name
+        if current_user.clearance <= 1: fmw_id = form.fmw.data
+        else: fmw_id = current_user.fmw.id
         date = form.date.data
-        personnels_status, missing_status = retrieve_personnel_statuses(db, fmw, date, session.get('clearance'))
+        personnels_status, missing_status = retrieve_personnel_statuses(db, fmw_id, date, clearance=current_user.clearance)
         if len(personnels_status) != 0:
             return render_template('ps/paradestate.html', personnels=personnels_status,
-                                   missing_personnels=missing_status, date=date)
+                                   missing_personnels=missing_status, date=date,
+                                   fmw_name=db.session.query(Fmw.name).filter_by(id=fmw_id).scalar())
         flash("No one has submitted PS. Please remind them to do so!")
+
     return render_template('ps/paradestate.html', form=form)
 
 @bp.route('/statuschange/<personnel_id>/<date>', methods=('GET', 'POST'))
 @login_required
 def statuschange(personnel_id,date):
+    """Route to change paradestate for personnel
+
+    Args:
+        personnel_id
+        date ([str]): [%Y-%m-%d]
+        fmw_id: [fmw_id belonging to personnel]
+        set_present: [Boolean]
+        time ([str]): [AM/PM]
+
+    Redirects:
+        personnel_id ([type]): [description]
+        date ([str]): [%Y-%m-%d]
+        fmw_id: [fmw_id belonging to personnel]
+    """
     record = Personnel_status.query.filter_by(personnel_id=personnel_id,date=date).first()
     fmw_id = request.args.get('fmw_id')
-    time = request.args.get('time')
     date = datetime.strptime(date, '%Y-%m-%d').date()
 
     if 'set_present' in request.args:
-        print('setting present')
         if request.args.get('time') == "AM":
             record = Personnel_status(date, 'P', '', None, '', personnel_id)
         else:
             record = Personnel_status(date, None, '', 'P', '', personnel_id)
-        print(personnel_id)
         db.session.add(record)
         db.session.commit()
         flash('Updated Personnel selected!')
         return redirect(url_for('ps.paradestate', redirect_to_paradestate=True, fmw_id=fmw_id, date=date))
 
     elif record is None:
-        print('no record, lets set it')
-        return redirect(url_for('index', status_change=False,redirect_to_paradestate=True,personnel_id=personnel_id,date=date, fmw_id=fmw_id))
+        return redirect(url_for('index', status_change=False,redirect_to_paradestate=True,personnel_id=personnel_id,date=date))
 
     elif record:
-        # load record and allow for edits
-        print('loading records')
-        return redirect(url_for('index', status_change=True,redirect_to_paradestate=True,personnel_id=personnel_id,date=date,fmw_id=fmw_id))
+        return redirect(url_for('index', status_change=True,redirect_to_paradestate=True,personnel_id=personnel_id,date=date))
 
 
 @bp.route('/strengthviewer', methods=('GET', 'POST'))
@@ -159,17 +170,17 @@ def strengthviewer():
     '''
     if current_user.clearance <= 2:
         form = strengthviewform()
-        if request.method == "POST":
-            fmw = form.fmw.data
-            personnels = retrieve_personnel_list(fmw)
+        if form.validate_on_submit():
+            fmw_id = form.fmw.data
+            personnels = retrieve_personnel_list(fmw_id,current_user.clearance)
             if personnels != []:
-                return render_template('ps/strengthviewer.html', fmw=fmw, personnels=personnels)
+                return render_template('ps/strengthviewer.html', fmw=fmw_id, personnels=personnels)
             flash('No personnel in selected FMW yet.')
-        return render_template('ps/select_fmw2.html', form=form)
+        return render_template('ps/select_fmw_strengthviewer.html', form=form)
     else:
-        fmw = current_user.fmw.name
-        personnels = retrieve_personnel_list(fmw)
-        return render_template('ps/strengthviewer.html', fmw=fmw, personnels=personnels)
+        fmw_id = current_user.fmw.id
+        personnels = retrieve_personnel_list(current_user.clearance)
+        return render_template('ps/strengthviewer.html', fmw=fmw_id, personnels=personnels)
     
 
 @bp.route('/admin/add_del_personnel', methods=('GET', 'POST'))
@@ -179,10 +190,10 @@ def admin_add_del():
     if form.validate_on_submit():
         name = form.name.data
         rank = form.rank.data
-        if session.get('clearance') <= 2: fmw = form.fmw.data
-        else: fmw = session.get('fmw')
+        if session.get('clearance') <= 2: fmw_id = form.fmw.data
+        else: fmw_id = session.get('fmw_id')
         add_del = form.add_del.data
-        error, personnel = add_del_personnel_db(db, add_del, rank, name, fmw)
+        error, personnel = add_del_personnel_db(db, add_del, rank, name, fmw_id)
         if error == None:
             return render_template('ps/admin_add_del.html', add_del=add_del, personnel=personnel)
         flash(error)
@@ -202,10 +213,10 @@ def admin_act_deact():
         if session.get('clearance') <= 2: fmw = form.fmw.data
         else: fmw = session.get('fmw')
         act_deact = form.act_deact.data
-        error = check_personnel_exist(db, name, fmw, rank)
+        error = check_personnel_exist(db, name, fmw_id, rank)
         if error == None:
             act_deact_personnel_db(db, act_deact, rank, name, fmw, fmd)
-            personnel = retrive_one_record(db, name, fmw)
+            personnel = retrive_one_record(db, name, fmw_id)
             return render_template('ps/admin_act_deact.html', act_deact=act_deact, personnel=personnel)
         flash(error)
     flash(form.errors)

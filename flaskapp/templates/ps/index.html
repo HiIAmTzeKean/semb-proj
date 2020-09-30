@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block content %}
-    <h1 class="font-weight-bold">Status Update for {{session.get('fmw')}}</h1>
+    <h1 class="font-weight-bold">Status Update for {{ session.get('fmw_id') }}</h1>
     
     <!--Flash success message to inform user-->
     {% if updated %}
