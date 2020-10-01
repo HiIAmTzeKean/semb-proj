@@ -14,7 +14,8 @@ VALUES
 ('Selarang',3),
 ('Navy',3),
 ('Kranji',4),
-('Admin',1);
+('Admin',1)
+('HQ93',3);
 
 INSERT INTO "user" ("username", "password","clearance","fmw_id")
 VALUES 
@@ -24,7 +25,8 @@ VALUES
 ('Selarang','Selarang',3,4),
 ('Navy','Navy',3,5),
 ('Kranji','Kranji',3,6),
-('Admin','Admin',1,7);
+('Admin','Admin',1,7)
+('HQ93','HQ93',3,8);
 
 
 INSERT INTO "personnel" ("name","rank","active","fmw_id")

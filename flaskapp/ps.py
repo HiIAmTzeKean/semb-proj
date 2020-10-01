@@ -6,7 +6,7 @@ from flask_login import current_user, login_required
 
 from flaskapp import db
 
-from .auth import fmw_required
+from flaskapp.auth.auth_route import fmw_required
 from .db_methods import (act_deact_personnel_db, add_del_personnel_db,
                          check_personnel_exist,
                          retrive_record_by_date,
@@ -39,10 +39,11 @@ def index():
 
     if request.args.get('status_change') is not None:
         personnel_id = int(request.args.get('personnel_id'))
-        print(personnel_id)
         date = request.args.get('date')
-        date = datetime.strptime(date, '%Y-%m-%d').date()
+        # date = datetime.strptime(date, '%Y-%m-%d').date()
         fmw_id= request.args.get('fmw_id')
+        form.name.choices = [db.session.query(Personnel.id,Personnel.name).filter_by(id=personnel_id).first()]
+
         if request.args.get('status_change') == True:
             record = retrive_record_by_date(personnel_id, date)
             form.start_date.data = record.date
@@ -53,12 +54,11 @@ def index():
             form.pm_status.data = record.pm_status
             form.pm_remarks.data = record.pm_remarks
         else:
-            print('setting id for you')
             form.name.data = personnel_id
         return render_template('ps/index.html', form=form, updated=updated, personnel=None,
                                date=date, redirect_to_paradestate=True, fmw_id=fmw_id)
 
-    if form.validate_on_submit():
+    if request.method =="POST":
         start_date = form.start_date.data
         end_date = form.end_date.data
         personnel_id = form.name.data
@@ -66,13 +66,12 @@ def index():
         am_remarks = form.am_remarks.data
         pm_status = form.pm_status.data
         pm_remarks = form.pm_remarks.data
-
         multi_date = submit_PS_helper(db,personnel_id, start_date, end_date, am_status, am_remarks, pm_status, pm_remarks)
         updated = True
         record = Personnel_status.query.filter(Personnel_status.personnel_id==personnel_id,Personnel_status.date==start_date).first()
 
         if request.args.get('redirect_to_paradestate'):
-            return redirect(url_for('ps.paradestate', redirect_to_paradestate=True ,fmw_id=fmw_id, date=request.args.get('date')))
+            return redirect(url_for('ps.paradestate', redirect_to_paradestate=True ,fmw_id=request.args.get('fmw_id'), date=request.args.get('date')))
         else:
             resp = make_response(render_template('ps/index.html', form=form, updated=updated,
                                 multi_date=multi_date, personnel=record, end_date=end_date))
@@ -89,12 +88,50 @@ def index():
     return render_template('ps/index.html', form=form, updated=updated, personnel=None)
 
 
-@bp.route('/paradestate', methods=('GET', 'POST'))
+@bp.route('/paradestate_pre_view', methods=('GET', 'POST'))
 @login_required
-def paradestate():
+def paradestate_pre_view():
+    """Pre-view for user to check what user can see
+    Args:
+        
+    Redirect:
+        url_for(paradestate)
+        date ([str]): [%Y-%m-%d]
+        fmw_id: [current_user.fmw_id]
+    """
+    clearance = current_user.clearance
+    form = admin_paradestateviewform()
+
+    if form.validate_on_submit():
+        date=form.date.data
+        if clearance == 4:
+            return redirect(url_for('ps.paradestate',date=date,fmw_id=current_user.fmw_id))
+        # for clearance 3 and below 
+        fmw_id = form.fmw.data
+        return redirect(url_for('ps.paradestate',date=date,fmw_id=fmw_id))
+    
+    if clearance == 3:
+        form.fmd.choices = [(coy.id, coy.name) for coy in Unit.query.filter_by(id=current_user.fmw.fmd_id).all()]
+        form.fmw.choices = [(coy.id, coy.name) for coy in Fmw.query.filter_by(fmd_id = current_user.fmw.fmd_id).all()]
+    elif clearance == 2:
+        # HQ9 view (HQ9 and all in 9AMB)
+        form.fmd.choices = [(coy.id, coy.name) for coy in Unit.query.filter(name!=0).all()]
+        form.fmw.choices = [(coy.id, coy.name) for coy in Fmw.query.filter_by(fmd_id = current_user.fmw.fmd_id).all()]
+    elif clearance == 1:
+        pass
+    return render_template('ps/paradestate_pre_view.html',form=form)
+
+
+@bp.route('/paradestate/<date>/<fmw_id>', methods=('GET', 'POST'))
+@login_required
+def paradestate(date,fmw_id):
     """View paradestate with date input
        Clearance 1: Select FMW and FMD to view
        Clearance 3: View current FMW
+    
+    Args:
+        date ([str]): [%Y-%m-%d]
+        fmw_id: [requested fmw user wants to view]
 
     Methods:
         Set Present: [Button in html. Set present for selected time. Redirects user back
@@ -102,32 +139,23 @@ def paradestate():
         Other Status: [Button in html. Set other status for Person. 
         Redirects user to Index page then back to paradestate page again]
     """
-
-    form = admin_paradestateviewform()
-    # return to display at which user was at
     if request.args.get('redirect_to_paradestate'):
-        fmw_id = request.args.get('fmw_id')
-        date = request.args.get('date')
-        date = datetime.strptime(date, '%Y-%m-%d').date()
         personnels_status, missing_status = retrieve_personnel_statuses(db, fmw_id, date, clearance=current_user.clearance)
         if len(personnels_status) != 0:
             return render_template('ps/paradestate.html', personnels=personnels_status,
                                    missing_personnels=missing_status, date=date,
                                    fmw_name=db.session.query(Fmw.name).filter_by(id=fmw_id).scalar())
         flash("No one has submitted PS. Please remind them to do so!")
+        return redirect(url_for('ps.paradestate_pre_view'))
 
-    elif form.validate_on_submit():
-        if current_user.clearance <= 1: fmw_id = form.fmw.data
-        else: fmw_id = current_user.fmw.id
-        date = form.date.data
-        personnels_status, missing_status = retrieve_personnel_statuses(db, fmw_id, date, clearance=current_user.clearance)
-        if len(personnels_status) != 0:
-            return render_template('ps/paradestate.html', personnels=personnels_status,
-                                   missing_personnels=missing_status, date=date,
-                                   fmw_name=db.session.query(Fmw.name).filter_by(id=fmw_id).scalar())
-        flash("No one has submitted PS. Please remind them to do so!")
-    
-    return render_template('ps/paradestate.html', form=form)
+    personnels_status, missing_status = retrieve_personnel_statuses(db, fmw_id, date, clearance=current_user.clearance)
+    if len(personnels_status) != 0:
+        return render_template('ps/paradestate.html', personnels=personnels_status,
+                                missing_personnels=missing_status, date=date,
+                                fmw_name=db.session.query(Fmw.name).filter_by(id=fmw_id).scalar())
+    flash("No one has submitted PS. Please remind them to do so!")
+    return redirect(url_for('ps.paradestate_pre_view'))
+
 
 @bp.route('/statuschange/<personnel_id>/<date>', methods=('GET', 'POST'))
 @login_required
@@ -151,7 +179,7 @@ def statuschange(personnel_id,date):
     """
     record = Personnel_status.query.filter_by(personnel_id=personnel_id,date=date).first()
     fmw_id = request.args.get('fmw_id')
-    date = datetime.strptime(date, '%Y-%m-%d').date()
+    # date = datetime.strptime(date, '%Y-%m-%d').date()
 
     if 'set_present' in request.args:
         if request.args.get('time') == "AM":
@@ -162,12 +190,11 @@ def statuschange(personnel_id,date):
         db.session.commit()
         flash('Updated Personnel selected!')
         return redirect(url_for('ps.paradestate', redirect_to_paradestate=True, fmw_id=fmw_id, date=date))
-
     elif record is None:
-        return redirect(url_for('index', status_change=False,redirect_to_paradestate=True,personnel_id=personnel_id,date=date))
+        return redirect(url_for('index', status_change=False,personnel_id=personnel_id,date=date, fmw_id=fmw_id))
 
     elif record:
-        return redirect(url_for('index', status_change=True,redirect_to_paradestate=True,personnel_id=personnel_id,date=date))
+        return redirect(url_for('index', status_change=True,personnel_id=personnel_id,date=date, fmw_id=fmw_id))
 
 
 @bp.route('/strengthviewer', methods=('GET', 'POST'))
@@ -186,7 +213,7 @@ def strengthviewer():
     add_form = admin_adddelform()
     if add_form.validate_on_submit():
         #for workshop level add first
-        #TODO admin id shouldnt be tagged to personnel look at comment below
+        #TODO admin id shouldnt be tagged to personnel, look at comment below
         fmw_id = current_user.fmw.id
         return redirect(url_for('ps.add_del', personnel_name=add_form.name.data,
                                 fmw_id=fmw_id, rank=add_form.rank.data, add_del='add'))
@@ -194,7 +221,7 @@ def strengthviewer():
     # redirect from add/del and activate/deactivate
     if request.args.get('redirect_to_strenghtviewer') and request.args.get('cancel_request'):
         flash('Cancelled!')
-    else: 
+    elif request.args.get('redirect_to_strenghtviewer'): 
         flash('Success!')
     
     #TODO set cookie to save current fmw and user for easy redirect. Need to consider lapse if user is admin

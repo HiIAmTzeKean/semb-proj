@@ -132,55 +132,6 @@
             </div>
         </div>
     </div>
-
-    {% else %}
-    <div class="d-flex full-height justify-content-center align-items-center">
-        <div class="modal-dialog">
-            <div class="modal-content px-lg-4 py-lg-4">
-                <div class="modal-body">
-                    <form action="" method="post">
-                        {{ form.hidden_tag() }}
-
-                        {% if current_user.clearance <2 %}
-                        <h5 class="ml-lg-1 text-center">Please select the FMD which you want to view:</h5>
-                        <div class="form-row mx-1 mt-lg-3">
-                            <div class="col-md-3 font-weight-bold">
-                                {{ form.fmd.label(class_="col-form-label") }}
-                            </div>
-                            <div class="col-md-9">
-                                {{ form.fmd(class_="form-control custom-select") }}
-                            </div>
-                        </div>
-
-                        <h5 class="ml-lg-1 text-center">Please select the FMW which you want to view:</h5>
-                        <div class="form-row mx-1 mt-lg-3">
-                            <div class="col-md-3 font-weight-bold">
-                                {{ form.fmw.label(class_="col-form-label") }}
-                            </div>
-                            <div class="col-md-9">
-                                {{ form.fmw(class_="form-control custom-select") }}
-                            </div>
-                        </div>
-                        {% endif %}
-
-                        <h5 class="ml-lg-1 mt-3 text-center">Please select the date which you want to view:</h5>
-                        <div class="form-row mx-1 mt-lg-3">
-                            <div class="col-md-3 font-weight-bold">
-                                {{ form.date.label(class_="col-form-label") }}
-                            </div>
-                            <div class="col-md-9">
-                                {{ form.date(class_="form-control") }}
-                            </div>
-                        </div>
-
-                        <div class="form-row mx-1 mt-3">
-                            {{ form.submit(class_="form-control btn btn-dark") }}
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
     {% endif %}
 {% endblock %}
 
@@ -194,27 +145,5 @@
                 "paging": false
             });
         } );
-    </script>
-    <script>
-        let fmd_select = document.getElementById('fmd')
-        let fmw_select = document.getElementById('fmw')
-    
-        fmd_select.onchange = function() {
-            fmd = fmd_select.value;
-            
-            fetch('auth/fmw/' + fmd).then(function(response){
-    
-                response.json().then(function(data){
-    
-                    let optionHTML = '';
-    
-                    for (let fmw of data.fmws){
-                        optionHTML += '<option value="'+fmw.id+'">' + fmw.fmw + '</option>';
-                    }
-    
-                    fmw_select.innerHTML = optionHTML
-                });
-            });
-        }
     </script>
 {% endblock %}

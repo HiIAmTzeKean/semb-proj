@@ -12,11 +12,6 @@ from .helpers import fmd_type, statuses_type
 from .models import Fmw, Unit
 
 
-class loginform(FlaskForm):
-    username = StringField('Username', validators=[DataRequired()])
-    password = PasswordField('Password',validators=[DataRequired()])
-    submit = SubmitField('Sign in')
-
 
 class paradestateform(FlaskForm):
     statuses = statuses_type().items()
@@ -35,15 +30,6 @@ class paradestateform(FlaskForm):
             self.end_date.errors.append('End Date must not come before Start Date!')
             return False
         return True
-
-
-class loadfmwform(FlaskForm):
-    fmds = [(coy.id, coy.name) for coy in db.session.query(Unit).filter(Unit.name!=0).all()]
-    fmd = SelectField(label='FMD', choices=fmds, default=None)
-    default_unit_display = Unit.query.filter_by(name=9).first()
-    fmws = [(coy.id, coy.name) for coy in Fmw.query.filter_by(fmd_id = default_unit_display.id).all()]
-    fmw = SelectField(label='FMW', choices=fmws, default=None)
-    submit = SubmitField('Submit')
 
 
 class strengthviewform(FlaskForm):
