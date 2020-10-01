@@ -26,15 +26,15 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 from . import models
 
-from . import auth
-app.register_blueprint(auth.bp)
+from .auth import auth_route
+app.register_blueprint(auth_route.bp)
 
 from . import ps
 app.register_blueprint(ps.bp)
 app.add_url_rule('/', endpoint='index')
 
-from . import misc
-app.register_blueprint(misc.bp)
+from .misc import misc_route
+app.register_blueprint(misc_route.bp)
 
 # a simple page that says hello
 @app.route('/hello')

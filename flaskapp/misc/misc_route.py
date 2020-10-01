@@ -2,8 +2,8 @@ import git
 from flask import (Blueprint, flash, g, redirect, render_template, request,
                    session, url_for)
 from flaskapp import db
-from .models import User, Unit, Personnel, Fmw
-from .forms import paradestateform
+from flaskapp.models import User, Unit, Personnel, Fmw
+from flaskapp.forms import paradestateform
 
 bp = Blueprint('misc', __name__)
 
