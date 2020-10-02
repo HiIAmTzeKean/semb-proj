@@ -47,7 +47,9 @@
                         <td>{{ person.active }}</td>
                         <td>
                             <a href="{{ url_for('ps.add_del', rank=person.rank, personnel_name=person.name, fmw_id=person.fmw.id,personnel_id=person.id, add_del='del' )}}">Delete</a>
-                            <a href="">Deactivate</a>
+                
+                            <a href="{{ url_for('ps.act_deact',personnel_id=person.id, act_deact='deact', fmw_id=fmw_id )}}">Deactivate</a>
+                            <a href="{{ url_for('ps.act_deact',personnel_id=person.id, act_deact='act', fmw_id=fmw_id )}}">Activate</a>
                         </td>
                     </tr>
                 {% endfor %}
