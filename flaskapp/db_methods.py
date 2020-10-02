@@ -45,17 +45,6 @@ def submit_PS_helper(db,personnel_id, start_date, end_date, am_status, am_remark
     return multi_date
 
 
-def retrive_personnel_id(db,name,fmw_id,rank=""):
-    if rank != "":
-        record = Personnel.query.filter_by(name=name,fmw_id=fmw_id,rank=rank).first()
-    else:
-        record = Personnel.query.filter_by(name=name,fmw_id=fmw_id).first()
-    if record:
-        return record.id
-    return None
-
-
-
 def check_personnel_exist(db,name,fmw_id,rank):
     record = Personnel.query.filter_by(name=name,rank=rank).first()
     if record:
@@ -114,7 +103,10 @@ def add_del_personnel_db(db, add_del, rank, name, fmw_id):
     return None, output
 
 
-def act_deact_personnel_db(db,active,rank,name,fmw_id):
-    record = db.session.query(Personnel).filter(Personnel.rank==rank,Personnel.name==name,Personnel.fmw_id==fmw_id).first()
-    record.active = active
+def act_deact_personnel_db(db,personnel_id,active):
+    record = db.session.query(Personnel).filter(Personnel.id==personnel_id).first()
+    if active == 'act':
+        record.active = True
+    else:
+        record.active = False
     db.session.commit()

@@ -139,6 +139,8 @@ def paradestate(date,fmw_id):
         Other Status: [Button in html. Set other status for Person. 
         Redirects user to Index page then back to paradestate page again]
     """
+    #TODO filter out not active personnel and not display them in paradestate as they are inactive
+    #TODO change front end to accomodate half status update(Either AM/PM only)
     if request.args.get('redirect_to_paradestate'):
         personnels_status, missing_status = retrieve_personnel_statuses(db, fmw_id, date, clearance=current_user.clearance)
         if len(personnels_status) != 0:
@@ -224,7 +226,7 @@ def strengthviewer_pre_view():
         form.fmw.choices = [(coy.id, coy.name) for coy in Fmw.query.filter_by(fmd_id = current_user.fmw.fmd_id).all()]
     elif clearance == 1:
         pass
-    return render_template('ps/select_fmw_strengthviewer.html',form=form)
+    return render_template('ps/strengthviewer_pre_view.html',form=form)
 
 @bp.route('/strengthviewer/<fmw_id>', methods=('GET', 'POST'))
 @login_required
@@ -253,7 +255,7 @@ def strengthviewer(fmw_id):
     fmw_name = db.session.query(Fmw.name).filter_by(id=fmw_id).scalar()
     personnels = retrieve_personnel_list(fmw_id,current_user.clearance)
     if personnels != []:
-        return render_template('ps/strengthviewer.html', personnels=personnels,add_form=add_form, fmw_name=fmw_name)
+        return render_template('ps/strengthviewer.html', personnels=personnels,add_form=add_form, fmw_name=fmw_name,fmw_id=fmw_id)
     flash('No personnel in selected FMW yet.')
     return redirect(url_for('ps.strengthviewer_pre_view'))
 
@@ -275,6 +277,7 @@ def add_del(rank,personnel_name,fmw_id,add_del):
         cancel_request ([Boolean]): [If user wants to cancel request, cancel button is in html page]
     """
     form = submitform()
+    #TODO add in validation checks to add and del
     if add_del == 'del' and form.validate_on_submit():
         status_records = Personnel_status.query.filter(Personnel_status.personnel_id==request.args.get('personnel_id')).all()
         record = Personnel.query.filter_by(id=request.args.get('personnel_id')).first()
@@ -288,19 +291,17 @@ def add_del(rank,personnel_name,fmw_id,add_del):
         db.session.add(Personnel(rank,personnel_name,fmw_id))
         db.session.commit()
         return redirect(url_for('ps.strengthviewer', redirect_to_strenghtviewer=True,fmw_id=fmw_id))
-    return render_template('ps/admin_add_del.html',form=form,rank=rank,personnel_name=personnel_name,fmw_id=fmw_id)
+    return render_template('ps/admin_add_del.html',form=form,rank=rank,personnel_name=personnel_name,
+    fmw_name=db.session.query(Fmw.name).filter_by(id=fmw_id).scalar(),fmw_id=fmw_id)
 
 
-@bp.route('/act_deact/<rank>/<personnel_name>/<fmw_id>/<act_deact>', methods=('GET', 'POST'))
+@bp.route('/act_deact/<personnel_id>/<act_deact>/<fmw_id>', methods=('GET', 'POST'))
 @login_required
-def act_deact(rank,personnel_name,fmw_id,add_del):
-    """Add/Del personnel from DB
+def act_deact(personnel_id,act_deact,fmw_id):
+    """Activate/Deactivate personnel from DB
 
     Args:
-        rank
-        personnel_name
-        fmw_id
-        add_del
+        act_deact
         personnel_id
 
     Returns:
@@ -308,33 +309,14 @@ def act_deact(rank,personnel_name,fmw_id,add_del):
         cancel_request ([Boolean]): [If user wants to cancel request, cancel button is in html page]
     """
     form = submitform()
-    if add_del == 'deact' and form.validate_on_submit():
-        pass
-        return redirect(url_for('ps.strengthviewer', redirect_to_strenghtviewer=True))
-    elif add_del == 'act' and form.validate_on_submit():
-        pass
-    return render_template('ps/admin_add_del.html',form=form,rank=rank,personnel_name=personnel_name,fmw_id=fmw_id)
+    if form.validate_on_submit():
+        act_deact_personnel_db(db,personnel_id,act_deact)
+        return redirect(url_for('ps.strengthviewer', redirect_to_strenghtviewer=True,fmw_id=fmw_id))
 
-# @bp.route('/admin/act_deact', methods=('GET', 'POST'))
-# @login_required
-# def admin_act_deact():
-#     form = admin_actdeactform()
-#     fmd = session.get('fmd')
-#     form.fmw.choices = workshop_type(fmd)
-#     if form.validate_on_submit():
-#         name = form.name.data
-#         rank = form.rank.data
-#         if session.get('clearance') <= 2: fmw = form.fmw.data
-#         else: fmw = session.get('fmw')
-#         act_deact = form.act_deact.data
-#         error = check_personnel_exist(db, name, fmw_id, rank)
-#         if error == None:
-#             act_deact_personnel_db(db, act_deact, rank, name, fmw, fmd)
-#             personnel = retrive_one_record(db, name, fmw_id)
-#             return render_template('ps/admin_act_deact.html', act_deact=act_deact, personnel=personnel)
-#         flash(error)
-#     flash(form.errors)
-#     return render_template('ps/admin_act_deact.html', form=form)
+    record = Personnel.query.filter_by(id=personnel_id).first()
+    return render_template('ps/admin_add_del.html',form=form,rank=record.rank,personnel_name=record.name,
+                            fmw_name=record.fmw.name,fmw_id=fmw_id)
+
 
 @bp.route('/admin/generate_excel', methods=('GET', 'POST'))
 @login_required

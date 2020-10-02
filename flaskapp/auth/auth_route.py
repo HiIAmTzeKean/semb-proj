@@ -42,7 +42,7 @@ def load_fmw():
         fmw_id = form.fmw.data
         session['fmw_id']=fmw_id
         return redirect(url_for('index'))
-    return render_template('ps/select_fmw.html',form=form)
+    return render_template('auth/select_fmw.html',form=form)
 
 
 @bp.route('/fmw/<fmd_id>', methods=('GET', 'POST'))
