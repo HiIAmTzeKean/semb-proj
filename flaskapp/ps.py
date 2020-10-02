@@ -40,7 +40,6 @@ def index():
     if request.args.get('status_change') is not None:
         personnel_id = int(request.args.get('personnel_id'))
         date = request.args.get('date')
-        # date = datetime.strptime(date, '%Y-%m-%d').date()
         fmw_id= request.args.get('fmw_id')
         form.name.choices = [db.session.query(Personnel.id,Personnel.name).filter_by(id=personnel_id).first()]
 
@@ -91,7 +90,8 @@ def index():
 @bp.route('/paradestate_pre_view', methods=('GET', 'POST'))
 @login_required
 def paradestate_pre_view():
-    """Pre-view for user to check what user can see
+    """Pre-view for user to redirect after checking clearance 
+
     Args:
         
     Redirect:
@@ -179,7 +179,6 @@ def statuschange(personnel_id,date):
     """
     record = Personnel_status.query.filter_by(personnel_id=personnel_id,date=date).first()
     fmw_id = request.args.get('fmw_id')
-    # date = datetime.strptime(date, '%Y-%m-%d').date()
 
     if 'set_present' in request.args:
         if request.args.get('time') == "AM":
@@ -190,16 +189,46 @@ def statuschange(personnel_id,date):
         db.session.commit()
         flash('Updated Personnel selected!')
         return redirect(url_for('ps.paradestate', redirect_to_paradestate=True, fmw_id=fmw_id, date=date))
+
     elif record is None:
         return redirect(url_for('index', status_change=False,personnel_id=personnel_id,date=date, fmw_id=fmw_id))
-
     elif record:
         return redirect(url_for('index', status_change=True,personnel_id=personnel_id,date=date, fmw_id=fmw_id))
 
 
-@bp.route('/strengthviewer', methods=('GET', 'POST'))
+@bp.route('/strengthviewer_pre_view', methods=('GET', 'POST'))
 @login_required
-def strengthviewer():
+def strengthviewer_pre_view():
+    """Pre-view for user to redirect after checking clearance 
+
+    Args:
+        
+    Redirect:
+        url_for(strengthviewer)
+        fmw_id: [current_user.fmw_id]
+    """
+    clearance = current_user.clearance
+    if clearance == 4:
+            return redirect(url_for('ps.strengthviewer',fmw_id=current_user.fmw_id))
+    
+    form = strengthviewform()
+    if form.validate_on_submit():
+        fmw_id = form.fmw.data
+        return redirect(url_for('ps.strengthviewer',fmw_id=fmw_id))
+    if clearance == 3:
+        form.fmd.choices = [(coy.id, coy.name) for coy in Unit.query.filter_by(id=current_user.fmw.fmd_id).all()]
+        form.fmw.choices = [(coy.id, coy.name) for coy in Fmw.query.filter_by(fmd_id = current_user.fmw.fmd_id).all()]
+    elif clearance == 2:
+        # HQ9 view (HQ9 and all in 9AMB)
+        form.fmd.choices = [(coy.id, coy.name) for coy in Unit.query.filter(name!=0).all()]
+        form.fmw.choices = [(coy.id, coy.name) for coy in Fmw.query.filter_by(fmd_id = current_user.fmw.fmd_id).all()]
+    elif clearance == 1:
+        pass
+    return render_template('ps/select_fmw_strengthviewer.html',form=form)
+
+@bp.route('/strengthviewer/<fmw_id>', methods=('GET', 'POST'))
+@login_required
+def strengthviewer(fmw_id):
     """Display current strength in FMW
        Clearance 1: Select FMW and FMD to view
        Clearance 3: View current FMW
@@ -212,31 +241,21 @@ def strengthviewer():
     """
     add_form = admin_adddelform()
     if add_form.validate_on_submit():
-        #for workshop level add first
-        #TODO admin id shouldnt be tagged to personnel, look at comment below
         fmw_id = current_user.fmw.id
         return redirect(url_for('ps.add_del', personnel_name=add_form.name.data,
                                 fmw_id=fmw_id, rank=add_form.rank.data, add_del='add'))
 
-    # redirect from add/del and activate/deactivate
     if request.args.get('redirect_to_strenghtviewer') and request.args.get('cancel_request'):
         flash('Cancelled!')
     elif request.args.get('redirect_to_strenghtviewer'): 
         flash('Success!')
     
-    #TODO set cookie to save current fmw and user for easy redirect. Need to consider lapse if user is admin
-    if current_user.clearance <= 2:
-        form = strengthviewform()
-        if form.validate_on_submit():
-            fmw_id = form.fmw.data
-            personnels = retrieve_personnel_list(fmw_id,current_user.clearance)
-            if personnels != []:
-                return render_template('ps/strengthviewer.html', personnels=personnels,add_form=add_form)
-            flash('No personnel in selected FMW yet.')
-        return render_template('ps/select_fmw_strengthviewer.html', form=form, add_form=add_form)
-    else:
-        personnels = retrieve_personnel_list(current_user.fmw.id, current_user.clearance)
-        return render_template('ps/strengthviewer.html', personnels=personnels,add_form=add_form)
+    fmw_name = db.session.query(Fmw.name).filter_by(id=fmw_id).scalar()
+    personnels = retrieve_personnel_list(fmw_id,current_user.clearance)
+    if personnels != []:
+        return render_template('ps/strengthviewer.html', personnels=personnels,add_form=add_form, fmw_name=fmw_name)
+    flash('No personnel in selected FMW yet.')
+    return redirect(url_for('ps.strengthviewer_pre_view'))
 
 
 @bp.route('/add_del_personnel/<rank>/<personnel_name>/<fmw_id>/<add_del>', methods=('GET', 'POST'))
@@ -264,13 +283,37 @@ def add_del(rank,personnel_name,fmw_id,add_del):
         db.session.commit()
         db.session.delete(record)
         db.session.commit()
-        return redirect(url_for('ps.strengthviewer', redirect_to_strenghtviewer=True))
+        return redirect(url_for('ps.strengthviewer', redirect_to_strenghtviewer=True,fmw_id=fmw_id))
     elif add_del == 'add' and form.validate_on_submit():
         db.session.add(Personnel(rank,personnel_name,fmw_id))
         db.session.commit()
-        return redirect(url_for('ps.strengthviewer', redirect_to_strenghtviewer=True))
+        return redirect(url_for('ps.strengthviewer', redirect_to_strenghtviewer=True,fmw_id=fmw_id))
     return render_template('ps/admin_add_del.html',form=form,rank=rank,personnel_name=personnel_name,fmw_id=fmw_id)
 
+
+@bp.route('/act_deact/<rank>/<personnel_name>/<fmw_id>/<act_deact>', methods=('GET', 'POST'))
+@login_required
+def act_deact(rank,personnel_name,fmw_id,add_del):
+    """Add/Del personnel from DB
+
+    Args:
+        rank
+        personnel_name
+        fmw_id
+        add_del
+        personnel_id
+
+    Returns:
+        redirect_to_strenghtviewer ([Boolean])
+        cancel_request ([Boolean]): [If user wants to cancel request, cancel button is in html page]
+    """
+    form = submitform()
+    if add_del == 'deact' and form.validate_on_submit():
+        pass
+        return redirect(url_for('ps.strengthviewer', redirect_to_strenghtviewer=True))
+    elif add_del == 'act' and form.validate_on_submit():
+        pass
+    return render_template('ps/admin_add_del.html',form=form,rank=rank,personnel_name=personnel_name,fmw_id=fmw_id)
 
 # @bp.route('/admin/act_deact', methods=('GET', 'POST'))
 # @login_required

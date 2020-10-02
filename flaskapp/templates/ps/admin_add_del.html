@@ -25,7 +25,7 @@
           {{ form.submit }}
         </form>
         </td>
-        <td><a href="{{ url_for('ps.strengthviewer', redirect_to_strenghtviewer=True, cancel_request=True) }}">Cancel</a></td>
+        <td><a href="{{ url_for('ps.strengthviewer', redirect_to_strenghtviewer=True, cancel_request=True, fmw_id=fmw_id) }}">Cancel</a></td>
       </tr>
     </table>
 {% endblock %}

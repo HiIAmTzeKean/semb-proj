@@ -23,6 +23,7 @@ def fmd_type():
     fmd = [(93),(92),(9)]
     return fmd
 
+
 def workshop_type(fmd):
     if fmd == 9:
         workshop = [("9HQ")]

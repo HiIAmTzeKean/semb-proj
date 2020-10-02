@@ -15,6 +15,7 @@ class loginform(FlaskForm):
     password = PasswordField('Password',validators=[DataRequired()])
     submit = SubmitField('Sign in')
 
+
 class loadfmwform(FlaskForm):
     fmds = [(coy.id, coy.name) for coy in db.session.query(Unit).filter(Unit.name!=0).all()]
     fmd = SelectField(label='FMD', choices=fmds, default=None)
