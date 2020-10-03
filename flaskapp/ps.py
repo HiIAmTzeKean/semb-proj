@@ -42,21 +42,21 @@ def index():
 
     if request.args.get('status_change') is not None:
         personnel_id = int(request.args.get('personnel_id'))
-        date = request.args.get('date')
+        personnel = Personnel.query.filter_by(id=personnel_id).first()
+        date = datetime.strptime(request.args.get('date'), '%Y-%m-%d').date()
         fmw_id = request.args.get('fmw_id')
-        form.name.choices = [Personnel.query.filter_by(id=personnel_id).first()]
+        form.name.choices = [(personnel.id, personnel.name)]
+        form.name.data = personnel_id
+        form.start_date.data = date
+        form.end_date.data = date
 
-        if request.args.get('status_change') == True:
+        if request.args.get('status_change') == "True":  # TODO: see if this can be fixed to become a boolean
             record = retrive_record_by_date(personnel_id, date)
-            form.start_date.data = record.date
-            form.end_date.data = record.date
-            form.name.data = record.personnel_id
             form.am_status.data = record.am_status
             form.am_remarks.data = record.am_remarks
             form.pm_status.data = record.pm_status
             form.pm_remarks.data = record.pm_remarks
-        else:
-            form.name.data = personnel_id
+
         return render_template('ps/index.html', form=form, updated=updated, personnel=None,
                                date=date, redirect_to_paradestate=True, fmw_id=fmw_id)
 
@@ -86,7 +86,7 @@ def index():
                                               date=datetime.date(datetime.today())).first()
 
     if record:
-        form.name.data = record.id
+        form.name.data = record.personnel_id
         form.am_status.data = record.am_status
         form.am_remarks.data = record.am_remarks
         form.pm_status.data = record.pm_status
