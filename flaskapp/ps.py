@@ -11,9 +11,8 @@ from .db_methods import (act_deact_personnel_db, add_del_personnel_db,
                          check_personnel_exist,
                          retrive_record_by_date,
                          submit_PS_helper)
-from .forms import (admin_adddelform, submitform,
-                    admin_generateexcelform, admin_paradestateviewform,
-                    paradestateform, strengthviewform)
+from .forms import (admin_adddelform, admin_generateexcelform, admin_paradestateviewform, paradestateform,
+                    strengthviewform, strengthviewer_action_form, submitform)
 from .methods import (generate_PS, retrieve_personnel_list,
                       retrieve_personnel_statuses, retrieve_all_groups_accessible_by_user)
 from .models import Personnel, Personnel_status, User, Unit, Fmw
@@ -242,24 +241,30 @@ def strengthviewer(fmw_id):
         Activate (not done)
     """
     add_form = admin_adddelform()
+    action_form = strengthviewer_action_form()
     if add_form.validate_on_submit():
         fmw_id = current_user.fmw.id
         return redirect(url_for('ps.add_del', personnel_name=add_form.name.data,
                                 fmw_id=fmw_id, rank=add_form.rank.data, add_del='add'))
 
-    if request.args.get('cancel_request'):
-        flash('Cancelled action!')
-    elif request.args.get('redirect_from_add_del'):
-        flash('Success! Added {} {} to list'.format(request.args.get('rank'), request.args.get('personnel_name')))
-    elif request.args.get('redirect_from_act_deact'):
-        # TODO Add in customised message
-        flash('Success!')
+    elif action_form.validate_on_submit():
+        action = action_form.action.data
+        personnel_id = int(action_form.personnel_id.data)
+        if action == 'delete':
+            error = add_del_personnel_db(db, 'del', personnel_id)
+        elif action in ('activate', 'deactivate'):
+            error = act_deact_personnel_db(db, personnel_id, action)
+        else:
+            error = 'Invalid action provided.'
+
+        if error:
+            flash(error)
 
     fmw_name = db.session.query(Fmw.name).filter_by(id=fmw_id).scalar()
     personnels = retrieve_personnel_list(fmw_id, current_user.clearance)
     if personnels != []:
         return render_template('ps/strengthviewer.html', personnels=personnels, add_form=add_form, fmw_name=fmw_name,
-                               fmw_id=fmw_id)
+                               fmw_id=fmw_id, action_form=action_form)
     flash('No personnel in selected FMW yet.')
     return redirect(url_for('ps.strengthviewer_pre_view'))
 
@@ -289,31 +294,6 @@ def add_del(rank, personnel_name, fmw_id, add_del):
                                 fmw_id=fmw_id, rank=rank, personnel_name=personnel_name))
     return render_template('ps/admin_add_del.html', form=form, rank=rank, personnel_name=personnel_name,
                            fmw_name=db.session.query(Fmw.name).filter_by(id=fmw_id).scalar(), fmw_id=fmw_id)
-
-
-@bp.route('/act_deact/<personnel_id>/<act_deact>/<fmw_id>', methods=('GET', 'POST'))
-@login_required
-def act_deact(personnel_id, act_deact, fmw_id):
-    """Activate/Deactivate personnel from DB
-
-    Args:
-        act_deact
-        personnel_id
-
-    Returns:
-        redirect_to_strenghtviewer ([Boolean])
-        cancel_request ([Boolean]): [If user wants to cancel request, cancel button is in html page]
-    """
-    form = submitform()
-    if form.validate_on_submit():
-        error = act_deact_personnel_db(db, personnel_id, act_deact)
-        if error:
-            flash(error)
-        return redirect(url_for('ps.strengthviewer', redirect_from_act_deact=True, fmw_id=fmw_id))
-
-    record = Personnel.query.filter_by(id=personnel_id).first()
-    return render_template('ps/admin_add_del.html', form=form, rank=record.rank, personnel_name=record.name,
-                           fmw_name=record.fmw.name, fmw_id=fmw_id)
 
 
 @bp.route('/admin/generate_excel', methods=('GET', 'POST'))

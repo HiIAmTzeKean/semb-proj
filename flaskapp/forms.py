@@ -43,7 +43,6 @@ class admin_paradestateviewform(strengthviewform):
     date = DateField(label='Date', validators=[DataRequired()], default=datetime.today)
 
 
-################################ Pending del after init of del methods
 class submitform(FlaskForm):
     submit = SubmitField('Submit')
 
@@ -55,15 +54,10 @@ class admin_adddelform(FlaskForm):
     fmw = SelectField(label='FMW', choices=[], validators=[Optional()], validate_choice=False, default=None)
 
 
-class admin_actdeactform(FlaskForm):
-    name = StringField(label='Name', validators=[DataRequired()])
-    rank = StringField(label='Rank', validators=[DataRequired()])
-    act_deact = SelectField(label='Activate/Deactivate',validators=[InputRequired()],
-                            choices=[('True','Activate'),('False','Deactivate')], coerce=lambda x: x == 'True')
+class strengthviewer_action_form(FlaskForm):
+    action = HiddenField()
+    personnel_id = HiddenField()
     submit = SubmitField('Submit')
-    fmd = SelectField(label='FMD', choices=fmd_type())
-    fmw = SelectField(label='FMW', choices='')
-##################################
 
 
 class admin_generateexcelform(FlaskForm):

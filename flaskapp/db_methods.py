@@ -81,7 +81,7 @@ def add_del_check(db,personnel_id,add_del):
             return "Personnel does not exist in your FMW!"
 
 
-def add_del_personnel_db(db, add_del, personnel_id, rank, name, fmw_id):
+def add_del_personnel_db(db, add_del, personnel_id, rank="", name="", fmw_id=""):
     """[summary]
 
     Args:
@@ -114,7 +114,7 @@ def act_deact_personnel_db(db,personnel_id,active):
     if record is None:
         return 'Personnel does not exist! Please raise issue to admin'
     print(record.active)
-    if active == 'act':
+    if active == 'activate':
         if record.active == True:
             return 'Personnel is already active!'
         record.active = True
