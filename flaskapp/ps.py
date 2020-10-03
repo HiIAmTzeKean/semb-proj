@@ -14,9 +14,8 @@ from .db_methods import (act_deact_personnel_db, add_del_personnel_db,
 from .forms import (admin_adddelform, submitform,
                     admin_generateexcelform, admin_paradestateviewform,
                     paradestateform, strengthviewform)
-from .helpers import workshop_type
 from .methods import (generate_PS, retrieve_personnel_list,
-                      retrieve_personnel_statuses)
+                      retrieve_personnel_statuses, retrieve_all_groups_accessible_by_user)
 from .models import Personnel, Personnel_status, User, Unit, Fmw
 
 
@@ -60,7 +59,7 @@ def index():
         return render_template('ps/index.html', form=form, updated=updated, personnel=None,
                                date=date, redirect_to_paradestate=True, fmw_id=fmw_id)
 
-    if request.method == "POST":
+    if form.validate_on_submit():
         start_date = form.start_date.data
         end_date = form.end_date.data
         personnel_id = form.name.data
@@ -117,14 +116,7 @@ def paradestate_pre_view():
         fmw_id = form.fmw.data
         return redirect(url_for('ps.paradestate', date=date, fmw_id=fmw_id))
 
-    if clearance == 2 or clearance == 3:
-        form.fmw.choices = [(coy.id, coy.name) for coy in Fmw.query.filter_by(fmd_id=current_user.fmw.fmd_id).all()]
-
-    if clearance == 3:
-        form.fmd.choices = [(coy.id, coy.name) for coy in Unit.query.filter_by(id=current_user.fmw.fmd_id).all()]
-    elif clearance == 2:
-        # HQ9 view (HQ9 and all in 9AMB)
-        form.fmd.choices = [(coy.id, coy.name) for coy in Unit.query.filter(name != 0).all()]
+    form.fmw.choices = retrieve_all_groups_accessible_by_user()
     return render_template('ps/paradestate_pre_view.html', form=form)
 
 
@@ -232,14 +224,7 @@ def strengthviewer_pre_view():
         fmw_id = form.fmw.data
         return redirect(url_for('ps.strengthviewer', fmw_id=fmw_id))
 
-    if clearance == 2 or clearance == 3:
-        form.fmw.choices = [(coy.id, coy.name) for coy in Fmw.query.filter_by(fmd_id=current_user.fmw.fmd_id).all()]
-    if clearance == 3:
-        form.fmd.choices = [(coy.id, coy.name) for coy in Unit.query.filter_by(id=current_user.fmw.fmd_id).all()]
-    elif clearance == 2:
-        # HQ9 view (HQ9 and all in 9AMB)
-        form.fmd.choices = [(coy.id, coy.name) for coy in Unit.query.filter(name != 0).all()]
-
+    form.fmw.choices = retrieve_all_groups_accessible_by_user()
     return render_template('ps/strengthviewer_pre_view.html', form=form)
 
 

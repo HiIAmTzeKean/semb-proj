@@ -2,8 +2,9 @@ import os
 from csv import DictWriter, writer
 from datetime import datetime, timedelta
 from pathlib import Path
+from flask_login import current_user
 
-from .models import Fmw, Personnel, Personnel_status, User
+from .models import Unit, Personnel, Personnel_status, User
 
 
 def retrieve_personnel_list(fmw_id, clearance=100, query_all=False):
@@ -39,6 +40,21 @@ def retrieve_personnel_statuses(db, fmw_id, date, clearance=100, missing_status_
                                                                 Personnel.fmw_id == fmw_id).all()
 
     return (personnel_statuses, missing_status) if (missing_status_needed == True) else (personnel_statuses)
+
+
+def retrieve_all_groups_accessible_by_user():
+    if not current_user:
+        return []
+
+    group_list = []
+    all_units = Unit.query.filter(Unit.name != "0").all()
+    for unit in all_units:
+        # if clearance is 2, all units can be viewed
+        # but if clearance is 3, we need to filter till we get the correct unit
+        if current_user.clearance == 2 or current_user.fmw.unit == unit:
+            group_list.extend((group.id, "{} - {}".format(unit.name, group.name)) for group in unit.fmws)
+
+    return group_list
 
 
 def generate_PS(records, request_date=None):

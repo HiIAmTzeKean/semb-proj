@@ -33,10 +33,8 @@ class paradestateform(FlaskForm):
 
 
 class strengthviewform(FlaskForm):
-    fmds = [(coy.id, coy.name) for coy in Unit.query.all()]
-    fmd = SelectField(label='FMD', choices=fmds, validators=[Optional()], default=None)
     default_unit_display = Unit.query.filter_by(name=0).first()
-    fmws = [(coy.id, coy.name) for coy in Fmw.query.filter_by(fmd_id = default_unit_display.id).all()]
+    fmws = [(coy.id, coy.name) for coy in Fmw.query.filter_by(fmd_id=default_unit_display.id).all()]
     fmw = SelectField(label='FMW', choices=fmws, validators=[Optional()], validate_choice=False, default=None)
     submit = SubmitField('Submit')
 
@@ -51,8 +49,8 @@ class submitform(FlaskForm):
 
 
 class admin_adddelform(FlaskForm):
-    name = StringField(label='Name', validators=[DataRequired()])
-    rank = StringField(label='Rank', validators=[DataRequired()])
+    name = StringField(label='Name:', validators=[DataRequired()])
+    rank = StringField(label='Rank:', validators=[DataRequired()])
     submit = SubmitField('Submit')
     fmw = SelectField(label='FMW', choices=[], validators=[Optional()], validate_choice=False, default=None)
 

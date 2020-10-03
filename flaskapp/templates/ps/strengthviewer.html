@@ -4,26 +4,51 @@
   {{ super() }}Personnel List
 {% endblock %}
 
+{% block styles %}
+<style>
+.btn-success {
+    background-color: #228B22;
+    border-color: #228B22
+}
+
+.btn-danger {
+    background-color: #8B0000;
+    border-color: #8B0000
+}
+</style>
+{% endblock %}
+
 
 {% block content %}
     <div class="row">
         <div class="col">
             <h1 class="font-weight-bold">Personnel List for {{ fmw_name }}</h1>
 
-            <form action="" method="post">
-            {{ add_form.hidden_tag() }} 
-            <table>
-                <tr>
-                    <th>{{ add_form.rank.label }}</th>
-                    <th>{{ add_form.name.label }}</th>
-                    <th>{{ add_form.submit }}</a></th>
-                </tr>
-                <tr>
-                    <th>{{ add_form.rank }}</th>
-                    <th>{{ add_form.name }}</th>
-                </tr>
-            </table>
-            </form>
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Insert Personnel</h5>
+                    <form action="" method="post">
+                        {{ add_form.hidden_tag() }}
+                        <div class="form-row ">
+                            <div class="col-md-4 form-inline">
+                                {{ add_form.rank.label(class_="col-form-label mr-3 font-weight-bold") }}
+                                {{ add_form.rank(class_="form-control") }}
+                            </div>
+
+                            <div class="col-md-4 form-inline">
+                                {{ add_form.name.label(class_="col-form-label mr-3 font-weight-bold") }}
+                                {{ add_form.name(class_="form-control") }}
+                            </div>
+                            
+                            <div class="col-md-2">
+                                {{ add_form.submit(class_="form-control btn btn-dark") }}
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+
 
             <table class="table mt-3">
                 <thead class="thead-dark">
@@ -33,7 +58,8 @@
                         <th scope="col">Name</th>
                         <th scope="col">FMW</th>
                         <th scope="col">Active</th>
-                        <th scope="col">Action</th>
+                        <th scope="col"></th>
+                        <th scope="col"></th>
                     </tr>
                 </thead>
 
@@ -46,10 +72,23 @@
                         <td>{{ person.fmw.name }}</td>
                         <td>{{ person.active }}</td>
                         <td>
-                            <a href="{{ url_for('ps.add_del', rank=person.rank, personnel_name=person.name, fmw_id=person.fmw.id,personnel_id=person.id, add_del='del' )}}">Delete</a>
-                
-                            <a href="{{ url_for('ps.act_deact',personnel_id=person.id, act_deact='deact', fmw_id=fmw_id )}}">Deactivate</a>
-                            <a href="{{ url_for('ps.act_deact',personnel_id=person.id, act_deact='act', fmw_id=fmw_id )}}">Activate</a>
+                            {% if person.active %}
+                            <a href="{{ url_for('ps.act_deact',personnel_id=person.id, act_deact='deact', fmw_id=fmw_id )}}"
+                               class="btn btn-dark w-100">
+                                Deactivate
+                            </a>
+                            {% else %}
+                            <a href="{{ url_for('ps.act_deact',personnel_id=person.id, act_deact='act', fmw_id=fmw_id )}}"
+                               class="btn btn-success w-100">
+                                Activate
+                            </a>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('ps.add_del', rank=person.rank, personnel_name=person.name, fmw_id=person.fmw.id,personnel_id=person.id, add_del='del' )}}"
+                            class="btn btn-danger w-100">
+                                Delete
+                            </a>
                         </td>
                     </tr>
                 {% endfor %}
