@@ -58,5 +58,19 @@ def write_testdata_file():
             f.write(',\n' if i != len(personnel_status_list) else ';\n')
 
 
-if __name__ == '__main__':
-    write_testdata_file()
+def generate_personnels():
+    text =''
+    for i in range(100):
+        if i<=30:
+            unit_id = 2
+        elif i>30 and i<=50: 
+            unit_id = 3
+        elif i>50 and i <=80:
+            unit_id = 6
+        else:
+            unit_id = 1
+        print("('{}','{}',{},{}),".format("Person"+str(i),"RANK"+str(i),1,unit_id))
+    return text
+
+if __name__ == "__main__":
+    generate_personnels()

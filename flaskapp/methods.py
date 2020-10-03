@@ -1,73 +1,47 @@
 import os
-from csv import writer, DictWriter
-from datetime import timedelta,datetime
+from csv import DictWriter, writer
+from datetime import datetime, timedelta
 from pathlib import Path
 
-def nameconverter_paradestateform(rows):
-    names = [] 
-    for row in rows:
-        names.append((row["id"], row["name"]))
-    return names
+from .models import Fmw, Personnel, Personnel_status, User
 
 
-def authenticate_user(db, username, password):
-    error = None
-    user = db.execute(
-             'SELECT * FROM user WHERE username = ?', (username,)
-         ).fetchone()
-    if user is None:
-        error = 'Incorrect username.'
-    elif user['password'] != password:
-        error = 'Wrong password'
-    return error, user
+def retrieve_personnel_list(fmw_id, clearance=100, query_all=False):
+    if query_all == True and clearance <= 2: return Personnel.query.all()
+    # subquery = Fmw.query.filter_by(name=fmw).first()
+    return Personnel.query.filter_by(fmw_id=fmw_id).all()
 
 
-def retrieve_personnel_list(db, fmw,clearance=''):
-    if fmw == "Admin": return db.execute('SELECT * FROM personnel').fetchall()
-    return db.execute('SELECT * FROM personnel WHERE fmw = ?', (fmw,)).fetchall()
+def retrieve_personnel_statuses(db, fmw_id, date, clearance=100, missing_status_needed=True, query_all=False):
+    if clearance <= 2 and query_all == True:
+        # query all
+        personnel_statuses = db.session.query(Personnel_status).filter(
+            Personnel_status.date == date, Personnel.id == Personnel_status.personnel_id).all()
 
+        if missing_status_needed == True:
+            subquery = db.session.query(Personnel.id).join(Personnel_status,
+                                                           Personnel.id == Personnel_status.personnel_id).filter(
+                Personnel_status.date == date)
+            missing_status = db.session.query(Personnel).filter(Personnel.id.notin_(subquery)).all()
 
-def retrieve_personnel_statuses(db,fmw,date,missing_status_needed=True):
-    if fmw == 'Admin':
-        personnel_statuses = db.execute("""
-        SELECT personnel.id, personnel.rank, personnel.name, personnel.fmw,
-        personnel_status.am_status, personnel_status.am_remarks, personnel_status.pm_status, personnel_status.pm_remarks
-        FROM personnel, personnel_status
-        WHERE personnel.id = personnel_status.personnel_id 
-        AND personnel_status.date = ?
-        """, (date,) ).fetchall()
-        if missing_status_needed==True:
-            missing_status = db.execute("""
-            SELECT personnel.id, personnel.rank, personnel.name, personnel.fmw
-            FROM personnel
-            WHERE personnel.id NOT IN 
-                (SELECT personnel.id FROM
-                personnel_status INNER JOIN personnel ON personnel.id = personnel_status.personnel_id 
-                WHERE personnel_status.date = ? )
-            """, (date,) ).fetchall()
     else:
-        personnel_statuses = db.execute("""
-        SELECT personnel.id, personnel.rank, personnel.name, personnel.fmw,
-        personnel_status.am_status, personnel_status.am_remarks, personnel_status.pm_status, personnel_status.pm_remarks
-        FROM personnel, personnel_status
-        WHERE personnel.id = personnel_status.personnel_id 
-        AND personnel.fmw = ? AND personnel_status.date = ?
-        """, (fmw,date) ).fetchall()
-        #not done
-        if missing_status_needed==True:
-            missing_status = db.execute("""
-            SELECT personnel.id, personnel.rank, personnel.name, personnel.fmw
-            FROM personnel
-            WHERE personnel.fmw = ? 
-            AND personnel.id NOT IN 
-                (SELECT personnel.id FROM
-                personnel_status INNER JOIN personnel ON personnel.id = personnel_status.personnel_id 
-                WHERE personnel_status.date = ? )
-            """, (fmw,date) ).fetchall()
+        # fmw_query = Fmw.query.filter_by(name=fmw).first()
+        personnel_statuses = db.session.query(Personnel_status).filter(
+            Personnel_status.date == date, Personnel.id == Personnel_status.personnel_id,
+            Personnel.fmw_id == fmw_id).all()
+
+        if missing_status_needed == True:
+            subquery = db.session.query(Personnel.id).join(Personnel_status,
+                                                           Personnel.id == Personnel_status.personnel_id).filter(
+                Personnel_status.date == date)
+            # fmw_query = Fmw.query.filter_by(name=fmw).first()
+            missing_status = db.session.query(Personnel).filter(Personnel.id.notin_(subquery),
+                                                                Personnel.fmw_id == fmw_id).all()
+
     return (personnel_statuses, missing_status) if (missing_status_needed == True) else (personnel_statuses)
 
 
-def generate_PS(records,request_date=None):
+def generate_PS(records, request_date=None):
     # create func to write per day
     if request_date is None:
         request_date = datetime.date(datetime.today())
@@ -83,15 +57,15 @@ def generate_PS(records,request_date=None):
     with open(new_file_path, 'w', newline='') as csvfile:
         # write date first
         csvwriter = writer(csvfile)
-        csvwriter.writerow(['Date',request_date])
+        csvwriter.writerow(['Date', request_date])
         # write excel header
-        fieldnames = ['fmw','Name','Rank','Am status','Am Remarks','Pm status','Pm Remarks']
+        fieldnames = ['fmw', 'Name', 'Rank', 'Am status', 'Am Remarks', 'Pm status', 'Pm Remarks']
         csvwriter = DictWriter(csvfile, fieldnames=fieldnames)
         csvwriter.writeheader()
         for record in records:
-            csvwriter.writerow({'fmw': record['fmw'], 'Name': record['name'],'Rank': record['rank'],
-            'Am status': record['am_status'],'Am Remarks': record['am_remarks'],
-            'Pm status': record['pm_status'],'Pm Remarks': record['pm_remarks']})
+            csvwriter.writerow({'fmw': record.Person.fmw, 'Name': record.Person.name, 'Rank': record.Person.rank,
+                                'Am status': record.am_status, 'Am Remarks': record.am_remarks,
+                                'Pm status': record.pm_status, 'Pm Remarks': record.pm_remarks})
 
     if Path(new_file_path).is_file():
         return None

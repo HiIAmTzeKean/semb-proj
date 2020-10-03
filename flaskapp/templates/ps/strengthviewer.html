@@ -8,7 +8,23 @@
 {% block content %}
     <div class="row">
         <div class="col">
-            <h1 class="font-weight-bold">Personnel List for {{ fmw }}</h1>
+            <h1 class="font-weight-bold">Personnel List for {{ fmw_name }}</h1>
+
+            <form action="" method="post">
+            {{ add_form.hidden_tag() }} 
+            <table>
+                <tr>
+                    <th>{{ add_form.rank.label }}</th>
+                    <th>{{ add_form.name.label }}</th>
+                    <th>{{ add_form.submit }}</a></th>
+                </tr>
+                <tr>
+                    <th>{{ add_form.rank }}</th>
+                    <th>{{ add_form.name }}</th>
+                </tr>
+            </table>
+            </form>
+
             <table class="table mt-3">
                 <thead class="thead-dark">
                     <tr>
@@ -16,6 +32,8 @@
                         <th scope="col">Rank</th>
                         <th scope="col">Name</th>
                         <th scope="col">FMW</th>
+                        <th scope="col">Active</th>
+                        <th scope="col">Action</th>
                     </tr>
                 </thead>
 
@@ -25,7 +43,14 @@
                         <th scope="row">{{ loop.index }}</th>
                         <td>{{ person.rank }}</td>
                         <td>{{ person.name }}</td>
-                        <td>{{ person.fmw }}</td>
+                        <td>{{ person.fmw.name }}</td>
+                        <td>{{ person.active }}</td>
+                        <td>
+                            <a href="{{ url_for('ps.add_del', rank=person.rank, personnel_name=person.name, fmw_id=person.fmw.id,personnel_id=person.id, add_del='del' )}}">Delete</a>
+                
+                            <a href="{{ url_for('ps.act_deact',personnel_id=person.id, act_deact='deact', fmw_id=fmw_id )}}">Deactivate</a>
+                            <a href="{{ url_for('ps.act_deact',personnel_id=person.id, act_deact='act', fmw_id=fmw_id )}}">Activate</a>
+                        </td>
                     </tr>
                 {% endfor %}
                 </tbody>
