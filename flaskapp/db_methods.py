@@ -57,7 +57,7 @@ def check_personnel_exist(db,name,fmw_id,rank):
         return "User does not exist in the system. Please check rank and name."
 
 
-def add_del_check(db,add_del,name,fmw,rank):
+def add_del_check(db,personnel_id,add_del):
     """Does inital check for Add/Del
 
     Args:
@@ -68,45 +68,59 @@ def add_del_check(db,add_del,name,fmw,rank):
         add_del ([type]): [description]
 
     Returns:
-        Boolean,
-        Error: [Error message] OR
-        record: [Personnel Queried]
+        Error: [Error message]
     """
-    record = Personnel.query.filter_by(name=name,rank=rank,fmw_id=fmw_id).first()
-    if add_del == 'Add':
+    record = Personnel.query.filter_by(id=personnel_id).first()
+    if add_del == 'add':
         if record:
-            return False, "Personnel already exist in your FMW!"
-        else: return True, record
+            return "Personnel already exist in your FMW!"
+        else: return None
     else:
-        if record: return True, record
+        if record: return None
         else:
-            return False, "Personnel does not exist in your FMW!"
+            return "Personnel does not exist in your FMW!"
 
 
-def add_del_personnel_db(db, add_del, rank, name, fmw_id):
-    '''
-    Output will return (error,personnel)
-    if error, personnel will be blank as he does not exist
-    else error will be none and valid personnel will be returned
-    '''
-    check, output = add_del_check(db,name,fmw_id,rank,add_del)
-    if check == False:
-        return output,''
-    if add_del == 'Add':
+def add_del_personnel_db(db, add_del, personnel_id, rank, name, fmw_id):
+    """[summary]
+
+    Args:
+        db
+        add_del ([str]): [add/del]
+        rank
+        name
+        fmw_id
+
+    Returns:
+        error [str]: [description]
+    """
+    error = add_del_check(db,personnel_id,add_del)
+    if error:
+        return error
+    if add_del == 'add':
         db.session.add(Personnel(rank,name,fmw_id))
     else:
-        personnel_record = Personnel.query.filter_by(name=name,rank=rank,fmw_id=fmw_id).first()
-        status_records = Personnel_status.query.filter(Personnel_status.personnel_id==personnel_record.id).all()
-        db.session.delete(status_records)
+        personnel_record = Personnel.query.filter_by(id=personnel_id).first()
+        status_records = Personnel_status.query.filter(Personnel_status.personnel_id==personnel_id).all()
+        for status in status_records:
+            db.session.delete(status)
         db.session.delete(personnel_record)
     db.session.commit()
-    return None, output
+    return
 
 
 def act_deact_personnel_db(db,personnel_id,active):
     record = db.session.query(Personnel).filter(Personnel.id==personnel_id).first()
+    if record is None:
+        return 'Personnel does not exist! Please raise issue to admin'
+    print(record.active)
     if active == 'act':
+        if record.active == True:
+            return 'Personnel is already active!'
         record.active = True
     else:
+        if record.active == False:
+            return 'Personnel is already deactivated!'
         record.active = False
     db.session.commit()
+    return

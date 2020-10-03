@@ -247,9 +247,12 @@ def strengthviewer(fmw_id):
         return redirect(url_for('ps.add_del', personnel_name=add_form.name.data,
                                 fmw_id=fmw_id, rank=add_form.rank.data, add_del='add'))
 
-    if request.args.get('redirect_to_strenghtviewer') and request.args.get('cancel_request'):
-        flash('Cancelled!')
-    elif request.args.get('redirect_to_strenghtviewer'): 
+    if request.args.get('cancel_request'):
+        flash('Cancelled action!')
+    elif request.args.get('redirect_from_add_del'): 
+        flash('Success! Added {} {} to list'.format(request.args.get('rank'), request.args.get('personnel_name')))
+    elif request.args.get('redirect_from_act_deact'):
+        #TODO Add in customised message
         flash('Success!')
     
     fmw_name = db.session.query(Fmw.name).filter_by(id=fmw_id).scalar()
@@ -263,13 +266,13 @@ def strengthviewer(fmw_id):
 @bp.route('/add_del_personnel/<rank>/<personnel_name>/<fmw_id>/<add_del>', methods=('GET', 'POST'))
 @login_required
 def add_del(rank,personnel_name,fmw_id,add_del):
-    """Add/Del personnel from DB
+    """Add/Del personnel to DB. Redirected from paradestate to here
 
     Args:
         rank
         personnel_name
         fmw_id
-        add_del
+        add_del [str]; [add/del]
         personnel_id
 
     Returns:
@@ -277,22 +280,14 @@ def add_del(rank,personnel_name,fmw_id,add_del):
         cancel_request ([Boolean]): [If user wants to cancel request, cancel button is in html page]
     """
     form = submitform()
-    #TODO add in validation checks to add and del
-    if add_del == 'del' and form.validate_on_submit():
-        status_records = Personnel_status.query.filter(Personnel_status.personnel_id==request.args.get('personnel_id')).all()
-        record = Personnel.query.filter_by(id=request.args.get('personnel_id')).first()
-        for status in status_records:
-            db.session.delete(status)
-        db.session.commit()
-        db.session.delete(record)
-        db.session.commit()
-        return redirect(url_for('ps.strengthviewer', redirect_to_strenghtviewer=True,fmw_id=fmw_id))
-    elif add_del == 'add' and form.validate_on_submit():
-        db.session.add(Personnel(rank,personnel_name,fmw_id))
-        db.session.commit()
-        return redirect(url_for('ps.strengthviewer', redirect_to_strenghtviewer=True,fmw_id=fmw_id))
+    if form.validate_on_submit():
+        error = add_del_personnel_db(db, add_del, request.args.get('personnel_id'), rank, personnel_name, fmw_id)
+        if error:
+            flash(error)
+        return redirect(url_for('ps.strengthviewer', redirect_from_add_del=True,
+                                fmw_id=fmw_id,rank=rank,personnel_name=personnel_name))
     return render_template('ps/admin_add_del.html',form=form,rank=rank,personnel_name=personnel_name,
-    fmw_name=db.session.query(Fmw.name).filter_by(id=fmw_id).scalar(),fmw_id=fmw_id)
+                            fmw_name=db.session.query(Fmw.name).filter_by(id=fmw_id).scalar(),fmw_id=fmw_id)
 
 
 @bp.route('/act_deact/<personnel_id>/<act_deact>/<fmw_id>', methods=('GET', 'POST'))
@@ -310,8 +305,10 @@ def act_deact(personnel_id,act_deact,fmw_id):
     """
     form = submitform()
     if form.validate_on_submit():
-        act_deact_personnel_db(db,personnel_id,act_deact)
-        return redirect(url_for('ps.strengthviewer', redirect_to_strenghtviewer=True,fmw_id=fmw_id))
+        error = act_deact_personnel_db(db,personnel_id,act_deact)
+        if error:
+            flash(error)
+        return redirect(url_for('ps.strengthviewer', redirect_from_act_deact=True,fmw_id=fmw_id))
 
     record = Personnel.query.filter_by(id=personnel_id).first()
     return render_template('ps/admin_add_del.html',form=form,rank=record.rank,personnel_name=record.name,
