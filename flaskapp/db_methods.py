@@ -1,75 +1,54 @@
-def update_PS(db,personnel_id, status_date, am_status, am_remarks, pm_status, pm_remarks):
-    # assume that record already exist
-    db.execute("""
-    UPDATE "personnel_status"
-    SET am_status = ?, am_remarks = ?, pm_status = ?, pm_remarks = ?
-    WHERE personnel_id = ? AND date = ?
-    """, (am_status, am_remarks, pm_status, pm_remarks,  personnel_id, status_date))
-    db.commit()
+from .models import Personnel, Personnel_status, User
+from datetime import timedelta
 
 
-def insert_PS(db,personnel_id, status_date, am_status, am_remarks, pm_status, pm_remarks):
-    db.execute('''INSERT INTO personnel_status
-            (personnel_id, date, am_status, am_remarks, pm_status, pm_remarks)
-            VALUES (?,?,?,?,?,?)''',
-            (personnel_id, status_date, am_status, am_remarks, pm_status, pm_remarks))
-    db.commit()
+def update_PS(db,personnel_id, date, am_status, am_remarks, pm_status, pm_remarks):
+    db.session.query(Personnel_status).filter(Personnel_status.personnel_id==personnel_id,Personnel_status.date==date).update(
+        {Personnel_status.am_status:am_status, Personnel_status.am_remarks:am_remarks,
+        Personnel_status.pm_status:pm_status, Personnel_status.pm_remarks:pm_remarks}, synchronize_session = False)
+    db.session.commit()
 
 
-def retrive_record_by_date(db,personnel_id,status_date):
+def insert_PS(db,personnel_id, date, am_status, am_remarks, pm_status, pm_remarks):
+    status = Personnel_status(date, am_status, am_remarks, pm_status, pm_remarks, personnel_id )
+    db.session.add(status)
+    db.session.commit()
+
+
+def retrive_record_by_date(personnel_id,date):
     if personnel_id == None or personnel_id == '' or personnel_id == []:
         return None
-    record = db.execute("""
-    SELECT personnel.id, personnel.name, personnel_status.date, personnel_status.am_status,
-    personnel_status.am_remarks, personnel_status.pm_status, personnel_status.pm_remarks
-    FROM personnel JOIN personnel_status ON personnel.id = personnel_status.personnel_id
-    WHERE personnel.id = ? AND personnel_status.date = ?
-    """, (personnel_id, status_date)).fetchone()
+    record = Personnel_status.query.filter(Personnel_status.personnel_id==personnel_id,Personnel_status.date==date).first()
     if record: return record
     return None
 
 
 def submit_PS(db,personnel_id, date, am_status, am_remarks, pm_status, pm_remarks):
-    if retrive_record_by_date(db, personnel_id, date):
+    if retrive_record_by_date(personnel_id, date):
         update_PS(db, personnel_id, date, am_status, am_remarks, pm_status, pm_remarks)
     else:
         insert_PS(db, personnel_id, date, am_status, am_remarks, pm_status, pm_remarks)
 
 
-def retrive_personnel_id(db,name,fmw,rank=""):
-    if rank != "":
-        record = db.execute("""
-        SELECT personnel.id
-        FROM personnel
-        WHERE name = ? AND fmw = ? AND rank = ?
-        """, (name,fmw,rank)).fetchone()
+def submit_PS_helper(db,personnel_id, start_date, end_date, am_status, am_remarks, pm_status, pm_remarks, multi_date_needed = True):
+    if start_date == end_date:
+        submit_PS(db,personnel_id, start_date, am_status, am_remarks, pm_status, pm_remarks)
+        multi_date = False
     else:
-        record = db.execute("""
-        SELECT personnel.id
-        FROM personnel
-        WHERE name = ? AND fmw = ?
-        """, (name,fmw)).fetchone()
+        date = start_date
+        while date != (end_date + timedelta(days=1)):
+            submit_PS(db,personnel_id, date, am_status, am_remarks, pm_status, pm_remarks)
+            date = date + timedelta(days=1)
+        multi_date =True
+    if multi_date_needed == False:
+        return
+    return multi_date
+
+
+def check_personnel_exist(db,name,fmw_id,rank):
+    record = Personnel.query.filter_by(name=name,rank=rank).first()
     if record:
-        return record['id']
-    return None
-
-
-def retrive_one_record(db,name,fmw):
-    record = db.execute("""
-    SELECT *
-    FROM personnel
-    WHERE name = ? AND fmw = ?
-    """, (name,fmw)).fetchone()
-    if record: return record
-    return None
-
-
-def check_personnel_exist(db,name,fmw,rank):
-    record = db.execute("""SELECT * FROM personnel 
-    WHERE personnel.name = ? AND personnel.rank = ?""", (name,rank)).fetchone()
-    if record:
-        record2= db.execute("""SELECT * FROM personnel 
-        WHERE personnel.name = ? AND personnel.rank = ? AND personnel.fmw = ?""", (name,rank,fmw)).fetchone()
+        record2 = Personnel.query.filter_by(name=name,rank=rank,fmw_id=fmw_id).first()
         if record2:
             return None
         else:
@@ -78,46 +57,70 @@ def check_personnel_exist(db,name,fmw,rank):
         return "User does not exist in the system. Please check rank and name."
 
 
-def add_del_check(db,name,fmw,rank,add_del):
-    '''
-    returns (check_status,record)
-    if check is valid, personnel record will be returned
-    else an error message will be returned
-    '''
-    record = db.execute("""SELECT * FROM personnel 
-    WHERE personnel.name = ? AND personnel.rank = ? AND personnel.fmw = ?""", (name,rank,fmw)).fetchone()
-    if add_del == 'Add':
+def add_del_check(db,personnel_id,add_del):
+    """Does inital check for Add/Del
+
+    Args:
+        db ([type]): [description]
+        name ([type]): [description]
+        fmw ([type]): [description]
+        rank ([type]): [description]
+        add_del ([type]): [description]
+
+    Returns:
+        Error: [Error message]
+    """
+    record = Personnel.query.filter_by(id=personnel_id).first()
+    if add_del == 'add':
         if record:
-            return False, "Personnel already exist in your FMW!"
-        else: return True, record
+            return "Personnel already exist in your FMW!"
+        else: return None
     else:
-        if record: return True, record
+        if record: return None
         else:
-            return False, "Personnel does not exist in your FMW!"
+            return "Personnel does not exist in your FMW!"
 
 
-def add_del_personnel_db(db,name,fmw,rank,add_del):
-    '''
-    Output will return (error,personnel)
-    if error, personnel will be blank as he does not exist
-    else error will be none and valid personnel will be returned
-    '''
-    check, output = add_del_check(db,name,fmw,rank,add_del)
-    if check == False:
-        return output,''
-    if add_del == 'Add':
-        db.execute("""INSERT INTO personnel (name,fmw,rank) VALUES (?,?,?)""", (name,fmw,rank))
+def add_del_personnel_db(db, add_del, personnel_id, rank, name, fmw_id):
+    """[summary]
+
+    Args:
+        db
+        add_del ([str]): [add/del]
+        rank
+        name
+        fmw_id
+
+    Returns:
+        error [str]: [description]
+    """
+    error = add_del_check(db,personnel_id,add_del)
+    if error:
+        return error
+    if add_del == 'add':
+        db.session.add(Personnel(rank,name,fmw_id))
     else:
-        personnel_id = retrive_personnel_id(db,name,fmw)
-        db.execute("""DELETE FROM personnel_status WHERE id = ?""", (personnel_id,))
-        db.execute("""DELETE FROM personnel WHERE id = ?""", (personnel_id,))
-    db.commit()
-    return None, output
+        personnel_record = Personnel.query.filter_by(id=personnel_id).first()
+        status_records = Personnel_status.query.filter(Personnel_status.personnel_id==personnel_id).all()
+        for status in status_records:
+            db.session.delete(status)
+        db.session.delete(personnel_record)
+    db.session.commit()
+    return
 
 
-def act_deact_personnel_db(db,active,name,fmw):
-    personnel_id = retrive_personnel_id(db,name,fmw)
-    db.execute("""UPDATE personnel SET active = ? 
-    WHERE personnel.id = ?
-    """, (active,personnel_id))
-    db.commit()
+def act_deact_personnel_db(db,personnel_id,active):
+    record = db.session.query(Personnel).filter(Personnel.id==personnel_id).first()
+    if record is None:
+        return 'Personnel does not exist! Please raise issue to admin'
+    print(record.active)
+    if active == 'act':
+        if record.active == True:
+            return 'Personnel is already active!'
+        record.active = True
+    else:
+        if record.active == False:
+            return 'Personnel is already deactivated!'
+        record.active = False
+    db.session.commit()
+    return

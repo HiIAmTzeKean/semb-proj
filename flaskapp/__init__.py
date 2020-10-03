@@ -1,48 +1,42 @@
 import os
 from flask import Flask
+from flask_migrate import Migrate
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager
+from flask_bootstrap import Bootstrap
+from config import Config
 
+app = Flask(__name__, instance_relative_config=True, template_folder='templates')
 
-def create_app():
-    # create and configure the app
-    app = Flask(__name__, instance_relative_config=True, template_folder='templates')
-    app.config.from_mapping(
-        SECRET_KEY='dev',
-        DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
-    )
+# load config
+app.config.from_pyfile('config.py', silent=False)
+app.config.from_object(Config)
 
-    # load the instance config
-    app.config.from_pyfile('config.py', silent=False)
-    
-    # ensure the instance folder exists
-    try:
-        os.makedirs(app.instance_path)
-    except OSError:
-        pass
+# ensure the instance folder exists
+try:
+    os.makedirs(app.instance_path)
+except OSError:
+    pass
 
-    from flask_bootstrap import Bootstrap
-    Bootstrap(app)
+Bootstrap(app)
+login_manager = LoginManager(app)
+login_manager.login_view = 'auth.login'
 
-    from . import db
-    db.init_app(app)
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+from . import models
 
-    from . import auth
-    app.register_blueprint(auth.bp)
+from .auth import auth_route
+app.register_blueprint(auth_route.bp)
 
-    # for parade state page
-    from . import ps
-    app.register_blueprint(ps.bp)
-    app.add_url_rule('/', endpoint='index')
+from . import ps
+app.register_blueprint(ps.bp)
+app.add_url_rule('/', endpoint='index')
 
-    # for misc pages
-    from . import misc
-    app.register_blueprint(misc.bp)
+from .misc import misc_route
+app.register_blueprint(misc_route.bp)
 
-    # a simple page that says hello
-    @app.route('/hello')
-    def hello():
-        return 'hello world'
-
-    return app
-
-
-app = create_app()
+# a simple page that says hello
+@app.route('/hello')
+def hello():
+    return 'hello world'

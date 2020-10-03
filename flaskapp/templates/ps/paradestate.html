@@ -27,7 +27,7 @@
     {% if personnels %}
     <div class="row">
         <div class="col">
-            <h2 class="">Parade State for {{ session['fmw'] }} on {{ date }}</h2>
+            <h2 class="">Parade State for {{ fmw_name }} on {{ date }}</h2>
             <!-- Navbar to select AM or PM status -->
             <ul class="nav nav-pills" id="time-tab" role="tablist">
                 {% for time in ('AM', 'PM') %}
@@ -67,7 +67,6 @@
                             <th scope="col">Actions</th>
                         </tr>
                         </thead>
-
                         {# List of Personnels without status provided at this timeslot #}
                         {% for person in personnels|rejectattr(time + "_status") %}
                             <tr class="table-danger align-items-center">
@@ -95,15 +94,12 @@
                                 <td class="align-middle">ZZ: NONE PROVIDED</td>
                                 <td>
                                     <!-- Button to easily mark personnel as Present -->
-                                    <form action="{{ url_for('ps.mark_personnel_present', form=form) }}" method="post">
-                                        {{ status_update_form.csrf_token }}
-                                        {{ status_update_form.name(value=person.id) }}
-                                        {{ status_update_form.date(value=date) }}
-                                        {{ status_update_form.time(value=time) }}
-                                        {{ status_update_form.submit(class_="form-control btn btn-dark") }}
-                                    </form>
+                                    <a href="{{ url_for('ps.statuschange', personnel_id=person.id, date=date, fmw_id=person.fmw.id, time=time, set_present=True)}}"
+                                       class="btn btn-dark w-100 mt-1">Mark Present</a>
+
                                     <!-- 2nd button to mark this guy as other status, redirect to status page -->
-                                    <a href="{{ url_for('ps.index', name=person.id) }}" class="btn btn-dark w-100 mt-1">Other Status</a>
+                                    <a href="{{ url_for('ps.statuschange', personnel_id=person.id, date=date, fmw_id=person.fmw.id)}}"
+                                       class="btn btn-dark w-100 mt-1">Other Status</a>
                                 </td>
                             </tr>
                         {% endfor %}
@@ -124,45 +120,6 @@
                     </table>
                 </div>
                 {% endfor %}
-            </div>
-        </div>
-    </div>
-
-    {% else %}
-    <div class="d-flex full-height justify-content-center align-items-center">
-        <div class="modal-dialog">
-            <div class="modal-content px-lg-4 py-lg-4">
-                <div class="modal-body">
-                    <form action="" method="post">
-                        {{ form.hidden_tag() }}
-
-                        {% if form.fmw %}
-                        <h5 class="ml-lg-1 text-center">Please select the FMW which you want to view:</h5>
-                        <div class="form-row mx-1 mt-lg-3">
-                            <div class="col-md-3 font-weight-bold">
-                                {{ form.fmw.label(class_="col-form-label") }}
-                            </div>
-                            <div class="col-md-9">
-                                {{ form.fmw(class_="form-control custom-select") }}
-                            </div>
-                        </div>
-                        {% endif %}
-
-                        <h5 class="ml-lg-1 mt-3 text-center">Please select the date which you want to view:</h5>
-                        <div class="form-row mx-1 mt-lg-3">
-                            <div class="col-md-3 font-weight-bold">
-                                {{ form.date.label(class_="col-form-label") }}
-                            </div>
-                            <div class="col-md-9">
-                                {{ form.date(class_="form-control") }}
-                            </div>
-                        </div>
-
-                        <div class="form-row mx-1 mt-3">
-                            {{ form.submit(class_="form-control btn btn-dark") }}
-                        </div>
-                    </form>
-                </div>
             </div>
         </div>
     </div>

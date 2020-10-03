@@ -5,13 +5,13 @@
 {% endblock %}
 
 {% block content %}
-    <h1 class="font-weight-bold">Status Update for {{session.get('fmw')}}</h1>
+    <h1 class="font-weight-bold">Status Update for {{ session.get('fmw_id') }}</h1>
     
     <!--Flash success message to inform user-->
     {% if updated %}
         <div class="alert alert-success pl-3" role="alert">
             <h4 class="alert-heading">Status Updated</h4>
-            <p>{{ personnel.name }}'s status for {{ personnel.date }}  {{ ('to ' + end_date|string) if multi_date else '' }} has been updated to:</p>
+            <p>{{ personnel.Person.name }}'s status for {{ personnel.date }}  {{ ('to ' + end_date|string) if multi_date else '' }} has been updated to:</p>
             <p class="mb-0 font-weight-bold">
                 AM Status/Remarks:
                 <span class="font-weight-normal d-inline">{{ personnel.am_status }}</span>
@@ -29,17 +29,8 @@
         </div>
     {% endif %}
 
-    <form action="{{ url_for('ps.index', redirect_to_paradestate=True) if redirect_to_paradestate }}" method="post">
+    <form action="{{ url_for('ps.index', redirect_to_paradestate=True, fmw_id = fmw_id, date=date) if redirect_to_paradestate }}" method="post">
         {{ form.hidden_tag() }}
-        <div class="form-row mt-3">
-            <div class="col-md-3 font-weight-bold">
-                {{ form.fmw.label(class_="col-form-label") }}
-            </div>
-            <div class="col-md-9">
-                {{ form.fmw(class_="form-control custom-select") }}
-            </div>
-        </div>
-
         <div class="form-row mt-3">
             <div class="col-md-3 font-weight-bold">
                 {{ form.start_date.label(class_="col-form-label") }}
@@ -54,7 +45,14 @@
                 {{ form.end_date.label(class_="col-form-label") }}
             </div>
             <div class="col-md-9">
-                {{ form.end_date(class_="form-control") }}
+                {% if form.end_date.errors %}
+                    {{ form.end_date.label(class_="col-form-label") }}
+                    {% for error in form.end_date.errors %}
+                        {{ error }}
+                    {% endfor %}
+                {% else %}
+                    {{ form.end_date(class_="form-control") }}
+                {% endif %}
             </div>
         </div>
 

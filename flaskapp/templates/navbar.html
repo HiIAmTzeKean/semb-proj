@@ -8,20 +8,18 @@
     <div class="collapse navbar-collapse" id="navbar-content">
         <!-- Hyperlinks to various pages -->
         <ul class="navbar-nav mr-auto">
-            {% if g.user is none %}
+            {% if current_user.is_anonymous %}
             <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('auth.load_fmw') }}">Select FMW</a>
             </li>
             {% else %}
             <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('ps.paradestate') }}">Parade State</a>
+                <a class="nav-link" href="{{ url_for('ps.paradestate_pre_view') }}">Parade State</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('ps.strengthviewer') }}">Personnel List</a>
+                <a class="nav-link" href="{{ url_for('ps.strengthviewer_pre_view') }}">Personnel List</a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('ps.admin_add_del') }}">Admin</a>
-            </li>
+
                 
             <li class="nav-item d-lg-none my-2">
                 <a class="btn btn-outline-light" href="{{ url_for('auth.logout') }}">
@@ -33,7 +31,7 @@
     </div>
 
     <!-- Auth section -->
-    {% if g.user is none %}
+    {% if current_user.is_anonymous  %}
     <div class="ml-auto">
         <a class="btn btn-outline-light" href="{{ url_for('auth.login') }}">
             Sign in
