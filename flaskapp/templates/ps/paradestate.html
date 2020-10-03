@@ -30,22 +30,22 @@
             <h2 class="">Parade State for {{ fmw_name }} on {{ date }}</h2>
             <!-- Navbar to select AM or PM status -->
             <ul class="nav nav-pills" id="time-tab" role="tablist">
-                {% for time in ('AM', 'PM') %}
+                {% for time in ('am', 'pm') %}
                 <li class="nav-item text-center">
-                    <a class="nav-link {{ 'active' if time == 'AM' }}" id="{{ time }}-status-tab" data-toggle="pill" href="#{{ time }}-status"
-                       role="tab" aria-controls="{{ time }}-status">{{ time }} Parade State</a>
+                    <a class="nav-link {{ 'active' if time == 'am' }}" id="{{ time }}-status-tab" data-toggle="pill" href="#{{ time }}-status"
+                       role="tab" aria-controls="{{ time }}-status">{{ time|upper }} Parade State</a>
                 </li>
                 {% endfor %}
             </ul>
 
             <!-- Panels -->
             <div class="tab-content" id="pills-tabContent">
-                {% for time in ('AM', 'PM') %}
-                <div class="tab-pane fade {{ 'show active' if time == 'AM' }}" id="{{ time }}-status"
+                {% for time in ('am', 'pm') %}
+                <div class="tab-pane fade {{ 'show active' if time == 'am' }}" id="{{ time }}-status"
                      role="tabpanel" aria-labelledby="{{ time }}-status-tab">
                     <!-- Summary of Statuses -->
                     <div class="alert mt-2 {{ 'alert-danger' if missing_personnels else 'alert-info' }}" role="alert">
-                        <h4 class="alert-heading">Summary of {{ time }} Status</h4>
+                        <h4 class="alert-heading">Summary of {{ time|upper }} Status</h4>
                         <p>
                             {% for group in personnels|selectattr(time + "_status")|groupby(time + "_status") %}
                             {{ group.grouper }}: {{ group.list|length }}{{ ", " if not loop.last }}
@@ -63,27 +63,23 @@
                         <thead class="thead-dark">
                         <tr>
                             <th scope="col">Rank & Name</th>
-                            <th scope="col">{{ time }} Status/ Remarks</th>
+                            <th scope="col">{{ time|upper }} Status/ Remarks</th>
                             <th scope="col">Actions</th>
                         </tr>
                         </thead>
                         {# List of Personnels without status provided at this timeslot #}
                         {% for person in personnels|rejectattr(time + "_status") %}
                             <tr class="table-danger align-items-center">
-                                <td class="align-middle">{{ person.rank }} {{ person.name }}</td>
+                                <td class="align-middle">{{ person.Person.rank }} {{ person.Person.name }}</td>
                                 <td class="align-middle">ZZ: NONE PROVIDED</td>
                                 <td>
                                     <!-- Button to easily mark personnel as Present -->
-                                    <form action="{{ url_for('ps.mark_personnel_present', form=form) }}" method="post">
-                                        {{ status_update_form.csrf_token }}
-                                        {{ status_update_form.name(value=person.id) }}
-                                        {{ status_update_form.date(value=date) }}
-                                        {{ status_update_form.time(value=time) }}
-                                        {{ status_update_form.submit(class_="form-control btn btn-dark") }}
-                                    </form>
+                                    <a href="{{ url_for('ps.statuschange', personnel_id=person.id, date=date, fmw_id=person.Person.fmw_id, time=time, set_present=True)}}"
+                                       class="btn btn-dark w-100 mt-1">Mark Present</a>
 
                                     <!-- 2nd button to mark this guy as other status, redirect to status page -->
-                                    <a href="{{ url_for('ps.index', name=person.id) }}" class="btn btn-dark w-100 mt-1">Other Status</a>
+                                    <a href="{{ url_for('ps.statuschange', personnel_id=person.id, date=date, fmw_id=person.Person.fmw_id)}}"
+                                       class="btn btn-dark w-100 mt-1">Other Status</a>
                                 </td>
                             </tr>
                         {% endfor %}
@@ -94,11 +90,11 @@
                                 <td class="align-middle">ZZ: NONE PROVIDED</td>
                                 <td>
                                     <!-- Button to easily mark personnel as Present -->
-                                    <a href="{{ url_for('ps.statuschange', personnel_id=person.id, date=date, fmw_id=person.fmw.id, time=time, set_present=True)}}"
+                                    <a href="{{ url_for('ps.statuschange', personnel_id=person.id, date=date, fmw_id=person.fmw_id, time=time, set_present=True)}}"
                                        class="btn btn-dark w-100 mt-1">Mark Present</a>
 
                                     <!-- 2nd button to mark this guy as other status, redirect to status page -->
-                                    <a href="{{ url_for('ps.statuschange', personnel_id=person.id, date=date, fmw_id=person.fmw.id)}}"
+                                    <a href="{{ url_for('ps.statuschange', personnel_id=person.id, date=date, fmw_id=person.fmw_id)}}"
                                        class="btn btn-dark w-100 mt-1">Other Status</a>
                                 </td>
                             </tr>
@@ -107,7 +103,7 @@
                         {# List of Personnels with status provided at this timeslot #}
                         {% for person in personnels|selectattr(time + "_status")|sort(attribute=(time + "_status")) %}
                             <tr class="{{ 'table-danger' if not person[time + '_status'] }}">
-                                <td>{{ person.rank }} {{ person.name }}</td>
+                                <td>{{ person.Person.rank }} {{ person.Person.name }}</td>
                                 <td>
                                     {{ person[time + '_status'] }}
                                     {% if person[time + '_remarks'] != '' %}
