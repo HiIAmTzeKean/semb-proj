@@ -146,7 +146,6 @@ def paradestate(date, fmw_id):
         Redirects user to Index page then back to paradestate page again]
     """
     # TODO filter out not active personnel and not display them in paradestate as they are inactive
-    # TODO change front end to accomodate half status update(Either AM/PM only)
 
     personnels_status, missing_status = retrieve_personnel_statuses(db, fmw_id, date, clearance=current_user.clearance)
     if request.args.get('redirect_to_paradestate'):
@@ -185,17 +184,26 @@ def statuschange(personnel_id, date):
         date ([str]): [%Y-%m-%d]
         fmw_id: [fmw_id belonging to personnel]
     """
-    record = Personnel_status.query.filter_by(personnel_id=personnel_id, date=date).first()
+    record = Personnel_status.query.filter_by(personnel_id=int(personnel_id), date=date).first()
     fmw_id = request.args.get('fmw_id')
+    date = datetime.strptime(date, '%Y-%m-%d').date()
 
     if 'set_present' in request.args:
-        if request.args.get('time') == "AM":
+        if record:
+            # amend record
+            if request.args.get('time') == "am":
+                record.am_status = 'P'
+                record.am_remarks = ''
+            else:
+                record.pm_status = 'P'
+                record.pm_remarks = ''
+        elif request.args.get('time') == "am":
             record = Personnel_status(date, 'P', '', None, '', personnel_id)
         else:
             record = Personnel_status(date, None, '', 'P', '', personnel_id)
+
         db.session.add(record)
         db.session.commit()
-        flash('Updated Personnel selected!')
         return redirect(url_for('ps.paradestate', redirect_to_paradestate=True, fmw_id=fmw_id, date=date))
 
     elif record is None:

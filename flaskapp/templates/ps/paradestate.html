@@ -68,17 +68,17 @@
                         </tr>
                         </thead>
                         {# List of Personnels without status provided at this timeslot #}
-                        {% for person in personnels|rejectattr(time + "_status") %}
+                        {% for record in personnels|rejectattr(time + "_status") %}
                             <tr class="table-danger align-items-center">
-                                <td class="align-middle">{{ person.Person.rank }} {{ person.Person.name }}</td>
+                                <td class="align-middle">{{ record.Person.rank }} {{ record.Person.name }}</td>
                                 <td class="align-middle">ZZ: NONE PROVIDED</td>
                                 <td>
                                     <!-- Button to easily mark personnel as Present -->
-                                    <a href="{{ url_for('ps.statuschange', personnel_id=person.id, date=date, fmw_id=person.Person.fmw_id, time=time, set_present=True)}}"
+                                    <a href="{{ url_for('ps.statuschange', personnel_id=record.Person.id, date=date, fmw_id=record.Person.fmw_id, time=time, set_present=True)}}"
                                        class="btn btn-dark w-100 mt-1">Mark Present</a>
 
                                     <!-- 2nd button to mark this guy as other status, redirect to status page -->
-                                    <a href="{{ url_for('ps.statuschange', personnel_id=person.id, date=date, fmw_id=person.Person.fmw_id)}}"
+                                    <a href="{{ url_for('ps.statuschange', personnel_id=record.Person.id, date=date, fmw_id=record.Person.fmw_id)}}"
                                        class="btn btn-dark w-100 mt-1">Other Status</a>
                                 </td>
                             </tr>
@@ -101,13 +101,13 @@
                         {% endfor %}
 
                         {# List of Personnels with status provided at this timeslot #}
-                        {% for person in personnels|selectattr(time + "_status")|sort(attribute=(time + "_status")) %}
-                            <tr class="{{ 'table-danger' if not person[time + '_status'] }}">
-                                <td>{{ person.Person.rank }} {{ person.Person.name }}</td>
+                        {% for record in personnels|selectattr(time + "_status")|sort(attribute=(time + "_status")) %}
+                            <tr>
+                                <td>{{ record.Person.rank }} {{ record.Person.name }}</td>
                                 <td>
-                                    {{ person[time + '_status'] }}
-                                    {% if person[time + '_remarks'] != '' %}
-                                        <span>({{ person[time + '_remarks'] }})</span>
+                                    {{ record[time + '_status'] }}
+                                    {% if record[time + '_remarks'] != '' %}
+                                        <span>({{ record[time + '_remarks'] }})</span>
                                     {% endif %}
                                 </td>
                                 <td>{# empty td for formatting #}</td>
