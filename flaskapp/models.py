@@ -40,6 +40,7 @@ class User(db.Model, UserMixin):
     clearance = db.Column(db.Integer, nullable=False)
 
     fmw_id = db.Column(db.Integer, db.ForeignKey('fmw.id'), nullable=False)
+    fmw = db.relationship('Fmw', back_populates='user')
 
     @validates('clearance')
     def validate_clearance(self, key, clearance):
@@ -66,7 +67,9 @@ class Personnel(db.Model):
     active = db.Column(db.Boolean, nullable=False, default=True)
 
     fmw_id = db.Column(db.Integer, db.ForeignKey('fmw.id'), nullable=False)
-    statuses = db.relationship('Personnel_status', backref=db.backref('Person', lazy=False))
+    fmw = db.relationship('Fmw',back_populates='personnel')
+    # statuses = db.relationship('Personnel_status', backref=db.backref('Person', lazy=False))
+    status = db.relationship('Personnel_status', back_populates='person')
 
     def __init__(self, rank, name, fmw_id, active=True):
         self.rank = rank
@@ -88,6 +91,7 @@ class Personnel_status(db.Model):
     pm_remarks = db.Column(db.Text)
 
     personnel_id = db.Column(db.Integer, db.ForeignKey('personnel.id'), nullable=False)
+    person = db.relationship('Personnel', back_populates='status')
     
     def __init__(self, date, am_status, am_remarks, pm_status, pm_remarks, personnel_id):
         self.date = date
@@ -106,8 +110,11 @@ class Fmw(db.Model):
     name = db.Column(db.Text, nullable=False)
 
     fmd_id = db.Column(db.Integer, db.ForeignKey('unit.id'), nullable=False)
-    personnels = db.relationship('Personnel',backref=db.backref('fmw', lazy=False))
-    users = db.relationship('User', backref=db.backref('fmw', lazy=False))
+    unit = db.relationship('Unit',back_populates='fmw')
+    # personnels = db.relationship('Personnel',backref=db.backref('fmw', lazy=False))
+    # users = db.relationship('User', backref=db.backref('fmw', lazy=False))
+    personnel = db.relationship('Personnel', back_populates='fmw')
+    user = db.relationship('User', back_populates='fmw')
 
     def __init__(self, name=''):
         self.name = name
@@ -121,7 +128,8 @@ class Unit(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.Integer,nullable=False)
 
-    fmws = db.relationship('Fmw',backref=db.backref('unit', lazy=False))
+    # fmws = db.relationship('Fmw',backref=db.backref('unit', lazy=False))
+    fmw = db.relationship('Fmw',back_populates='unit')
 
     def __init__(self, name=''):
         self.name = name
