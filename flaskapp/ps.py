@@ -301,18 +301,18 @@ def admin_generate_excel():
         start_date = form.start_date.data
         end_date = form.end_date.data
         if start_date == end_date:
-            records = retrieve_personnel_statuses(db, 'Admin', start_date, missing_status_needed=False)
+            records = retrieve_personnel_statuses(db, 1, start_date, missing_status_needed=False)
             error = generate_PS(records)
             if error:
                 flash("Error in compiling data to excel file. Contact admin!")
         else:
             while start_date != (end_date + timedelta(days=1)):
-                records = retrieve_personnel_statuses(db, 'Admin', start_date, missing_status_needed=False)
+                records = retrieve_personnel_statuses(db, 1, start_date, missing_status_needed=False)
                 error = generate_PS(records, start_date)
                 if error:
                     flash("Error in compiling multiple dates to excel file. Contact admin!")
                 start_date = start_date + timedelta(days=1)
         if error == None:
             flash('Success! Data is now stored in archives')
-            return redirect(url_for('ps.admin_add_del'))
+            return redirect(url_for('ps.admin_generate_excel'))
     return render_template('ps/admin_generate_excel.html', form=form)

@@ -84,10 +84,52 @@ def generate_PS(records, request_date=None):
         csvwriter = DictWriter(csvfile, fieldnames=fieldnames)
         csvwriter.writeheader()
         for record in records:
-            csvwriter.writerow({'fmw': record.Person.fmw, 'Name': record.Person.name, 'Rank': record.Person.rank,
+            csvwriter.writerow({'fmw': record.person.fmw, 'Name': record.person.name, 'Rank': record.person.rank,
                                 'Am status': record.am_status, 'Am Remarks': record.am_remarks,
                                 'Pm status': record.pm_status, 'Pm Remarks': record.pm_remarks})
 
     if Path(new_file_path).is_file():
         return None
     return 'File not created'
+
+# def generate_PS_excel(dates):
+#     import xlsxwriter
+
+#     # Create a workbook and add a worksheet.
+#     workbook = xlsxwriter.Workbook('Expenses01.xlsx')
+#     worksheet = workbook.add_worksheet()
+#     date1=date2=date3=date4=date5='2020-01-01'
+#     header1 = ['fmw', 'Rank', 'Name']
+#     header2 = [date1,date2,date3,date4,date5]
+    
+#     for field in header:
+#         worksheet.write(0, 0, field)
+#         col + 1
+    
+#     worksheet.merge_range('D1:E1', date1)
+#     worksheet.merge_range('F1:G1', date1)
+#     worksheet.merge_range('H1:I1', date1)
+#     worksheet.merge_range('J1:K1', date1)
+#     worksheet.merge_range('L1:N1', date1)
+
+#     # Start from the cell below header. Rows and columns are zero indexed.
+#     row = 1
+#     col = 3
+#     for i in range(5):
+#         worksheet.write(1, col, 'AM')
+#         worksheet.write(1, col+1, 'AM')
+#         col + 2
+
+#     for date in dates:
+#         # get records to write
+#         records = Personnel_status.query.filter(date=date).all()
+#         # write data
+#         row = 2
+#         col = 0
+#         for record in records:
+#             worksheet.write(row, col, record.fmw.name)
+#             worksheet.write(row, col+1, record.rank)
+#             worksheet.write(row, col+2, record.name)
+#             # write per date
+        
+
