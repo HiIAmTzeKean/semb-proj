@@ -1,39 +1,20 @@
-from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, PasswordField, SelectField, HiddenField
-from wtforms.fields.html5 import DateField
-from wtforms.validators import DataRequired
 from datetime import datetime
 
+from flask_wtf import FlaskForm
+from wtforms import (HiddenField, PasswordField, SelectField, StringField,
+                     SubmitField, BooleanField)
+from wtforms.fields.html5 import DateField
+from wtforms.validators import DataRequired, InputRequired, Optional
 
-class loginform(FlaskForm):
-    username = StringField('Username', validators=[DataRequired()])
-    password = PasswordField('Password',validators=[DataRequired()])
-    submit = SubmitField('Sign in')
+from flaskapp import db
+
+from .helpers import fmd_type, statuses_type
+from .models import Fmw, Unit
 
 
 class paradestateform(FlaskForm):
-    statuses = {
-        'P': 'PRESENT',
-        'AO': 'ATTACHED OUT',
-        'DUTY': 'DUTY',
-        'OS': 'OUT STATION',
-        'OC': 'ON COURSE',
-        'OFF': 'OFF',
-        'LL': 'LOCAL LEAVE',
-        'OL': 'OVERSEAS LEAVE',
-        'MC': 'MC',
-        'MA': 'MA',
-        'RSO': 'RSO',
-        'RSI': 'RSI',
-        'SOL': 'SOL',
-        'DR': 'DUTY REST',
-        'OTHERS': 'OTHERS'
-    }
-    statuses = statuses.items()
-    workshops = [("Sembawang"),("Bedok"),("Navy"),("Selarang"),("HQ")]
-    fmw = SelectField(label='FMW', choices=workshops)
+    statuses = statuses_type().items()
     name = SelectField(label='Name', choices='',validators=[DataRequired()], coerce=int)
-    #status_date = DateField(label='Date', validators=[DataRequired()], default=datetime.today)
     start_date = DateField(label='Start Date', validators=[DataRequired()], default=datetime.today)
     end_date = DateField(label='End Date', validators=[DataRequired()], default=datetime.today)
     am_status = SelectField(label='AM Status', choices=statuses)
@@ -42,44 +23,52 @@ class paradestateform(FlaskForm):
     pm_remarks = StringField(label='PM Remarks',)
     submit = SubmitField('Submit')
 
-
-class paradestateviewform(FlaskForm):
-    date = DateField(label='Date', validators=[DataRequired()], default=datetime.today)
-    submit = SubmitField('Submit')
-
-
-class admin_paradestateviewform(paradestateviewform):
-    workshops = [("Sembawang"),("Bedok"),("Navy"),("Selarang"),("HQ")]
-    fmw = SelectField(label='FMW', choices=workshops)
+    def validate(self):
+        if not FlaskForm.validate(self):
+            return False
+        if self.end_date.data < self.start_date.data:
+            self.end_date.errors.append('End Date must not come before Start Date!')
+            return False
+        return True
 
 
 class strengthviewform(FlaskForm):
-    workshops = [("Sembawang"),("Bedok"),("Navy"),("Selarang"),("HQ")]
-    fmw = SelectField(label='FMW', choices=workshops)
+    default_unit_display = Unit.query.filter_by(name=0).first()
+    fmws = [(coy.id, coy.name) for coy in Fmw.query.filter_by(fmd_id=default_unit_display.id).all()]
+    fmw = SelectField(label='FMW', choices=fmws, validators=[Optional()], validate_choice=False, default=None)
+    submit = SubmitField('Submit')
+
+
+class admin_paradestateviewform(strengthviewform):
+    date = DateField(label='Date', validators=[DataRequired()], default=datetime.today)
+
+
+class submitform(FlaskForm):
     submit = SubmitField('Submit')
 
 
 class admin_adddelform(FlaskForm):
-    name = StringField(label='Name', validators=[DataRequired()])
-    rank = StringField(label='Rank', validators=[DataRequired()])
-    add_del = SelectField(label='Add/Delete', choices=[('Add'),('Delete')])
+    name = StringField(label='Name:', validators=[DataRequired()])
+    rank = StringField(label='Rank:', validators=[DataRequired()])
     submit = SubmitField('Submit')
-    #for clearance 2 and above
-    workshops = [("Sembawang"),("Bedok"),("Navy"),("Selarang"),("HQ")]
-    fmw = SelectField(label='FMW', choices=workshops)
+    fmw = SelectField(label='FMW', choices=[], validators=[Optional()], validate_choice=False, default=None)
 
 
-class admin_actdeactform(FlaskForm):
-    name = StringField(label='Name', validators=[DataRequired()])
-    rank = StringField(label='Rank', validators=[DataRequired()])
-    act_deact = SelectField(label='Activate/Deactivate', choices=[(1,'Activate'),(0,'Deactivate')])
+class strengthviewer_action_form(FlaskForm):
+    action = HiddenField()
+    personnel_id = HiddenField()
     submit = SubmitField('Submit')
-    #for clearance 2 and above
-    workshops = [("Sembawang"),("Bedok"),("Navy"),("Selarang"),("HQ")]
-    fmw = SelectField(label='FMW', choices=workshops)
 
 
 class admin_generateexcelform(FlaskForm):
     start_date = DateField(label='Start Date', validators=[DataRequired()], default=datetime.today)
     end_date = DateField(label='End Date', validators=[DataRequired()], default=datetime.today)
     submit = SubmitField('Submit')
+
+    def validate(self):
+        if not FlaskForm.validate(self):
+            return False
+        if self.end_date.data < self.start_date.data:
+            self.end_date.errors.append('End Date must not come before Start Date!')
+            return False
+        return True
