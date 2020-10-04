@@ -138,7 +138,6 @@ def paradestate(date, fmw_id):
         Other Status: [Button in html. Set other status for Person. 
         Redirects user to Index page then back to paradestate page again]
     """
-    # TODO filter out not active personnel and not display them in paradestate as they are inactive
 
     # either show the current time (AM/PM) or use arguments provided
     current_time = request.args.get('time') if request.args.get('time') else datetime.now().strftime('%p').lower()

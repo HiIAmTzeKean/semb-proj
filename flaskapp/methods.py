@@ -8,7 +8,8 @@ from .models import Unit, Personnel, Personnel_status, User
 
 
 def retrieve_personnel_list(fmw_id, clearance=100, query_all=False):
-    if query_all == True and clearance <= 2: return Personnel.query.all()
+    if query_all == True and clearance <= 2:
+        return Personnel.query.all()
     # subquery = Fmw.query.filter_by(name=fmw).first()
     return Personnel.query.filter_by(fmw_id=fmw_id).all()
 
@@ -17,27 +18,27 @@ def retrieve_personnel_statuses(db, fmw_id, date, clearance=100, missing_status_
     if clearance <= 2 and query_all == True:
         # query all
         personnel_statuses = db.session.query(Personnel_status).filter(
-            Personnel_status.date == date, Personnel.id == Personnel_status.personnel_id).all()
+            Personnel_status.date == date, Personnel.id == Personnel_status.personnel_id, Personnel.active == True).all()
 
         if missing_status_needed == True:
             subquery = db.session.query(Personnel.id).join(Personnel_status,
                                                            Personnel.id == Personnel_status.personnel_id).filter(
-                Personnel_status.date == date)
-            missing_status = db.session.query(Personnel).filter(Personnel.id.notin_(subquery)).all()
+                                                           Personnel_status.date == date)
+            missing_status = db.session.query(Personnel).filter(
+                Personnel.id.notin_(subquery), Personnel.active == True).all()
 
     else:
-        # fmw_query = Fmw.query.filter_by(name=fmw).first()
         personnel_statuses = db.session.query(Personnel_status).filter(
             Personnel_status.date == date, Personnel.id == Personnel_status.personnel_id,
-            Personnel.fmw_id == fmw_id).all()
+            Personnel.fmw_id == fmw_id, Personnel.active == True).all()
 
         if missing_status_needed == True:
             subquery = db.session.query(Personnel.id).join(Personnel_status,
                                                            Personnel.id == Personnel_status.personnel_id).filter(
-                Personnel_status.date == date)
-            # fmw_query = Fmw.query.filter_by(name=fmw).first()
+                                                           Personnel_status.date == date)
             missing_status = db.session.query(Personnel).filter(Personnel.id.notin_(subquery),
-                                                                Personnel.fmw_id == fmw_id).all()
+                                                                Personnel.fmw_id == fmw_id,
+                                                                Personnel.active == True).all()
 
     return (personnel_statuses, missing_status) if (missing_status_needed == True) else (personnel_statuses)
 
@@ -52,7 +53,10 @@ def retrieve_all_groups_accessible_by_user():
         # if clearance is 2, all units can be viewed
         # but if clearance is 3, we need to filter till we get the correct unit
         if current_user.clearance == 2 or current_user.fmw.unit == unit:
-            group_list.extend((group.id, "{} - {}".format(unit.name, group.name)) for group in unit.fmw)
+            group_list.extend(
+                (group.id, "{} - {}".format(unit.name, group.name))
+                for group in unit.fmw)
+            print(group_list)
 
     return group_list
 
@@ -75,7 +79,8 @@ def generate_PS(records, request_date=None):
         csvwriter = writer(csvfile)
         csvwriter.writerow(['Date', request_date])
         # write excel header
-        fieldnames = ['fmw', 'Name', 'Rank', 'Am status', 'Am Remarks', 'Pm status', 'Pm Remarks']
+        fieldnames = ['fmw', 'Name', 'Rank', 'Am status',
+                      'Am Remarks', 'Pm status', 'Pm Remarks']
         csvwriter = DictWriter(csvfile, fieldnames=fieldnames)
         csvwriter.writeheader()
         for record in records:
