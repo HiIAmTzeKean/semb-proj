@@ -42,6 +42,7 @@ def index():
         personnel_id = int(request.args.get('personnel_id'))
         personnel = Personnel.query.filter_by(id=personnel_id).first()
         date = datetime.strptime(request.args.get('date'), '%Y-%m-%d').date()
+        time = request.args.get('time')
         fmw_id = request.args.get('fmw_id')
         form.name.choices = [(personnel.id, personnel.name)]
         form.name.data = personnel_id
@@ -55,8 +56,8 @@ def index():
             form.pm_status.data = record.pm_status
             form.pm_remarks.data = record.pm_remarks
 
-        return render_template('ps/index.html', form=form, updated=updated, personnel=None,
-                               date=date, redirect_to_paradestate=True, fmw_id=fmw_id)
+        return render_template('ps/index.html', form=form, updated=updated, record=None,
+                               date=date, time=time, redirect_to_paradestate=True, fmw_id=fmw_id)
 
     if form.validate_on_submit():
         start_date = form.start_date.data
@@ -73,10 +74,11 @@ def index():
 
         if request.args.get('redirect_to_paradestate'):
             return redirect(url_for('ps.paradestate', redirect_to_paradestate=True,
-                                    fmw_id=request.args.get('fmw_id'), date=request.args.get('date')))
+                                    fmw_id=request.args.get('fmw_id'), date=request.args.get('date'),
+                                    time=request.args.get('time')))
         else:
             resp = make_response(render_template('ps/index.html', form=form, updated=updated,
-                                                 multi_date=multi_date, personnel=record, end_date=end_date))
+                                                 multi_date=multi_date, record=record, end_date=end_date))
             resp.set_cookie('personnel_id', value=str(personnel_id), max_age=60 * 60 * 24)
             return resp
 
@@ -89,7 +91,7 @@ def index():
         form.am_remarks.data = record.am_remarks
         form.pm_status.data = record.pm_status
         form.pm_remarks.data = record.pm_remarks
-    return render_template('ps/index.html', form=form, updated=updated, personnel=None)
+    return render_template('ps/index.html', form=form, updated=updated, record=None)
 
 
 @bp.route('/paradestate_pre_view', methods=('GET', 'POST'))
@@ -138,19 +140,14 @@ def paradestate(date, fmw_id):
     """
     # TODO filter out not active personnel and not display them in paradestate as they are inactive
 
+    # either show the current time (AM/PM) or use arguments provided
+    current_time = request.args.get('time') if request.args.get('time') else datetime.now().strftime('%p').lower()
     personnels_status, missing_status = retrieve_personnel_statuses(db, fmw_id, date, clearance=current_user.clearance)
-    if request.args.get('redirect_to_paradestate'):
-        if len(personnels_status) != 0:
-            return render_template('ps/paradestate.html', personnels=personnels_status,
-                                   missing_personnels=missing_status, date=date,
-                                   fmw_name=db.session.query(Fmw.name).filter_by(id=fmw_id).scalar())
-        flash("No one has submitted PS. Please remind them to do so!")
-        return redirect(url_for('ps.paradestate_pre_view'))
-
     if len(personnels_status) != 0:
         return render_template('ps/paradestate.html', personnels=personnels_status,
-                               missing_personnels=missing_status, date=date,
+                               missing_personnels=missing_status, date=date, current_time=current_time,
                                fmw_name=db.session.query(Fmw.name).filter_by(id=fmw_id).scalar())
+
     flash("No one has submitted PS. Please remind them to do so!")
     return redirect(url_for('ps.paradestate_pre_view'))
 
@@ -178,29 +175,30 @@ def statuschange(personnel_id, date):
     record = Personnel_status.query.filter_by(personnel_id=int(personnel_id), date=date).first()
     fmw_id = request.args.get('fmw_id')
     date = datetime.strptime(date, '%Y-%m-%d').date()
+    time = request.args.get('time')
 
     if 'set_present' in request.args:
         if record:
             # amend record
-            if request.args.get('time') == "am":
+            if time == "am":
                 record.am_status = 'P'
                 record.am_remarks = ''
             else:
                 record.pm_status = 'P'
                 record.pm_remarks = ''
-        elif request.args.get('time') == "am":
+        elif time == "am":
             record = Personnel_status(date, 'P', '', None, '', personnel_id)
         else:
             record = Personnel_status(date, None, '', 'P', '', personnel_id)
 
         db.session.add(record)
         db.session.commit()
-        return redirect(url_for('ps.paradestate', redirect_to_paradestate=True, fmw_id=fmw_id, date=date))
+        return redirect(url_for('ps.paradestate', redirect_to_paradestate=True, fmw_id=fmw_id, date=date, time=time))
 
     elif record is None:
-        return redirect(url_for('index', status_change=False, personnel_id=personnel_id, date=date, fmw_id=fmw_id))
+        return redirect(url_for('index', status_change=False, personnel_id=personnel_id, date=date, fmw_id=fmw_id, time=time))
     elif record:
-        return redirect(url_for('index', status_change=True, personnel_id=personnel_id, date=date, fmw_id=fmw_id))
+        return redirect(url_for('index', status_change=True, personnel_id=personnel_id, date=date, fmw_id=fmw_id, time=time))
 
 
 @bp.route('/strengthviewer_pre_view', methods=('GET', 'POST'))

@@ -52,7 +52,7 @@ def retrieve_all_groups_accessible_by_user():
         # if clearance is 2, all units can be viewed
         # but if clearance is 3, we need to filter till we get the correct unit
         if current_user.clearance == 2 or current_user.fmw.unit == unit:
-            group_list.extend((group.id, "{} - {}".format(unit.name, group.name)) for group in unit.fmws)
+            group_list.extend((group.id, "{} - {}".format(unit.name, group.name)) for group in unit.fmw)
 
     return group_list
 

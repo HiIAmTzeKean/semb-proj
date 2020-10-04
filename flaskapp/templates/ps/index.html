@@ -11,25 +11,25 @@
     {% if updated %}
         <div class="alert alert-success pl-3" role="alert">
             <h4 class="alert-heading">Status Updated</h4>
-            <p>{{ personnel.Person.name }}'s status for {{ personnel.date }}  {{ ('to ' + end_date|string) if multi_date else '' }} has been updated to:</p>
+            <p>{{ record.person.name }}'s status for {{ record.date }}  {{ ('to ' + end_date|string) if multi_date else '' }} has been updated to:</p>
             <p class="mb-0 font-weight-bold">
                 AM Status/Remarks:
-                <span class="font-weight-normal d-inline">{{ personnel.am_status }}</span>
-                {% if personnel.am_remarks != '' %}
-                    <span class="font-weight-normal d-inline">({{ personnel.am_remarks }})</span>
+                <span class="font-weight-normal d-inline">{{ record.am_status }}</span>
+                {% if record.am_remarks != '' %}
+                    <span class="font-weight-normal d-inline">({{ record.am_remarks }})</span>
                 {% endif %}
             </p>
             <p class="mb-0 font-weight-bold">
                 PM Status/Remarks:
-                <span class="font-weight-normal d-inline">{{ personnel.pm_status }}</span>
-                {% if personnel.pm_remarks != '' %}
-                    <span class="font-weight-normal d-inline">({{ personnel.pm_remarks }})</span>
+                <span class="font-weight-normal d-inline">{{ record.pm_status }}</span>
+                {% if record.pm_remarks != '' %}
+                    <span class="font-weight-normal d-inline">({{ record.pm_remarks }})</span>
                 {% endif %}
             </p>
         </div>
     {% endif %}
 
-    <form action="{{ url_for('ps.index', redirect_to_paradestate=True, fmw_id = fmw_id, date=date) if redirect_to_paradestate }}" method="post">
+    <form action="{{ url_for('ps.index', redirect_to_paradestate=True, fmw_id = fmw_id, date=date, time=time) if redirect_to_paradestate }}" method="post">
         {{ form.hidden_tag() }}
         <div class="form-row mt-3">
             <div class="col-md-3 font-weight-bold">
